@@ -1,6 +1,14 @@
-import torch
 import numpy as np
-from typing import Union, Dict, Tuple
+from utils import create_wall_mask
+
+"""
+To Do:
+ - legal actions
+ - checkRep
+ - support for multiple agents?
+
+"""
+
 
 class Grid:
     '''
@@ -14,23 +22,38 @@ class Grid:
     actions = np.asarray([[0, 0], [-1, 0], [0, 1], [1, 0], [0, -1]],
                          dtype=int)
 
-    def __init__(self, shape: Union[int, tuple]):
-        if isinstance(shape, int):
-            shape = (shape, shape)
-        assert isinstance(shape, tuple)
+    def __init__(self, shape, num_agents=1):
+        assert isinstance(shape, int)
         self.shape = shape
 
-
-        self.wall_mask = np.zeros(self.shape, dtype=float)
-        
-        self.goal_mask = np.zeros(self.shape, dtype=float)
+        self.grid_coords = set((i,j) for i in range(shape) for j in range(shape))
+        self.wall_mask = create_wall_mask(shape)
 
         self._place_agent()
 
+    def checkRep() -> None:
+        """
+        ensure that all states within grid are legal
+        for development
+        """
+        pass
 
     def _place_agent(self) -> None:
+        self.agent_pos = np.random.choice(self.grid_coords - self.wall_mask)
+
+
+    def legal_actions(self, agent_state) -> List:
+        """
+        return the list of np arrays that are legal actions
+        """
         pass
 
+
     def T(self, action:np.ndarray, state: np.ndarray) -> tuple:
-        """ Returns new state, internally updates"""
-        pass
+        """
+        Precondition: action needs to be legal
+        Returns new state, internally updates
+        """
+        self.agent_pos =  state + action
+        return state+action #avoid aliasing
+    
