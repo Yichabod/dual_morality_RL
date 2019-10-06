@@ -1,6 +1,8 @@
-import numpy as np
-from utils import create_wall_mask, Train, create_agent_mask
 import random
+import numpy as np
+from utils import Train, create_agent_mask
+import random
+
 
 """
 To Do:
@@ -19,13 +21,13 @@ class Grid:
 
     '''
 
-    # available actions: stay, north, east, south, west
-    actions = set([(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)])
                         
 
     def __init__(self, size, num_agents=1):
         assert isinstance(size, int)
-        actions = set([(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)])
+
+        # available actions: stay, north, east, south, west
+        self.all_actions = set([(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)])
         
         self.size = size
 
@@ -53,7 +55,8 @@ class Grid:
         """
         return the list of np arrays that are legal actions
         """
-        legal_actions = actions
+        legal_actions = self.all_actions
+        print(legal_actions)
         if self.agent_pos[0] == self.size-1:
             legal_actions-={(1,0)}
         if self.agent_pos[1] == self.size-1:
@@ -65,15 +68,16 @@ class Grid:
         return legal_actions
         
 
-
     def T(self, action:tuple) -> None:
         """
         Precondition: action needs to be legal
         Returns new state, internally updates
         """
+
         #check that action is legal
         if action not in self.legal_actions():
-            raise "Not a valid action"
+            print(self.legal_actions())
+            raise ValueError("Not a valid action")
         
         ag = self.agent_pos
         ac = action
@@ -87,10 +91,13 @@ class Grid:
         if set(self.other_agents.keys()).intersection(new_agent_pos):
             #push
             pass
-        if set(self.other_agents.keys()).intersection(self.train):
+        if set(self.other_agents.keys()).intersection({self.train.pos}):
             #death
             pass
             
+    
+        self.agent_pos = new_agent_pos
+
     
         
         #return state+action #avoid aliasing
@@ -101,3 +108,9 @@ class Grid:
         
         #reward per state
     
+
+if __name__ == "__main__":
+    pass
+    #grid = Grid(4)
+    #assert(len(grid.legal_actions(np.array([1,1])))==4)
+

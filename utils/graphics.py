@@ -1,8 +1,8 @@
 import numpy as np
 
-# need to modify this 
 
-def display_grid(mdp, agent=None, action=None):
+def display_grid(mdp, action=None):
+
     """
     Takes in mdp environment and an agent, with optional action to
     show which direction next move should be in
@@ -18,7 +18,6 @@ def display_grid(mdp, agent=None, action=None):
     for other in mdp.other_agents:
         grid[other[0],other[1]] = str(mdp.other_agents[other])
     
-    
     #if type(action) == np.ndarray:
         #next_x, next_y = action+agent.state
         #grid[next_x,next_y] = "N"
@@ -27,7 +26,5 @@ def display_grid(mdp, agent=None, action=None):
     if mdp.train.pos != None:
         grid[mdp.train.pos[0],mdp.train.pos[1]] = "T"
 
-
-    grid = grid.astype(str)
     print(grid)
     return grid
