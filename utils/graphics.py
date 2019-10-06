@@ -2,7 +2,7 @@ import numpy as np
 
 # need to modify this 
 
-def display_grid(mdp, agent, action=None):
+def display_grid(mdp, agent=None, action=None):
     """
     Takes in mdp environment and an agent, with optional action to
     show which direction next move should be in
@@ -13,18 +13,21 @@ def display_grid(mdp, agent, action=None):
     To Do: add support for collision
     """
     dims = (mdp.size,mdp.size) #tuple eg (11,11)
-    grid = np.full(dims, " ", dtype=str) #np has nice display built in
+    grid = np.full(dims, "_", dtype=str) #np has nice display built in
 
-    for wall in mdp.wall:
-        grid[wall[0],wall[1]] = "W"
-    if type(action) == np.ndarray:
-        next_x, next_y = action+agent.state
-        grid[next_x,next_y] = "N"
+    for other in mdp.other_agents:
+        grid[other[0],other[1]] = str(mdp.other_agents[other])
+    
+    
+    #if type(action) == np.ndarray:
+        #next_x, next_y = action+agent.state
+        #grid[next_x,next_y] = "N"
 
-    state_x,state_y = agent.state
-    grid[agent.sta,state_y] = "◉" #where the agent is
+    grid[mdp.agent_pos[0],mdp.agent_pos[1]] = "◉" #where the agent is
+    if mdp.train.pos != None:
+        grid[mdp.train.pos[0],mdp.train.pos[1]] = "T"
 
 
     grid = grid.astype(str)
-    pprint(grid)
+    print(grid)
     return grid

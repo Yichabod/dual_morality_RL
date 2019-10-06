@@ -1,5 +1,6 @@
 import numpy as np
-from utils import create_wall_mask
+from utils import create_wall_mask, Train, create_agent_mask
+import random
 
 """
 To Do:
@@ -19,15 +20,20 @@ class Grid:
     '''
 
     # available actions: stay, north, east, south, west
-    actions = np.asarray([[0, 0], [-1, 0], [0, 1], [1, 0], [0, -1]],
-                         dtype=int)
+    actions = set([(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)])
+                        
 
-    def __init__(self, shape, num_agents=1):
-        assert isinstance(shape, int)
-        self.shape = shape
+    def __init__(self, size, num_agents=1):
+        assert isinstance(size, int)
+        actions = set([(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)])
+        
+        self.size = size
 
-        self.grid_coords = set((i,j) for i in range(shape) for j in range(shape))
-        self.wall_mask = create_wall_mask(shape)
+        self.grid_coords = set((i,j) for i in range(size) for j in range(size))
+        #self.wall_mask = create_wall_mask(shape)
+        
+        self.train = Train(size)
+        self.other_agents = create_agent_mask()
 
         self._place_agent()
 
@@ -39,21 +45,59 @@ class Grid:
         pass
 
     def _place_agent(self) -> None:
-        self.agent_pos = np.random.choice(self.grid_coords - self.wall_mask)
+        empty = self.grid_coords - {self.train.pos} - set(self.other_agents)
+        self.agent_pos = random.choice(tuple(empty))
 
 
-    def legal_actions(self, agent_state) -> List:
+    def legal_actions(self) -> set:
         """
         return the list of np arrays that are legal actions
         """
-        pass
+        legal_actions = actions
+        if self.agent_pos[0] == self.size-1:
+            legal_actions-={(1,0)}
+        if self.agent_pos[1] == self.size-1:
+            legal_actions-={(0,1)}
+        if self.agent_pos[0] == 0:
+            legal_actions-={(-1,0)}
+        if self.agent_pos[1] == 0:
+            legal_actions-={(0,-1)}
+        return legal_actions
+        
 
 
-    def T(self, action:np.ndarray, state: np.ndarray) -> tuple:
+    def T(self, action:tuple) -> None:
         """
         Precondition: action needs to be legal
         Returns new state, internally updates
         """
-        self.agent_pos =  state + action
-        return state+action #avoid aliasing
+        #check that action is legal
+        if action not in self.legal_actions():
+            raise "Not a valid action"
+        
+        ag = self.agent_pos
+        ac = action
+        self.train.update
+        new_agent_pos = (ag[0] + ac[0], ag[1] + ac[1]) 
+        
+        #collision detect
+        if new_agent_pos == self.train.pos:
+            #death
+            pass
+        if set(self.other_agents.keys()).intersection(new_agent_pos):
+            #push
+            pass
+        if set(self.other_agents.keys()).intersection(self.train):
+            #death
+            pass
+            
+    
+        
+        #return state+action #avoid aliasing
+
+    def R(self, state: tuple, action: tuple) -> int:
+        """
+        """
+        
+        #reward per state
     
