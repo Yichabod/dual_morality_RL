@@ -2,6 +2,7 @@ import random
 import numpy as np
 from utils import Train, OtherMask
 import random
+from graphics import display_grid
 
 
 """
@@ -124,7 +125,9 @@ class Grid:
     
 
 if __name__ == "__main__":
-    pass
-    #grid = Grid(4)
-    #assert(len(grid.legal_actions(np.array([1,1])))==4)
-
+    grid = Grid(5)
+    for i in range(5):
+        display_grid(grid)
+        print("")
+        action = random.choice(tuple(grid.legal_actions()))
+        grid.T(action)
