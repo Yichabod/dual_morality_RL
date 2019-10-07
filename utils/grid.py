@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from utils import Train, create_agent_mask
+from utils import Train, OtherMask
 import random
 
 
@@ -35,7 +35,7 @@ class Grid:
         #self.wall_mask = create_wall_mask(shape)
         
         self.train = Train(size)
-        self.other_agents = create_agent_mask()
+        self.other_agents = OtherMask(size)
 
         self._place_agent()
 
@@ -47,27 +47,30 @@ class Grid:
         pass
 
     def _place_agent(self) -> None:
-        empty = self.grid_coords - {self.train.pos} - set(self.other_agents)
+        empty = self.grid_coords - {self.train.pos} - self.other_agents.get_mask_set()
         self.agent_pos = random.choice(tuple(empty))
 
+    def in_bounds(self,position:tuple) -> bool:
+        if 0 <= position[0] < self.size and 0 <= position[1] < self.size:
+            return True
+        else:
+            return False
 
     def legal_actions(self) -> set:
         """
         return the list of np arrays that are legal actions
         """
-        legal_actions = self.all_actions
-        print(legal_actions)
-        if self.agent_pos[0] == self.size-1:
-            legal_actions-={(1,0)}
-        if self.agent_pos[1] == self.size-1:
-            legal_actions-={(0,1)}
-        if self.agent_pos[0] == 0:
-            legal_actions-={(-1,0)}
-        if self.agent_pos[1] == 0:
-            legal_actions-={(0,-1)}
+        legal_actions = self.all_actions.copy()
+        for action in self.all_actions:
+            new_position_y = self.agent_pos[0]+action[0]
+            new_position_x = self.agent_pos[1]+action[1]
+            if not self.in_bounds((new_position_y,new_position_x)):
+                legal_actions -= {action}
+    
         return legal_actions
         
 
+        
     def T(self, action:tuple) -> None:
         """
         Precondition: action needs to be legal
@@ -81,22 +84,30 @@ class Grid:
         
         ag = self.agent_pos
         ac = action
-        self.train.update
+        self.train.update()
         new_agent_pos = (ag[0] + ac[0], ag[1] + ac[1]) 
         
         #collision detect
         if new_agent_pos == self.train.pos:
-            #death
+            #death, terminal state?
             pass
-        if set(self.other_agents.keys()).intersection(new_agent_pos):
+        if self.other_agents.get_mask_set().intersection({new_agent_pos}):
             #push
-            pass
-        if set(self.other_agents.keys()).intersection({self.train.pos}):
+            new_other_y = new_agent_pos[0] + action[0]
+            new_other_x = new_agent_pos[1] + action[1]
+            new_other_pos = (new_other_y,new_other_x)
+            if self.in_bounds(new_other_pos):
+                self.other_agents.push(new_agent_pos,action)
+            else:
+                new_agent_pos = self.agent_pos
+                
+        if self.other_agents.get_mask_set().intersection({self.train.pos}):
             #death
             pass
             
-    
         self.agent_pos = new_agent_pos
+
+    
 
     
         
@@ -105,7 +116,10 @@ class Grid:
     def R(self, state: tuple, action: tuple) -> int:
         """
         """
-        
+        reward = -1
+        if self.agent_pos == self.train.pos:
+            #death, end state
+            reward = -100
         #reward per state
     
 

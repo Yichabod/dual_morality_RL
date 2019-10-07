@@ -14,9 +14,10 @@ def display_grid(mdp, action=None):
     """
     dims = (mdp.size,mdp.size) #tuple eg (11,11)
     grid = np.full(dims, "_", dtype=str) #np has nice display built in
+    others_dict = mdp.other_agents.mask
 
-    for other in mdp.other_agents:
-        grid[other[0],other[1]] = str(mdp.other_agents[other])
+    for other in others_dict:
+        grid[other[0],other[1]] = str(others_dict[other])
     
     #if type(action) == np.ndarray:
         #next_x, next_y = action+agent.state
@@ -24,7 +25,14 @@ def display_grid(mdp, action=None):
 
     grid[mdp.agent_pos[0],mdp.agent_pos[1]] = "◉" #where the agent is
     if mdp.train.pos != None:
-        grid[mdp.train.pos[0],mdp.train.pos[1]] = "T"
+        # if agent is killed by train, X marks collision
+        if mdp.train.pos == mdp.agent_pos:
+            grid[mdp.train.pos[0],mdp.train.pos[1]] = "X"
+        # if other is killed by train, X marks collision
+        elif set(others_dict.keys()).intersection({mdp.train.pos}):
+            grid[mdp.train.pos[0],mdp.train.pos[1]] = "x"
+        else:
+            grid[mdp.train.pos[0],mdp.train.pos[1]] = "T"
 
     print(grid)
     return grid
