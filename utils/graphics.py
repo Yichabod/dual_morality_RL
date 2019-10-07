@@ -18,7 +18,7 @@ def display_grid(mdp, action=None):
 
     for other in others_dict:
         grid[other[0],other[1]] = str(others_dict[other])
-    
+
     #if type(action) == np.ndarray:
         #next_x, next_y = action+agent.state
         #grid[next_x,next_y] = "N"

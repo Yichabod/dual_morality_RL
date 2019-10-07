@@ -1,6 +1,7 @@
 import random
 from utils import Train, OtherMask, in_bounds
 from graphics import display_grid
+import numpy as np
 
 
 """
@@ -20,7 +21,7 @@ class Grid:
 
     '''
 
-                        
+
 
     def __init__(self, size, num_agents=1):
         assert isinstance(size, int)
@@ -28,11 +29,11 @@ class Grid:
         # available actions: stay, north, east, south, west
         # coords are (y,x), with negative being up and left
         self.all_actions = set([(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)])
-        
+
         self.size = size
 
         self.grid_coords = set((i,j) for i in range(size) for j in range(size))
-        
+
         self.train = Train(size)
         self.other_agents = OtherMask(size)
 
@@ -51,7 +52,8 @@ class Grid:
         pass
 
     def _place_agent(self) -> None:
-        empty = self.grid_coords - {self.train.pos} - self.other_agents.get_mask_set()
+        empty = self.grid_coords - {self.train.pos} - set(self.other_agents)
+
         self.agent_pos = random.choice(tuple(empty))
 
 
@@ -66,11 +68,10 @@ class Grid:
             new_position_x = self.agent_pos[1]+action[1]
             if not in_bounds(self.size,(new_position_y,new_position_x)):
                 legal_actions -= {action}
-    
-        return legal_actions
-        
 
-        
+        return legal_actions
+
+
     def T(self, action:tuple) -> None:
         """
         Precondition: action needs to be legal
@@ -123,7 +124,7 @@ class Grid:
             #death, end state
             reward = -100
         #reward per state
-    
+
 
 if __name__ == "__main__":
     # makes 5x5 test grid and chooses random action until terminal state is reached
