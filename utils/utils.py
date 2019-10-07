@@ -14,7 +14,9 @@ def in_bounds(size,position:tuple) -> bool:
     
 class OtherMask:
     """
+    Class to maintain location and number of other agents in grid
     """
+    
     def __init__(self, size, positions={(0,2),(2,2)}, num=1):
         self.mask = {}
         for pos in positions:
@@ -29,6 +31,9 @@ class OtherMask:
         return set(self.mask)
         
 class Train:
+    """
+    Class to represent train and its properties
+    """
     def __init__(self, size, pos=(0,0),vel=(0,1)):
         self.pos = pos
         self.vel = vel

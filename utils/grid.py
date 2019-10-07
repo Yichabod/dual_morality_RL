@@ -6,7 +6,7 @@ import numpy as np
 
 """
 To Do:
- - legal actions
+ - how to integrate reward function with transition?
  - checkRep
  - support for multiple agents?
 
@@ -15,12 +15,10 @@ To Do:
 
 class Grid:
     '''
+    Grid is the state class for the MDP, with transition and reward functions
     Provides base grid environment with which the agents interact.
-    Keeps track of agent positions
-    Takes care of transitions between states
-
+    Keeps track of agent positions, others positions, and train 
     '''
-
 
 
     def __init__(self, size, num_agents=1):
@@ -31,7 +29,8 @@ class Grid:
         self.all_actions = set([(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)])
 
         self.size = size
-
+        
+        #all possible coordinates as a y,x tuple
         self.grid_coords = set((i,j) for i in range(size) for j in range(size))
 
         self.train = Train(size)
@@ -51,16 +50,19 @@ class Grid:
         """
         pass
 
+
     def _place_agent(self) -> None:
-        empty = self.grid_coords - {self.train.pos} - set(self.other_agents)
+        """
+        randomly sets self.agent_pos taking into account currently occupied coordinates
+        """
+        empty = self.grid_coords - {self.train.pos} - self.other_agents.get_mask_set()
 
         self.agent_pos = random.choice(tuple(empty))
 
 
-
     def legal_actions(self) -> set:
         """
-        return the list of np arrays that are legal actions
+        return the set of tuples representing legal actions from the current state
         """
         legal_actions = self.all_actions.copy()
         for action in self.all_actions:
@@ -74,8 +76,9 @@ class Grid:
 
     def T(self, action:tuple) -> None:
         """
-        Precondition: action needs to be legal
-        Returns new state, internally updates
+        Precondition: action needs to be legal, board cannot be in terminal state
+        Returns None at the moment, changes grid object properties to update state
+        can be changed return duplicate grid object if mutation is bad 
         """
 
         #check not terminal state
@@ -87,17 +90,18 @@ class Grid:
             
             ag = self.agent_pos
             ac = action
-            self.train.update()
             new_agent_pos = (ag[0] + ac[0], ag[1] + ac[1]) 
+            self.train.update()
             
             #collision detect
             if new_agent_pos == self.train.pos:
-                #death, terminal state?
+                #agent intersect train: death, terminal state?
                 self.train.vel = (0,0)
                 self.terminal_state = True
                 pass
             if self.other_agents.get_mask_set().intersection({new_agent_pos}):
-                #push
+                #agent intersect other: push
+                #moves both agent and other given that it will not push anyone out of bounds
                 new_other_y = new_agent_pos[0] + action[0]
                 new_other_x = new_agent_pos[1] + action[1]
                 new_other_pos = (new_other_y,new_other_x)
@@ -106,10 +110,11 @@ class Grid:
                 else:
                     new_agent_pos = self.agent_pos
             if self.other_agents.get_mask_set().intersection({self.train.pos}):
-                #death
+                #other intersect train: death
                 self.train.vel = (0,0)
                 pass
                 
+            #increment time by one for each transition
             self.timestep += 1
             if self.timestep == self.terminal_time:
                 self.terminal_state = True
