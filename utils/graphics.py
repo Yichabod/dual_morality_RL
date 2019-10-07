@@ -12,14 +12,19 @@ def display_grid(mdp, action=None):
     To Do: add support for collision
     """
     dims = (mdp.size,mdp.size) #tuple eg (11,11)
-    grid = np.full(dims, " ", dtype=str) #np has nice display built in
+    grid = np.full(dims, "_", dtype=str) #np has nice display built in
 
-    if type(action) == np.ndarray:
-        next_x, next_y = action+agent.state
-        grid[next_x,next_y] = "N"
+    for other in mdp.other_agents:
+        grid[other[0],other[1]] = str(mdp.other_agents[other])
 
-    state_x,state_y = mdp.agent_pos
-    grid[state_x,state_y] = "◉" #where the agent is
+
+    #if type(action) == np.ndarray:
+        #next_x, next_y = action+agent.state
+        #grid[next_x,next_y] = "N"
+
+    grid[mdp.agent_pos[0],mdp.agent_pos[1]] = "◉" #where the agent is
+    if mdp.train.pos != None:
+        grid[mdp.train.pos[0],mdp.train.pos[1]] = "T"
 
 
     grid = grid.astype(str)
