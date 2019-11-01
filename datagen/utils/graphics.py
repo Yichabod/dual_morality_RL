@@ -24,7 +24,7 @@ def display_grid(mdp, action=None):
         #grid[next_x,next_y] = "N"
 
     grid[mdp.agent_pos[0],mdp.agent_pos[1]] = "◉" #where the agent is
-    if mdp.train.pos != None:
+    if mdp.train.on_screen == True:
         # if agent is killed by train, X marks collision
         if mdp.train.pos == mdp.agent_pos:
             grid[mdp.train.pos[0],mdp.train.pos[1]] = "X"
