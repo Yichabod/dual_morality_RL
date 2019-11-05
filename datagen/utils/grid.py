@@ -1,5 +1,5 @@
 import random
-from utils import Train, OtherMask, in_bounds
+from utils import Train, OtherMask, Switch, in_bounds
 from graphics import display_grid
 import numpy as np
 
@@ -17,7 +17,8 @@ class Grid:
     '''
     Grid is the state class for the MDP, with transition and reward functions
     Provides base grid environment with which the agents interact.
-    Keeps track of agent positions, others positions, and train 
+    Keeps track of agent positions, others positions, and train
+    Note positions are (y,x) with (0,0) in the top left corner of the grid
     '''
 
 
@@ -29,15 +30,16 @@ class Grid:
         self.all_actions =[(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)]
 
         self.size = size
-        
+
         #all possible coordinates as a y,x tuple
         self.grid_coords = set((i,j) for i in range(size) for j in range(size))
 
         self.train = Train(size)
         self.other_agents = OtherMask(size)
+        self.switch = Switch(size)
 
         self._place_agent()
-        
+
         #timestep horizon until end of episode
         """
         self.terminal_time = 10
@@ -55,7 +57,7 @@ class Grid:
 
         self.agent_pos = random.choice(tuple(empty))
         #for first pass MC solution
-        self.agent_pos = (0,3)
+        self.agent_pos = (0,2)
 
 
     def legal_actions(self) -> set:
@@ -76,30 +78,36 @@ class Grid:
         """
         Precondition: action needs to be legal, board cannot be in terminal state
         Returns None at the moment, changes grid object properties to update state
-        can be changed return duplicate grid object if mutation is bad 
+        can be changed return duplicate grid object if mutation is bad
         """
 
         #check not terminal state
         if self.terminal_state:
             return self.agent_pos,self.train.pos
-        
+
         #check that action is legal
         new_x = self.agent_pos[0] + action[0]
         new_y = self.agent_pos[1] + action[1]
-        new_agent_pos = (new_x,new_y) 
+        new_agent_pos = (new_x,new_y)
         self.train.update()
-        
+
         #episode ends if train leaves screen or collides
         if not self.train.on_screen:
             self.terminal_state = True
-        
+
         if action not in self.legal_actions():
             new_agent_pos = self.agent_pos
-        
+
+        #check if switch is pushed
+        if new_agent_pos == self.switch.pos:
+            new_agent_pos = self.agent_pos #agent
+            self.train.velocity = (self.train.velocity[1], self.train.velocity[0]) #move perpindicular
+            self.switch.activated = True
+
         #collision detect
         if new_agent_pos == self.train.pos:
             #agent intersect train: death, terminal state
-            self.train.vel = (0,0)
+            self.train.velocity = (0,0)
             self.terminal_state = True
             pass
         if self.other_agents.positions.intersection({new_agent_pos}):
@@ -114,10 +122,10 @@ class Grid:
                 new_agent_pos = self.agent_pos
         if self.other_agents.positions.intersection({self.train.pos}):
             #other intersect train: death, terminal state
-            self.train.vel = (0,0)
+            self.train.velocity = (0,0)
             self.terminal_state = True
             pass
-            
+
         self.agent_pos = new_agent_pos
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
         return self.current_state
@@ -126,31 +134,32 @@ class Grid:
         """
         """
         if self.terminal_state:
-            return 0 
-        
+            return 0
+
         reward = 0
-        
+
         #check that action is legal
         new_x = self.agent_pos[0] + action[0]
         new_y = self.agent_pos[1] + action[1]
-        new_agent_pos = (new_x,new_y) 
+        new_agent_pos = (new_x,new_y)
         new_train_pos = self.train.get_next_position()
-            
+
         if action not in self.legal_actions():
             new_agent_pos = self.agent_pos
-            
+
         if new_agent_pos == new_train_pos:
             #agent intersect train: death
             reward -= 10
-            
+
         if self.other_agents.positions.intersection({new_agent_pos}):
             #agent intersect other: push
             #moves both agent and other given that it will not push anyone out of bounds
             reward -= 1
+
         if self.other_agents.positions.intersection({new_train_pos}):
             #other intersect train: death, terminal state
-            reward -= 4
-       
+            reward -= 100
+
         return reward
 
 
@@ -167,5 +176,3 @@ if __name__ == "__main__":
         grid.T(action)
         display_grid(grid)
         print(grid.current_state)
-        
-

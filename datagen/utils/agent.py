@@ -8,6 +8,7 @@ class Agent:
     Dual processing agent.
     Given a set of actions and a view of the grid, decides what action to take
     """
+    GRID_SIZE = 5
     def __init__(self):
         self.model_based_planner = None
 
@@ -30,14 +31,14 @@ class Agent:
                     action_probs[i] = epsilon/len(Q_values)
             return action_probs
         return policy
-    
+
     def run_final_policy(self, mdp, policy):
         """
         Use Q_dict to solve MDP (no exploration)
         args: Q_dict[state] = [value of action1, value of action2, ...]
         returns: policy function takes in state and chooses maxQ value action
         """
-        grid = mdp(5)
+        grid = mdp(self.GRID_SIZE)
         display_grid(grid)
         state = grid.current_state
         while not grid.terminal_state: # max number of steps per episode
@@ -49,8 +50,8 @@ class Agent:
             newstate = grid.T(action)
             state = newstate
             display_grid(grid)
-        
-    
+
+
     def mc_first_visit_control(self, mdp, n_episodes, discount_factor=0.9, epsilon=0.2) -> tuple:
         """
         Monte Carlo first visit control. Uses epsilon greedy strategy
@@ -61,20 +62,20 @@ class Agent:
                 Q(s,a) = val, policy(state) = action
         """
         # Q is a dictionary mapping state to [value of action1, value of action2,...]
-        grid = mdp(5)
+        grid = mdp(self.GRID_SIZE)
         Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
         policy = self._create_epsilon_greedy_policy(Q, epsilon)
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(n_episodes):
             # generate episode
             episode = []
-            grid = mdp(5)
+            grid = mdp(self.GRID_SIZE)
             state = grid.current_state
             while not grid.terminal_state: # max number of steps per episode
                 action_probs = policy(state)
                 action_ind = np.random.choice(np.arange(len(action_probs)), p=action_probs)
                 action = grid.all_actions[action_ind]
-                
+
                 #must calculate reward before transitioning state, otherwise reward will be calculated for action in newstate
                 reward = grid.R(action)
                 newstate = grid.T(action)
@@ -96,7 +97,7 @@ class Agent:
                     Q[state][action_index] = sa_reward_sum[sa_pair]/total_sa_counts[sa_pair] #average reward over all episodes
                     policy = self._create_epsilon_greedy_policy(Q, epsilon)
         return Q, policy
-    
+
 if __name__ == "__main__":
     import grid
     agent = Agent()
