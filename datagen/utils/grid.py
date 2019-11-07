@@ -37,8 +37,8 @@ class Grid:
         self.train = Train(size)
         self.other_agents = OtherMask(size)
         self.switch = Switch(size)
-
-        self._place_agent()
+        self._place_grid_elements()
+        # self._place_agent()
 
         #timestep horizon until end of episode
         """
@@ -59,6 +59,52 @@ class Grid:
         #for first pass MC solution
         self.agent_pos = (0,2)
 
+    def _place_train_random(self) -> None:
+        orientation = np.random.choice(4)
+        if orientation == 0: #against left wall
+            row = np.random.choice(self.size)
+            self.train.pos = (row, 0)
+            self.train.velocity = (0, 1)
+        elif orientation == 1: #against right wall
+            row = np.random.choice(self.size)
+            self.train.pos = (row, self.size-1)
+            self.train.velocity = (0, -1)
+        elif orientation == 2: #against top wall
+            col = np.random.choice(self.size)
+            self.train.pos = (0, col)
+            self.train.velocity = (1, 0)
+        elif orientation == 3: #against bottom wall
+            col = np.random.choice(self.size)
+            self.train.pos = (self.size-1, col)
+            self.train.velocity = (-1, 0)
+
+    def _place_other_agents_random(self, number=1) -> None:
+        placed = set()
+        while number > 0:
+            coord = (np.random.choice(self.size), np.random.choice(self.size))
+            if coord != self.train.pos and coord not in placed:
+                number -= 1
+                placed.add((row,col))
+        self.other_agents.positions = placed
+
+    def _place_grid_elements(self, random_placement=False) -> None:
+        """
+        places agent, train, switch, and other people
+        :params:
+            random_placement (boolean): whether or not the agent are placed 'randomly'
+            train will always be along a border, going perpindicular to the wall. No collision
+
+        """
+        if random_placement:
+            self._place_train_random()
+            self._place_other_agents_random()
+            #TODO place switch, agent. Should these be constrained to be near each other?
+
+        else: #random
+            self.train.pos = (1,0)
+            self.other_agents.positions = {(1,3)}
+            self.switch.pos = (0,4)
+            self.agent_pos = (0,2)
 
     def legal_actions(self) -> set:
         """
@@ -70,7 +116,6 @@ class Grid:
             new_position_x = self.agent_pos[1]+action[1]
             if not in_bounds(self.size,(new_position_y,new_position_x)):
                 legal_actions.remove(action)
-
         return legal_actions
 
 
@@ -83,7 +128,7 @@ class Grid:
 
         #check not terminal state
         if self.terminal_state:
-            return self.agent_pos,self.train.pos
+            return self.agent_pos, self.train.pos
 
         #check that action is legal
         new_x = self.agent_pos[0] + action[0]
@@ -170,9 +215,7 @@ if __name__ == "__main__":
     print(grid.current_state)
     while not grid.terminal_state:
         print("")
-        action = random.choice(tuple(grid.legal_actions()))
-        print(action)
-        print(grid.R(action))
+        action =  tuple(grid.legal_actions())[0]#random.choice(tuple(grid.legal_actions()))
         grid.T(action)
         display_grid(grid)
         print(grid.current_state)
