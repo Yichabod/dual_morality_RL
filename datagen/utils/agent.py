@@ -11,6 +11,7 @@ class Agent:
     GRID_SIZE = 5
     def __init__(self):
         self.model_based_planner = None
+        self.pos = (1,1)
 
     def _create_epsilon_greedy_policy(self, Q_dict, epsilon=0.2):
         """
