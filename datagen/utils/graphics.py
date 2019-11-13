@@ -4,9 +4,9 @@ import numpy as np
 def display_grid(mdp, action=None):
 
     """
-    Takes in mdp environment and an agent, with optional action to
+    Takes ina Grid mdp environment and an agent, with optional action to
     show which direction next move should be in
-    Displays walls(W), goals (G), main agent(◉), other agents(A), next states (N)
+    Displays main agent(◉), other agents(numbers), switch(S) and train (T)
     in the grid of given dimensions
     Call the displayGrid function right after next action is generated
     but before it moves
