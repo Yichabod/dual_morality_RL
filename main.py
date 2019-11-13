@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/maxlangenkamp/Desktop/UROP/dual_morality_RL/datagen/utils')
+# sys.path.append('/Users/maxlangenkamp/Desktop/UROP/dual_morality_RL/datagen/utils')
 import random
 from utils import Train, OtherMask, Switch, in_bounds, generate_array
 from grid import Grid
