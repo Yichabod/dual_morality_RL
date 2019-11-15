@@ -47,6 +47,8 @@ class OtherMask:
     def __init__(self, size, positions={(1,3)}, num=1):
         self.mask = {}
         self.positions = positions
+        self.size = size
+        self.num = num
         for pos in positions:
             self.mask[pos] = num
     def push(self, position, action):
@@ -56,6 +58,8 @@ class OtherMask:
         new_pos = (new_pos_y,new_pos_x)
         self.mask[new_pos] = num_pushed
         self.positions = set(self.mask.keys())
+    def copy(self):
+        return OtherMask(self.size, self.positions, self.num)
 
 class Switch:
     """
@@ -65,6 +69,9 @@ class Switch:
         self.size = size
         self.pos = pos
         self.activated = False
+    
+    def copy(self):
+        return Switch(self.size, self.pos)
 
 class Train:
     """
@@ -85,3 +92,5 @@ class Train:
         newx = self.pos[0]+self.velocity[0]
         newy = self.pos[1]+self.velocity[1]
         return (newx,newy)
+    def copy(self):
+        return Train(self.size, self.pos,self.velocity)
