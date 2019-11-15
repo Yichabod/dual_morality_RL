@@ -25,7 +25,7 @@ class Grid:
     '''
 
 
-    def __init__(self, size, num_agents=1, random=False):
+    def __init__(self, size, random=False):
         assert isinstance(size, int)
 
         # available actions: stay, north, east, south, west
@@ -33,118 +33,77 @@ class Grid:
         self.all_actions =[(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)]
 
         self.size = size
-
-        #all possible coordinates as a y,x tuple
-        self.grid_coords = set((i,j) for i in range(size) for j in range(size))
-
-        self.train = Train(size)
-        self.other_agents = OtherMask(size)
-        self.switch = Switch(size)
-        self._place_grid_elements(random)
-        # self._place_agent()
+        
+        self.terminal_state = False
 
         #timestep horizon until end of episode
         """
         self.terminal_time = 10
         self.timestep = 0
         """
-        self.terminal_state = False
+        
+        self._place_all(random)
+
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
 
-    def _place_grid_elements(self, random_placement=False) -> None:
+    
+    def copy(self):
+        """
+        returns deep copy of grid - because grid is mutated in learning (agent performs transition and
+        observes result), copy is necessary to maintain original start position
+        """
+        copy = Grid(self.size)
+        copy.train = self.train.copy()
+        copy.other_agents = self.other_agents.copy()
+        copy.switch = self.switch
+        copy.agent_pos = self.agent_pos
+        copy.current_state = self.current_state
+        return copy
+    
+    def _place_all(self, place_random) -> None:
         """
         places agent, train, switch, and other people
         :params:
-            random_placement (boolean): whether or not the agent are placed 'randomly'
+            place_random (boolean): whether or not the agent are placed 'randomly'
             train will always be along a border, going perpindicular to the wall. No collision
 
         """
-        if random_placement:
-            self._place_train_random()
-            self._place_other_agents_random()
-            self._place_switch_random()
-            self._place_agent_random()
-            #TODO place switch, agent. Should these be constrained to be near each other?
-
-        else: #random
-            self.train.pos = (1,0)
-            self.other_agents.positions = {(1,3)}
-            self.switch.pos = (0,4)
+        #all possible coordinates as a y,x tuple
+        if not place_random:
+            self.train = Train(self.size)
+            self.other_agents = OtherMask(self.size)
+            self.switch = Switch(self.size)
             self.agent_pos = (0,2)
-
-
-    def _place_train_random(self) -> None:
-        """
-        randomly place train along one of the walls of the grid
-        """
-        orientation = np.random.choice(4)
-        if orientation == 0: #against left wall
-            row = np.random.choice(self.size)
-            self.train.pos = (row, 0)
-            self.train.velocity = (0, 1)
-        elif orientation == 1: #against right wall
-            row = np.random.choice(self.size)
-            self.train.pos = (row, self.size-1)
-            self.train.velocity = (0, -1)
-        elif orientation == 2: #against top wall
-            col = np.random.choice(self.size)
-            self.train.pos = (0, col)
-            self.train.velocity = (1, 0)
-        elif orientation == 3: #against bottom wall
-            col = np.random.choice(self.size)
-            self.train.pos = (self.size-1, col)
-            self.train.velocity = (-1, 0)
-
-    def _place_other_agents_random(self, number=1, constrained=False) -> None:
-        """
-        place other agents on grid randomly
-        @param: number - number of agents to place
-        @param: constrained - whether or not to make sure the final agent is in path of train
-        """
-        placed = set()
-        while number > 0:
-            if constrained and number == 1: #make sure in line with train
-                train_velocity = self.train.velocity
-                if train_velocity == (0,1): #against left wall
-                    row = self.train.pos[0]
-                    col = np.random.choice(1,self.size)
-                elif train_velocity == (0,-1): #against right wall
-                    row = self.train.pos[0]
-                    col = np.random.choice(self.size-1)
-                elif train_velocity == (1,0): #against top wall
-                    col = self.train.pos[1]
-                    row = np.random.choice(1,self.size)
-                elif train_velocity == (-1,0): #against bottom wall
-                    row = self.train.pos[1]
-                    col = np.random.choice(self.size-1)
-                    coord = (row,col)
-            else:
-                coord = (np.random.choice(self.size), np.random.choice(self.size))
-
-            if coord != self.train.pos and coord not in placed:
-                number -= 1
-                placed.add(coord)
-        self.other_agents.positions = placed
-
-    def _place_switch_random(self):
-        """
-        randomly place switch in grid without colliding with train, other agents
-        """
-        available_pos = set((row, col) for row in range(self.size) for col in range(self.size))\
-                            -set(self.train.pos) - self.other_agents.positions
-        self.switch.pos = random.sample(available_pos,1)[0]
-
-    def _place_agent_random(self):
-        """
-        Randomly place agent in grid without colliding with train, other agents, or switch
-        """
-        try:
-            available_pos = set((row, col) for row in range(self.size) for col in range(self.size))\
-                            -set(self.train.pos) - self.other_agents.positions - set(self.switch.pos)
-        except:
-            import pdb; pdb.set_trace()
-        self.agent_pos = random.sample(available_pos,1)[0]
-
+        else:
+            open_grid_coords = set((i,j) for i in range(self.size) for j in range(self.size))
+            
+            train_orientation = np.random.choice(4) #random between 0-3, 0->right,1->left,2->down,3->up
+            train_loc = np.random.choice(self.size) #position along starting wall
+            train_map = {0:((0,1),(train_loc,0)),1:((0,-1),(train_loc,self.size-1)),
+                         2:((1,0),(0, train_loc)),3:((-1,0),(self.size-1, train_loc))}
+            train_vel = train_map[train_orientation][0]
+            train_pos = train_map[train_orientation][1]
+            self.train = Train(self.size, train_pos, train_vel)
+            open_grid_coords.remove(self.train.pos)
+            
+            #sets agent position based on open coordinates
+            self.agent_pos = random.sample(open_grid_coords,1)[0]
+            open_grid_coords.remove(self.agent_pos)
+            
+            #sets others position based on open coordinates
+            random_others_pos = random.sample(open_grid_coords,1)[0]
+            self.other_agents = OtherMask(self.size, positions={random_others_pos})
+            open_grid_coords.remove(random_others_pos)
+            
+            #places switch so that it cannot be in path of train
+            for i in range(self.size):
+                train_y_coord = self.train.pos[0] + self.train.velocity[0]*i 
+                train_x_coord = self.train.pos[1] + self.train.velocity[1]*i 
+                train_coord = (train_y_coord,train_x_coord)
+                if train_coord in open_grid_coords:
+                    open_grid_coords.remove(train_coord)
+            switch_pos = random.sample(open_grid_coords,1)[0]
+            self.switch = Switch(self.size, switch_pos)
 
 
     def legal_actions(self) -> set:
@@ -237,7 +196,7 @@ class Grid:
 
         if new_agent_pos == new_train_pos:
             #agent intersect train: death
-            reward -= 10
+            reward -= 100
 
         if self.other_agents.positions.intersection({new_agent_pos}):
             #agent intersect other: push
@@ -246,7 +205,7 @@ class Grid:
 
         if self.other_agents.positions.intersection({new_train_pos}):
             #other intersect train: death, terminal state
-            reward -= 100
+            reward -= 10
 
         return reward
 
@@ -254,7 +213,6 @@ class Grid:
 if __name__ == "__main__":
     # makes 5x5 test grid and chooses random action until terminal state is reached
     grid = Grid(5,random=True)
-    grid.agent_pos
     display_grid(grid)
     print(grid.current_state)
     while not grid.terminal_state:
