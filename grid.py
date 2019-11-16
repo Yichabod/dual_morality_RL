@@ -33,7 +33,6 @@ class Grid:
         self.all_actions =[(0, 0), (-1, 0), (0, 1), (1, 0), (0, -1)]
 
         self.size = size
-        
         self.terminal_state = False
 
         #timestep horizon until end of episode
@@ -43,7 +42,6 @@ class Grid:
         """
         
         self._place_all(random)
-
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
 
     
@@ -66,10 +64,11 @@ class Grid:
         :params:
             place_random (boolean): whether or not the agent are placed 'randomly'
             train will always be along a border, going perpindicular to the wall. No collision
-
+            Switch cannot be located in the path of the train
         """
         #all possible coordinates as a y,x tuple
         if not place_random:
+            #default positions. Train, switch and other defaults found in utils.py
             self.train = Train(self.size)
             self.other_agents = OtherMask(self.size)
             self.switch = Switch(self.size)

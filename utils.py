@@ -20,7 +20,7 @@ def generate_array(mdp, action=None):
     in the grid of given dimensions.
     Intended to be able to feed into a network
     """
-    dims = (1,mdp.size,mdp.size) #tuple eg (11,11)
+    dims = (1,mdp.size,mdp.size) #tuple eg (1,11,11)
     grid = np.full(dims, 0, dtype=int) #np has nice display built in
     others_dict = mdp.other_agents.mask
 
@@ -69,7 +69,6 @@ class Switch:
         self.size = size
         self.pos = pos
         self.activated = False
-    
     def copy(self):
         return Switch(self.size, self.pos)
 
