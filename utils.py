@@ -1,5 +1,7 @@
 import numpy as np
 
+ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch':4}
+INT_ELEMENT_DICT = {1:'◉',2:'O',3:'T',4:'S'}
 
 def in_bounds(size,position:tuple) -> bool:
     """
@@ -25,18 +27,26 @@ def generate_array(mdp, action=None):
     others_dict = mdp.other_agents.mask
 
     for other in others_dict:
-        grid[0,other[0],other[1]] = 2
+        grid[0,other[0],other[1]] = ELEMENT_INT_DICT['other']
 
-    #if type(action) == np.ndarray:
-        #next_x, next_y = action+agent.state
-        #grid[next_x,next_y] = "N"
-
-    grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = 1 #where the agent is
-    grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = 4 #switch
+    grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
+    grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch'] #switch
     if mdp.train.on_screen == True:
-        grid[0,mdp.train.pos[0],mdp.train.pos[1]] = 3
+        grid[0,mdp.train.pos[0],mdp.train.pos[1]] = ELEMENT_INT_DICT['train']
 
     return grid
+
+def visualize_array(grid):
+    """
+    grid: 2d numpy array with integers for each element of the grid
+    prints a grid with all the elements visualised
+    """
+    ret = np.full(grid.shape, "_", dtype=str) #np has nice display built in
+    for i, row in enumerate(grid):
+        for j, elt in enumerate(row):
+            if elt in INT_ELEMENT_DICT:
+                ret[i][j] = INT_ELEMENT_DICT[elt]
+    print(ret)
 
 
 class OtherMask:

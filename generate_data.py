@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 15 15:06:50 2019
 
 @author: alicezhang
 """
@@ -12,7 +11,7 @@ from agent import Agent
 
 def collect_random_grid(size=5):
     """
-    returns 2 ndarrays, actions_array (n,) and grids_array (n, size, size) generated 
+    returns 2 ndarrays, actions_array (n,) and grids_array (n, size, size) generated
     by the MC agent from a single random grid
     takes as input grid size
     """
@@ -20,13 +19,13 @@ def collect_random_grid(size=5):
     a = Agent()
     Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000)
     return a.run_final_policy(testgrid.copy(), Q)
-   
+
 def data_gen(num_grids=200,grid_size=5):
     """
-    Saves 2 ndarrays, actions_array (n,) and grids_array (n, size, size) generated 
+    Saves 2 ndarrays, actions_array (n,) and grids_array (n, size, size) generated
     by the MC agent from num_grids randomly generated grids of size grid_size
     each grid can generate from 2-5 data points
-    
+
     files should appear as "grids_data.npy" and "actions_data.npy" in the same
     directory as this script
     """
@@ -39,6 +38,5 @@ def data_gen(num_grids=200,grid_size=5):
     np.save("grids_data",grids_data[1:])
     np.save("actions_data",actions_data[1:])
 
-#uncomment below to generate data files 
-#data_gen()
-
+#uncomment below to generate data files
+# data_gen()

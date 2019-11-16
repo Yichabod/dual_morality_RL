@@ -4,19 +4,52 @@ from collections import Counter, defaultdict
 from graphics import display_grid
 from utils import generate_array
 
+ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
+
 class Agent:
     """
     Dual processing agent.
     Given a set of actions and a view of the grid, decides what action to take
     """
 
+
+
     def __init__(self):
         pass
 
-    def _create_epsilon_greedy_policy(self, Q_dict, epsilon=0.2):
+
+    def run_model_free_policy(self, grid, neural_net, display=False):
+        """
+        Use neural network to solve MDP (no exploration)
+        args: grid = original grid state, neural_net = trained neural net, used to choose next action
+        returns: 2 numpy arrays containing grid and optimal action pairs to be
+        fed into downstream model
+        """
+        if display: display_grid(grid)
+        state = grid.current_state
+        grids_array = np.empty((1,grid.size,grid.size),dtype=int)
+        grids = []
+        actions = []
+        while not grid.terminal_state: # max number of steps per episode
+            grid.append(state)
+            action_ind = np.argmax(neural_net.predict(state))
+            action = grid.all_actions[action_ind]
+            if display: print(action)
+            actions.append(action)
+            grids.append(generate_array(grid))
+
+            new_state = grid.T(action)
+            state = new_state
+            if display: display_grid(grid)
+        return np.array(grids), np.array(actions)
+
+
+    def _create_epsilon_greedy_policy(self, Q_dict, nn_initialization=False, epsilon=0.2):
         """
         Use Q_dict to create a greedy policy
         args: Q_dict[state] = [value of action1, value of action2, ...]
+              nn_initialization = whether to use neural network to seed the Q value dictionary
+              TODO
         returns: policy function takes in state and chooses with prob 1-e+(e/|A|) maxQ value action
         """
         def policy(state):
@@ -37,7 +70,7 @@ class Agent:
         """
         Use Q_dict to solve MDP (no exploration)
         args: grid = original grid state, Q_dict[state] = [value of action1, value of action2, ...]
-        returns: 2 numpy arrays containing grid and optimal action pairs to be 
+        returns: 2 numpy arrays containing grid and optimal action pairs to be
         fed into downstream model
         """
         policy = self._create_epsilon_greedy_policy(Q_dict,epsilon=0) #optimal policy, eps=0 always chooses best value
@@ -50,11 +83,11 @@ class Agent:
             action_ind = np.argmax(action_probs)
             action = grid.all_actions[action_ind]
             if display: print(action)
-            
-            action_dict = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
-            action_array = np.concatenate((action_array,np.array([action_dict[action]])))
+
+            ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
+            action_array = np.concatenate((action_array,np.array([ACTION_DICT[action]])))
             grids_array = np.vstack((grids_array,generate_array(grid)))
-            
+
             newstate = grid.T(action)
             state = newstate
             if display: display_grid(grid)
