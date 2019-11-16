@@ -20,21 +20,21 @@ def generate_array(mdp, action=None):
     in the grid of given dimensions.
     Intended to be able to feed into a network
     """
-    dims = (mdp.size,mdp.size) #tuple eg (11,11)
+    dims = (1,mdp.size,mdp.size) #tuple eg (11,11)
     grid = np.full(dims, 0, dtype=int) #np has nice display built in
     others_dict = mdp.other_agents.mask
 
     for other in others_dict:
-        grid[other[0],other[1]] = 2
+        grid[0,other[0],other[1]] = 2
 
     #if type(action) == np.ndarray:
         #next_x, next_y = action+agent.state
         #grid[next_x,next_y] = "N"
 
-    grid[mdp.agent_pos[0],mdp.agent_pos[1]] = 1 #where the agent is
-    grid[mdp.switch.pos[0], mdp.switch.pos[1]] = 4 #switch
+    grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = 1 #where the agent is
+    grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = 4 #switch
     if mdp.train.on_screen == True:
-        grid[mdp.train.pos[0],mdp.train.pos[1]] = 3
+        grid[0,mdp.train.pos[0],mdp.train.pos[1]] = 3
 
     return grid
 

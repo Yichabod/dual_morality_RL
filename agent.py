@@ -2,6 +2,7 @@ import numpy as np
 from collections import Counter, defaultdict
 
 from graphics import display_grid
+from utils import generate_array
 
 class Agent:
     """
@@ -62,20 +63,22 @@ class Agent:
         policy = self._create_optimal_policy(Q_dict)
         if display: display_grid(grid)
         state = grid.current_state
+        grids_array = np.empty((1,grid.size,grid.size),dtype=int)
+        action_array = np.empty((1),dtype=int)
         while not grid.terminal_state: # max number of steps per episode
             action_probs = policy(state)
             action_ind = np.argmax(action_probs)
             action = grid.all_actions[action_ind]
+            if display: print(action)
             
-            print(generate_array(grid))
-            grids_array = generate_array(grid)
-            #actions_array = 
-            #must calculate reward before transitioning state, otherwise reward will be calculated for action in newstate
-            reward = grid.R(action)
+            action_dict = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
+            action_array = np.concatenate((action_array,np.array([action_dict[action]])))
+            grids_array = np.vstack((grids_array,generate_array(grid)))
+            
             newstate = grid.T(action)
             state = newstate
             if display: display_grid(grid)
-            
+        return grids_array[1:], action_array[1:]
 
 
     def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2) -> tuple:
