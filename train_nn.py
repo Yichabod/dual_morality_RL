@@ -16,10 +16,14 @@ ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
 
 train_xs = np.load("grids_data.npy")
 train_ys = np.load("actions_data.npy")
+
 print(train_xs.shape, train_ys.shape)
-C = int(np.max(train_xs))+1 #+1 since zero indexed? channels
+C = int(np.max(train_xs))+1 #+1 since 0 means no channels
 
 class Neuralnet(nn.Module):
+    """
+    Expected input = (Batch, Channels, Height, Width), in the test case (~900, 5, 5, 5)
+    """
     def __init__(self):
         super(Neuralnet, self).__init__()
         self.conv1 = nn.Conv2d(C, 10,5,padding=2)
@@ -47,7 +51,7 @@ train_xs.shape
 onehot_train_xs = torch.zeros(B, C, H, W)
 
 print(train_xs.shape, onehot_train_xs.shape)
-onehot_train_xs.scatter_(1, train_xs, torch.ones(onehot_train_xs.shape))
+onehot_train_xs.scatter_(1, train_xs, torch.ones(onehot_train_xs.shape)) #take the arrays and one-hot them
 print(onehot_train_xs[0])
 train_ys = torch.from_numpy(train_ys)
 
@@ -73,11 +77,25 @@ def train():
             print('Epoch:{}, loss: {:.3f}'.format(epoch + 1, running_loss))
             running_loss = 0.0
 
-# onehot_train_xs = torch.zeros(B, C, H, W)
-# test = np.array([[0, 2, 0, 0, 1],
-#         [0, 0, 0, 0, 0],
-#         [0, 0, 0, 0, 0],
-#         [0, 0, 0, 0, 3],
-#         [0, 0, 0, 4, 0]])
-# onehot_train_xs.scatter_(1, test, torch.ones(onehot_train_xs.shape))
-# outputs = net(test)
+def predict(input_state):
+    '''
+    input_state: HxW (5x5) numpy array
+    returns 1x5(num actions) numpy array of pre-softmax probabilities of actions
+    '''
+    pass
+    
+onehot_train_xs = torch.zeros(B, C, H, W)
+test = np.array([[0, 2, 0, 0, 1],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 3],
+        [0, 0, 0, 4, 0]])
+onehot_train_xs.scatter_(1, test, torch.ones(onehot_train_xs.shape))
+
+test1 = torch.from_numpy(np.array([[[[0, 2, 0, 0, 1],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 3],
+        [0, 0, 0, 4, 0]]]]))
+test1.shape
+outputs = net(test1)
