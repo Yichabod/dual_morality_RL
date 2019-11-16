@@ -6,9 +6,7 @@ Created on Fri Nov 15 15:06:50 2019
 @author: alicezhang
 """
 
-import sys
 from grid import Grid
-from graphics import display_grid
 import numpy as np
 from agent import Agent
 
@@ -27,6 +25,7 @@ def data_gen(num_grids=200,grid_size=5):
     """
     Saves 2 ndarrays, actions_array (n,) and grids_array (n, size, size) generated 
     by the MC agent from num_grids randomly generated grids of size grid_size
+    each grid can generate from 2-5 data points
     
     files should appear as "grids_data.npy" and "actions_data.npy" in the same
     directory as this script

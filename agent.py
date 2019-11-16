@@ -9,10 +9,9 @@ class Agent:
     Dual processing agent.
     Given a set of actions and a view of the grid, decides what action to take
     """
-    GRID_SIZE = 5
+
     def __init__(self):
-        self.model_based_planner = None
-        self.pos = (1,1)
+        pass
 
     def _create_epsilon_greedy_policy(self, Q_dict, epsilon=0.2):
         """
@@ -33,34 +32,15 @@ class Agent:
                     action_probs[i] = epsilon/len(Q_values)
             return action_probs
         return policy
-    
-    def _create_optimal_policy(self, Q_dict):
-        """
-        Use Q_dict to create an optimal final policy
-        args: Q_dict[state] = [value of action1, value of action2, ...]
-        returns: policy function takes in state and chooses maxQ value action
-        """
-        def policy(state):
-            Q_values = Q_dict[state]
-            action_probs = [0 for k in range(len(Q_values))]
-            best_action = np.argmax(Q_values)
-            for i in range(len(Q_values)):
-                if np.count_nonzero(Q_values) == 0: #all are zero
-                    action_probs[i] = 1/len(Q_values)
-                elif i == best_action:
-                    action_probs[i] = 1
-                else:
-                    action_probs[i] = 0
-            return action_probs
-        return policy
 
     def run_final_policy(self, grid, Q_dict, display=False):
         """
         Use Q_dict to solve MDP (no exploration)
         args: grid = original grid state, Q_dict[state] = [value of action1, value of action2, ...]
-        returns: 2 numpy arrays containing grid and optimal action pairs
+        returns: 2 numpy arrays containing grid and optimal action pairs to be 
+        fed into downstream model
         """
-        policy = self._create_optimal_policy(Q_dict)
+        policy = self._create_epsilon_greedy_policy(Q_dict,epsilon=0) #optimal policy, eps=0 always chooses best value
         if display: display_grid(grid)
         state = grid.current_state
         grids_array = np.empty((1,grid.size,grid.size),dtype=int)
@@ -93,13 +73,12 @@ class Agent:
         # Q is a dictionary mapping state to [value of action1, value of action2,...]
         grid = start_grid.copy()
         Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
-        policy = self._create_epsilon_greedy_policy(Q, epsilon)
+        policy = self._create_epsilon_greedy_policy(Q, epsilon) #initialized random policy
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
-        i = 0
         for n in range(n_episodes):
             # generate episode
             episode = []
-            grid = start_grid.copy()
+            grid = start_grid.copy() #copy because running episode mutates grid object
             state = grid.current_state
             while not grid.terminal_state: # max number of steps per episode
                 action_probs = policy(state)
@@ -133,4 +112,4 @@ if __name__ == "__main__":
     testgrid = grid.Grid(5,random=True)
     agent = Agent()
     Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
-    agent.run_final_policy(testgrid.copy(), Q)
+    print(agent.run_final_policy(testgrid.copy(), Q,display=False))
