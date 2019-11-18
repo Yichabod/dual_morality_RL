@@ -22,17 +22,17 @@ def generate_array(mdp, action=None):
     in the grid of given dimensions.
     Intended to be able to feed into a network
     """
-    dims = (mdp.size,mdp.size) #tuple eg (1,11,11)
+    dims = (1,mdp.size,mdp.size) #tuple eg (1,11,11)
     grid = np.full(dims, 0, dtype=int) #np has nice display built in
     others_dict = mdp.other_agents.mask
 
     for other in others_dict:
-        grid[other[0],other[1]] = ELEMENT_INT_DICT['other']
+        grid[0,other[0],other[1]] = ELEMENT_INT_DICT['other']
 
-    grid[mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
-    grid[mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch'] #switch
+    grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
+    grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch'] #switch
     if mdp.train.on_screen == True:
-        grid[mdp.train.pos[0],mdp.train.pos[1]] = ELEMENT_INT_DICT['train']
+        grid[0,mdp.train.pos[0],mdp.train.pos[1]] = ELEMENT_INT_DICT['train']
 
     return grid
 

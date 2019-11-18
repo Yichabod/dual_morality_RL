@@ -44,7 +44,7 @@ class Agent:
         net = self.train_load_neural_net()
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
-            state_array = generate_array(grid)
+            state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
             action_ind = np.argmax(neural_net.predict(net, state_array))
             action = grid.all_actions[action_ind]
             if display: print(action)
@@ -154,6 +154,7 @@ class Agent:
 if __name__ == "__main__":
     import grid
     testgrid = grid.Grid(5,random=False)
+    testgrid.agent_pos = (testgrid.agent_pos[0],testgrid.agent_pos[1])
     agent = Agent()
     # Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
     # print(agent.run_final_policy(testgrid.copy(), Q,display=False))
