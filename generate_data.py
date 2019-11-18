@@ -38,5 +38,5 @@ def data_gen(num_grids=200,grid_size=5):
     np.save("grids_data",grids_data[1:])
     np.save("actions_data",actions_data[1:])
 
-#uncomment below to generate data files
-# data_gen()
+if __name__ == "__main__":
+    data_gen()
