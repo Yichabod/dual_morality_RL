@@ -1,6 +1,6 @@
 import numpy as np
 from collections import Counter, defaultdict
-
+import neural_net
 from graphics import display_grid
 from utils import generate_array
 
@@ -17,8 +17,19 @@ class Agent:
     def __init__(self):
         pass
 
+    def train_load_neural_net(self):
+        """
+        Attempt to load neural net from 'neural_net' file. If not present, train neural net
+        and then return the network
+        """
+        try:
+            net = neural_net.load()
+        except:
+            neural_net.train()
+            net = neural_net.load()
+        return net
 
-    def run_model_free_policy(self, grid, neural_net, display=False):
+    def run_model_free_policy(self, grid, display=False):
         """
         Use neural network to solve MDP (no exploration)
         args: grid = original grid state, neural_net = trained neural net, used to choose next action
@@ -26,20 +37,20 @@ class Agent:
         fed into downstream model
         """
         if display: display_grid(grid)
-        state = grid.current_state
+        # state = grid.current_state
         grids_array = np.empty((1,grid.size,grid.size),dtype=int)
         grids = []
         actions = []
+        net = self.train_load_neural_net()
         while not grid.terminal_state: # max number of steps per episode
-            grid.append(state)
-            action_ind = np.argmax(neural_net.predict(state))
+            # grids.append(state)
+            state_array = generate_array(grid)
+            action_ind = np.argmax(neural_net.predict(net, state_array))
             action = grid.all_actions[action_ind]
             if display: print(action)
             actions.append(action)
             grids.append(generate_array(grid))
-
-            new_state = grid.T(action)
-            state = new_state
+            grid.T(action)
             if display: display_grid(grid)
         return np.array(grids), np.array(actions)
 
@@ -142,7 +153,8 @@ class Agent:
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=True)
+    testgrid = grid.Grid(5,random=False)
     agent = Agent()
-    Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
-    print(agent.run_final_policy(testgrid.copy(), Q,display=False))
+    # Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
+    # print(agent.run_final_policy(testgrid.copy(), Q,display=False))
+    print(agent.run_model_free_policy(testgrid.copy(),display=True))

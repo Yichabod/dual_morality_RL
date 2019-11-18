@@ -26,18 +26,19 @@ class Net(nn.Module):
 def train():
     train_xs = np.load("grids_data.npy")
     train_ys = np.load("actions_data.npy")
-    action_dict = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
-    
-    
+    grid = Grid(5)
+    action_dict = {action:ind for ind, action in enumerate(grid.all_actions)}
+
+
     B, H, W = train_xs.shape
     C = int(np.max(train_xs))+1
-    
+
     net = Net(C)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.03, momentum=0.9)
 
-    
-    
+
+
     # input shape b x c x h x w to net
     # so need to unsqueeze to make channel dimension of 1, could also make each agent it's own channel instead
     train_xs = torch.from_numpy(train_xs).unsqueeze(1).to(torch.long)
@@ -45,7 +46,7 @@ def train():
 
     onehot_train_xs.scatter_(1, train_xs, torch.ones(onehot_train_xs.shape))
     train_ys = torch.from_numpy(train_ys).to(torch.long)
-    
+
     for epoch in range(1000):  # loop over the dataset multiple times
         running_loss = 0.0
 
@@ -81,9 +82,9 @@ def predict(model, state, C=5):
     '''
     H, W = state.shape
     onehot_test_xs = torch.zeros([1, C, H, W])
-    
+
     test_x = torch.from_numpy(state).unsqueeze(0).unsqueeze(1).to(torch.long)
     onehot_test_xs.scatter_(1, test_x, torch.ones(onehot_test_xs.shape))
     outputs = model(onehot_test_xs)
-    
+
     return outputs.detach().numpy()
