@@ -35,7 +35,7 @@ def train():
 
     net = Net(C)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.03, momentum=0.9)
+    optimizer = optim.Adam(net.parameters(), lr=0.01)
 
 
 
@@ -47,7 +47,7 @@ def train():
     onehot_train_xs.scatter_(1, train_xs, torch.ones(onehot_train_xs.shape))
     train_ys = torch.from_numpy(train_ys).to(torch.long)
 
-    for epoch in range(1000):  # loop over the dataset multiple times
+    for epoch in range(400):  # loop over the dataset multiple times
         running_loss = 0.0
 
         inputs, labels = onehot_train_xs, train_ys
