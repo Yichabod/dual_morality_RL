@@ -6,14 +6,7 @@ import numpy as np
 SEED = 42
 # random.seed(SEED)
 # np.random.seed(SEED)
-
-"""
-To Do:
- - how to integrate reward function with transition?
- - checkRep
- - support for multiple agents?
-
-"""
+PEOPLE_RANGE = 10 #the number of people randomly generated goes up to this
 
 
 class Grid:
@@ -35,16 +28,10 @@ class Grid:
         self.size = size
         self.terminal_state = False
 
-        #timestep horizon until end of episode
-        """
-        self.terminal_time = 10
-        self.timestep = 0
-        """
-        
         self._place_all(random)
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
 
-    
+
     def copy(self):
         """
         returns deep copy of grid - because grid is mutated in learning (agent performs transition and
@@ -57,7 +44,7 @@ class Grid:
         copy.agent_pos = self.agent_pos
         copy.current_state = self.current_state
         return copy
-    
+
     def _place_all(self, place_random) -> None:
         """
         places agent, train, switch, and other people
@@ -75,7 +62,7 @@ class Grid:
             self.agent_pos = (0,2)
         else:
             open_grid_coords = set((i,j) for i in range(self.size) for j in range(self.size))
-            
+
             train_orientation = np.random.choice(4) #random between 0-3, 0->right,1->left,2->down,3->up
             train_loc = np.random.choice(self.size) #position along starting wall
             train_map = {0:((0,1),(train_loc,0)),1:((0,-1),(train_loc,self.size-1)),
@@ -84,20 +71,22 @@ class Grid:
             train_pos = train_map[train_orientation][1]
             self.train = Train(self.size, train_pos, train_vel)
             open_grid_coords.remove(self.train.pos)
-            
+
             #sets agent position based on open coordinates
             self.agent_pos = random.sample(open_grid_coords,1)[0]
             open_grid_coords.remove(self.agent_pos)
-            
+
             #sets others position based on open coordinates
             random_others_pos = random.sample(open_grid_coords,1)[0]
-            self.other_agents = OtherMask(self.size, positions={random_others_pos})
+
+            self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=np.random.choice(PEOPLE_RANGE))
+
             open_grid_coords.remove(random_others_pos)
-            
+
             #places switch so that it cannot be in path of train
             for i in range(self.size):
-                train_y_coord = self.train.pos[0] + self.train.velocity[0]*i 
-                train_x_coord = self.train.pos[1] + self.train.velocity[1]*i 
+                train_y_coord = self.train.pos[0] + self.train.velocity[0]*i
+                train_x_coord = self.train.pos[1] + self.train.velocity[1]*i
                 train_coord = (train_y_coord,train_x_coord)
                 if train_coord in open_grid_coords:
                     open_grid_coords.remove(train_coord)
@@ -165,7 +154,7 @@ class Grid:
                 self.other_agents.push(new_agent_pos,action)
             else:
                 new_agent_pos = self.agent_pos
-                
+
         if self.other_agents.positions.intersection({self.train.pos}):
             #other intersect train: death, terminal state
             self.train.velocity = (0,0)
@@ -176,7 +165,7 @@ class Grid:
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
         return self.current_state
 
-    def R(self, action: tuple) -> int:
+    def R(self, action:tuple) -> int:
         """
         """
         if self.terminal_state:
@@ -195,16 +184,17 @@ class Grid:
 
         if new_agent_pos == new_train_pos:
             #agent intersect train: death
-            reward -= 100
+            reward -= 5
 
         if self.other_agents.positions.intersection({new_agent_pos}):
             #agent intersect other: push
             #moves both agent and other given that it will not push anyone out of bounds
-            reward -= 1
+            reward -= self.other_agents.num
+
 
         if self.other_agents.positions.intersection({new_train_pos}):
             #other intersect train: death, terminal state
-            reward -= 10
+            reward -= 1
 
         return reward
 
@@ -216,7 +206,8 @@ if __name__ == "__main__":
     print(grid.current_state)
     while not grid.terminal_state:
         print("")
-        action =  tuple(grid.legal_actions())[0]#random.choice(tuple(grid.legal_actions()))
+        action =  tuple(grid.legal_actions())[0]
         grid.T(action)
+        print(grid.R())
         display_grid(grid)
         print(grid.current_state)
