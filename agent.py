@@ -13,7 +13,6 @@ class Agent:
     """
 
 
-
     def __init__(self):
         pass
 
@@ -22,11 +21,11 @@ class Agent:
         Attempt to load neural net from 'neural_net' file. If not present, train neural net
         and then return the network
         """
-        try:
-            net = neural_net.load()
-        except:
-            neural_net.train()
-            net = neural_net.load()
+        # try:
+        #     net = neural_net.load()
+        # except:
+        neural_net.train()
+        net = neural_net.load()
         return net
 
     def run_model_free_policy(self, grid, display=False):
@@ -154,8 +153,10 @@ class Agent:
 if __name__ == "__main__":
     import grid
     testgrid = grid.Grid(5,random=False)
-    testgrid.agent_pos = (testgrid.agent_pos[0],testgrid.agent_pos[1])
     agent = Agent()
-    # Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
-    # print(agent.run_final_policy(testgrid.copy(), Q,display=False))
-    print(agent.run_model_free_policy(testgrid.copy(),display=True))
+    model_based = False
+    if model_based == True:
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
+        print(agent.run_final_policy(testgrid.copy(), Q,display=True))
+    else:
+        print(agent.run_model_free_policy(testgrid.copy(),display=True))
