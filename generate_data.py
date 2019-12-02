@@ -35,8 +35,7 @@ def collect_random_grid(size=5):
     grids, action_values = a.run_final_policy(testgrid.copy(), Q)
     return _add_previous_train_step(grids), action_values
 
-
-def data_gen(num_grids=1000,grid_size=5):
+def data_gen(num_grids=10,grid_size=5):
     """
     Saves 2 ndarrays, actions_val_array (n,5) and grids_array (n, size, size) generated
     by the MC agent from num_grids randomly generated grids of size grid_size
@@ -47,7 +46,7 @@ def data_gen(num_grids=1000,grid_size=5):
     """
     start = time.time()
     grids_data = np.empty((1,2,grid_size,grid_size),dtype=int)
-    actions_data = np.empty((1),dtype=int)
+    actions_data = np.empty((1, grid_size),dtype=int)
     for i in range(num_grids):
         grids,actions = collect_random_grid(grid_size)
         actions_data = np.concatenate((actions_data,actions))
@@ -58,6 +57,6 @@ def data_gen(num_grids=1000,grid_size=5):
     np.save("actions_data",actions_data[1:])
     print("finished in", time.time()-start)
 
-
+    
 if __name__ == "__main__":
     data_gen()

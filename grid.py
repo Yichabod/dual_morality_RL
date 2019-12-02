@@ -2,11 +2,16 @@ import random
 from utils import Train, OtherMask, Switch, in_bounds
 from graphics import display_grid
 import numpy as np
+import enum
 
 SEED = 42
 # random.seed(SEED)
 # np.random.seed(SEED)
 PEOPLE_RANGE = 10 #the number of people randomly generated goes up to this
+
+class GridType(enum.Enum):
+    AgentOnTrack = 1
+
 
 
 class Grid:
@@ -31,6 +36,9 @@ class Grid:
         self._place_all(random)
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
 
+        self.rewards_dict = {'agent hit by train': -5, 'agent pushes others':-1,
+                            'others hit by train':self.other_agents.num, 'agent push switch': -0.5,
+                            'do nothing':0}
 
     def copy(self):
         """
@@ -45,7 +53,7 @@ class Grid:
         copy.current_state = self.current_state
         return copy
 
-    def _place_all(self, place_random) -> None:
+    def _place_all(self, place_random, return_placement_type=True) -> None:
         """
         places agent, train, switch, and other people
         :params:
@@ -182,19 +190,23 @@ class Grid:
         if action not in self.legal_actions():
             new_agent_pos = self.agent_pos
 
+        if self.switch.activated:
+            reward += self.rewards_dict['agent push switch']
+            self.switch.activated = False
+
         if new_agent_pos == new_train_pos:
             #agent intersect train: death
-            reward -= 5
+            reward += self.rewards_dict['agent hit by train']
 
         if self.other_agents.positions.intersection({new_agent_pos}):
             #agent intersect other: push
             #moves both agent and other given that it will not push anyone out of bounds
-            reward -= self.other_agents.num
+            reward -= self.rewards_dict['agent pushes others']
 
 
         if self.other_agents.positions.intersection({new_train_pos}):
             #other intersect train: death, terminal state
-            reward -= 1
+            reward -= self.rewards_dict['others hit by train']
 
         return reward
 
@@ -208,6 +220,6 @@ if __name__ == "__main__":
         print("")
         action =  tuple(grid.legal_actions())[0]
         grid.T(action)
-        print(grid.R())
+        print(grid.R(action))
         display_grid(grid)
         print(grid.current_state)
