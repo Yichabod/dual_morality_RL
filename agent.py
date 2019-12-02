@@ -58,6 +58,7 @@ class Agent:
         """
         Use Q_dict to create a greedy policy
         args: Q_dict[state] = [value of action1, value of action2, ...]
+                where state is defined as result of grid.current_state (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
               nn_initialization = whether to use neural network to seed the Q value dictionary
               TODO
         returns: policy function takes in state and chooses with prob 1-e+(e/|A|) maxQ value action
@@ -87,7 +88,7 @@ class Agent:
         if display: display_grid(grid)
         state = grid.current_state
         grids_array = np.empty((1,grid.size,grid.size),dtype=int)
-        action_array = np.empty((1),dtype=int)
+        action_val_array = np.empty((1,grid.size),dtype=int)
         while not grid.terminal_state: # max number of steps per episode
             action_probs = policy(state)
             action_ind = np.argmax(action_probs)
@@ -95,13 +96,13 @@ class Agent:
             if display: print(action)
 
             ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
-            action_array = np.concatenate((action_array,np.array([ACTION_DICT[action]])))
+            action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
             grids_array = np.vstack((grids_array,generate_array(grid)))
 
             newstate = grid.T(action)
             state = newstate
             if display: display_grid(grid)
-        return grids_array[1:], action_array[1:]
+        return grids_array[1:], action_val_array[1:]
 
 
     def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2) -> tuple:
@@ -154,7 +155,7 @@ if __name__ == "__main__":
     import grid
     testgrid = grid.Grid(5,random=False)
     agent = Agent()
-    model_based = False
+    model_based = True
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
         print(agent.run_final_policy(testgrid.copy(), Q,display=True))
