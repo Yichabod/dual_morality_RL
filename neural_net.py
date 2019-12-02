@@ -26,25 +26,31 @@ class Net(nn.Module):
 def train(num_epochs=400):
     train_xs = np.load("grids_data.npy")
     train_ys = np.load("actions_data.npy")
-    grid = Grid(5)
-    action_dict = {action:ind for ind, action in enumerate(grid.all_actions)}
+    #
+    previous_trains = train_xs[:, 0:1, :, :]
+    #only keep current trains
+    train_xs = train_xs[:, 1, :, :]
+    #grid = Grid(5)
+    #action_dict = {action:ind for ind, action in enumerate(grid.all_actions)}
 
     B, H, W = train_xs.shape
-    C = int(np.max(train_xs))+1
-
+    C = int(np.max(train_xs))+2
+    
     net = Net(C)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.MSELoss()#CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.01)
-
 
 
     # input shape b x c x h x w to net
     # so need to unsqueeze to make channel dimension of 1, could also make each agent its own channel instead
     train_xs = torch.from_numpy(train_xs).unsqueeze(1).to(torch.long)
-    onehot_train_xs = torch.zeros([B, C, H, W], dtype = torch.float32)
-
+    onehot_train_xs = torch.zeros([B, C-1, H, W], dtype = torch.float32)
+    
     onehot_train_xs.scatter_(1, train_xs, torch.ones(onehot_train_xs.shape))
-    train_ys = torch.from_numpy(train_ys).to(torch.long)
+    #add previous train obeservation
+    onehot_train_xs = torch.cat((onehot_train_xs, torch.from_numpy(previous_trains).float()), dim=1)
+    
+    train_ys = torch.from_numpy(train_ys).float()#.to(torch.long)
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         running_loss = 0.0
@@ -68,12 +74,12 @@ def train(num_epochs=400):
     torch.save(net.state_dict(), 'nn_model')
     print("Model saved as nn_model")
 
-def load(C=5):
+def load(C=6):
     model = Net(C)
     model.load_state_dict(torch.load('nn_model'))
     return model
 
-def predict(model, state, C=5):
+def predict(model, state, C=6):
     '''
     model: pytorch model, output of load()
     input_state: HxW(5x5) numpy array
@@ -89,5 +95,6 @@ def predict(model, state, C=5):
     return outputs.detach().numpy()
 
 if __name__ == "__main__":
-    grids = np.ones((49,2,5,5))
-    actions = np.ones((49,5))
+    #grids = np.ones((49,2,5,5))
+    #actions = np.ones((49,5))
+    train()
