@@ -15,11 +15,11 @@ def _add_previous_train_step(grids):
     ans = []
     for ind, grid in enumerate(grids):
         if ind == 0:
-            stacked = np.stack((grid,np.zeros(shape,dtype=int)))
+            stacked = np.stack((np.zeros(shape,dtype=int), grid))
         else:
             prev_grid = grids[ind-1]
             prev_train = np.where(prev_grid==ELEMENT_INT_DICT['train'], prev_grid,0) #zeros except for prev train pos
-            stacked = np.stack([grid,prev_train])
+            stacked = np.stack([prev_train,grid])
         ans.append(stacked)
     return np.array(ans)
 
@@ -34,6 +34,7 @@ def collect_random_grid(size=5):
     Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
     grids, action_values = a.run_final_policy(testgrid.copy(), Q)
     return _add_previous_train_step(grids), action_values
+
 
 def data_gen(num_grids=10,grid_size=5):
     """
@@ -57,6 +58,6 @@ def data_gen(num_grids=10,grid_size=5):
     np.save("actions_data",actions_data[1:])
     print("finished in", time.time()-start)
 
-    
+
 if __name__ == "__main__":
     data_gen()
