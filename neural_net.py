@@ -29,7 +29,6 @@ def train(num_epochs=400):
     grid = Grid(5)
     action_dict = {action:ind for ind, action in enumerate(grid.all_actions)}
 
-
     B, H, W = train_xs.shape
     C = int(np.max(train_xs))+1
 
@@ -40,7 +39,7 @@ def train(num_epochs=400):
 
 
     # input shape b x c x h x w to net
-    # so need to unsqueeze to make channel dimension of 1, could also make each agent it's own channel instead
+    # so need to unsqueeze to make channel dimension of 1, could also make each agent its own channel instead
     train_xs = torch.from_numpy(train_xs).unsqueeze(1).to(torch.long)
     onehot_train_xs = torch.zeros([B, C, H, W], dtype = torch.float32)
 
@@ -88,3 +87,7 @@ def predict(model, state, C=5):
     outputs = model(onehot_test_xs)
 
     return outputs.detach().numpy()
+
+if __name__ == "__main__":
+    grids = np.ones((49,2,5,5))
+    actions = np.ones((49,5))
