@@ -22,11 +22,11 @@ class Agent:
         Attempt to load neural net from 'neural_net' file. If not present, train neural net
         and then return the network
         """
-        # try:
-        #     net = neural_net.load()
-        # except:
-        neural_net.train()
-        net = neural_net.load()
+        try:
+            net = neural_net.load()
+        except:
+            neural_net.train()
+            net = neural_net.load()
         return net
 
     def run_model_free_policy(self, grid, display=False):
@@ -55,7 +55,6 @@ class Agent:
             actions.append(action)
             grids.append(generate_array(grid))
             grid.T(action)
-            min_reward = min(min_reward,grid.R(action))
             if display: display_grid(grid)
         return np.array(grids), np.array(actions)
 
@@ -111,7 +110,8 @@ class Agent:
             min_reward = min(min_reward, grid.R(action))
             state = newstate
             if display: display_grid(grid)
-        return grids_array[1:], action_val_array[1:], rewards_dict[min_reward]
+        grid_type = rewards_dict[min_reward] if min_reward in rewards_dict else None
+        return grids_array[1:], action_val_array[1:], grid_type
 
 
     def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2) -> tuple:
@@ -162,9 +162,9 @@ class Agent:
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=False)
+    testgrid = grid.Grid(5,random=True)
     agent = Agent()
-    model_based = True
+    model_based = False
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
         print(agent.run_final_policy(testgrid.copy(), Q,display=True))
