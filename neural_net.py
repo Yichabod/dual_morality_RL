@@ -23,7 +23,10 @@ class Net(nn.Module):
         x = self.fc1(x)
         return x
 
-def train(num_epochs=400):
+def train(num_epochs=400, C=6):
+    '''
+    C is the number of channels in input array
+    '''
     train_xs = np.load("grids_data.npy")
     train_ys = np.load("actions_data.npy")
     #
@@ -34,7 +37,7 @@ def train(num_epochs=400):
     #action_dict = {action:ind for ind, action in enumerate(grid.all_actions)}
 
     B, H, W = train_xs.shape
-    C = int(np.max(train_xs))+2
+    #C = int(np.max(train_xs))+2
     
     net = Net(C)
     criterion = nn.MSELoss()#CrossEntropyLoss()
@@ -82,14 +85,18 @@ def load(C=6):
 def predict(model, state, C=6):
     '''
     model: pytorch model, output of load()
-    input_state: HxW(5x5) numpy array
-    returns 1x5(num actions) numpy array of pre-softmax probabilities for taking an action
+    input_state: 2xHxW(5x5) numpy array
+    returns 1x5(num actions) numpy array of Q-values for each action
     '''
-    H, W = state.shape
-    onehot_test_xs = torch.zeros([1, C, H, W])
-
-    test_x = torch.from_numpy(state).unsqueeze(0).unsqueeze(1).to(torch.long)
+    _, H, W = state.shape
+    onehot_test_xs = torch.zeros([1, C-1, H, W])
+    
+    #state[1] is current observation
+    test_x = torch.from_numpy(state[1]).unsqueeze(0).unsqueeze(1).to(torch.long)
     onehot_test_xs.scatter_(1, test_x, torch.ones(onehot_test_xs.shape))
+    
+    previous_trains = state[0:1]
+    onehot_test_xs = torch.cat((onehot_test_xs, torch.from_numpy(previous_trains).unsqueeze(0).float()), dim=1)
     outputs = model(onehot_test_xs)
 
     return outputs.detach().numpy()
@@ -98,3 +105,6 @@ if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
     train()
+    model = load()
+    state = np.random.random([2,5,5])
+    print(predict(model, state))
