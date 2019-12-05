@@ -160,9 +160,16 @@ class Agent:
                     policy = self._create_epsilon_greedy_policy(Q, epsilon)
         return Q, policy
 
+def create_pushing_only_grid(grid):
+    grid.train.pos = (3,0)
+    grid.agent_pos = (2,2)
+    grid.other_agents.pos = set((3,3))
+    grid.switch.pos = (4,4)
+
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=True)
+    testgrid = grid.Grid(5,random=False)
+    create_pushing_only_grid(testgrid)
     agent = Agent()
     model_based = False
     if model_based == True:
