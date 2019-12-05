@@ -38,7 +38,7 @@ def train(num_epochs=400, C=6):
 
     B, H, W = train_xs.shape
     #C = int(np.max(train_xs))+2
-    
+
     net = Net(C)
     criterion = nn.MSELoss()#CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.01)
@@ -48,14 +48,15 @@ def train(num_epochs=400, C=6):
     # so need to unsqueeze to make channel dimension of 1, could also make each agent its own channel instead
     train_xs = torch.from_numpy(train_xs).unsqueeze(1).to(torch.long)
     onehot_train_xs = torch.zeros([B, C-1, H, W], dtype = torch.float32)
-    
+
     onehot_train_xs.scatter_(1, train_xs, torch.ones(onehot_train_xs.shape))
     #add previous train obeservation
     onehot_train_xs = torch.cat((onehot_train_xs, torch.from_numpy(previous_trains).float()), dim=1)
-    
+
     train_ys = torch.from_numpy(train_ys).float()#.to(torch.long)
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
+        print("epoch",epoch)
         running_loss = 0.0
 
         inputs, labels = onehot_train_xs, train_ys
@@ -90,11 +91,11 @@ def predict(model, state, C=6):
     '''
     _, H, W = state.shape
     onehot_test_xs = torch.zeros([1, C-1, H, W])
-    
+
     #state[1] is current observation
     test_x = torch.from_numpy(state[1]).unsqueeze(0).unsqueeze(1).to(torch.long)
     onehot_test_xs.scatter_(1, test_x, torch.ones(onehot_test_xs.shape))
-    
+
     previous_trains = state[0:1]
     onehot_test_xs = torch.cat((onehot_test_xs, torch.from_numpy(previous_trains).unsqueeze(0).float()), dim=1)
     outputs = model(onehot_test_xs)
