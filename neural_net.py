@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 class Net(nn.Module):
-    def __init__(self, C=5):
+    def __init__(self, C=7):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(C, 10, 5, padding=2)
         self.pool = nn.MaxPool2d(2, 2)
@@ -23,7 +23,7 @@ class Net(nn.Module):
         x = self.fc1(x)
         return x
 
-def train(num_epochs=400, C=6):
+def train(num_epochs=400, C=7):
     '''
     C is the number of channels in input array
     '''
@@ -78,12 +78,12 @@ def train(num_epochs=400, C=6):
     torch.save(net.state_dict(), 'nn_model')
     print("Model saved as nn_model")
 
-def load(C=6):
+def load(C=7):
     model = Net(C)
     model.load_state_dict(torch.load('nn_model'))
     return model
 
-def predict(model, state, C=6):
+def predict(model, state, C=7):
     '''
     model: pytorch model, output of load()
     input_state: 2xHxW(5x5) numpy array
