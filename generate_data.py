@@ -4,7 +4,7 @@ import numpy as np
 from agent import Agent
 import time
 
-ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch':4}
+ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch(h)':4,'switch(v)':5}
 
 def _add_previous_train_step(grids):
     """
@@ -54,6 +54,7 @@ def data_gen(num_grids=1000,grid_size=5):
         grids_data = np.vstack((grids_data,grids))
         if i % 100 == 0:
             print("generated grid",i)
+    print(grids_data[1:],actions_data[1:])
     np.save("grids_data",grids_data[1:])
     np.save("actions_data",actions_data[1:])
     print("finished in", time.time()-start)
