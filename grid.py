@@ -37,7 +37,7 @@ class Grid:
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
 
         self.rewards_dict = {'agent hit by train': -5, 'agent pushes others':-1,
-                            'others hit by train':self.other_agents.num, 'agent push switch': -0.5,
+                            'others hit by train':-self.other_agents.num, 'agent push switch': -0.5,
                             'do nothing':0}
 
     def copy(self):
@@ -87,7 +87,9 @@ class Grid:
             #sets others position based on open coordinates
             random_others_pos = random.sample(open_grid_coords,1)[0]
 
-            self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=np.random.choice(PEOPLE_RANGE))
+            #just one other for now - no NN representation exists yet
+            #self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=np.random.choice(PEOPLE_RANGE))
+            self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=1)
 
             open_grid_coords.remove(random_others_pos)
 
@@ -201,12 +203,12 @@ class Grid:
         if self.other_agents.positions.intersection({new_agent_pos}):
             #agent intersect other: push
             #moves both agent and other given that it will not push anyone out of bounds
-            reward -= self.rewards_dict['agent pushes others']
+            reward += self.rewards_dict['agent pushes others']
 
 
         if self.other_agents.positions.intersection({new_train_pos}):
             #other intersect train: death, terminal state
-            reward -= self.rewards_dict['others hit by train']
+            reward += self.rewards_dict['others hit by train']
 
         return reward
 

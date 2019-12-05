@@ -42,18 +42,26 @@ class Agent:
         type of grid (agent hit by train, agent push switch, agent push others, train hit others): str
         """
         if display: display_grid(grid)
-        grids_array = np.empty((1,grid.size,grid.size),dtype=int)
         grids = []
         actions = []
         net = self.train_load_neural_net()
+        last_train = np.zeros((grid.size,grid.size),dtype=int)
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
             state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
-            action_ind = np.argmax(neural_net.predict(net, state_array))
+            test_input = np.stack((state_array,last_train))
+            action_ind = np.argmax(neural_net.predict(net, test_input))
             action = grid.all_actions[action_ind]
             if display: print(action)
+            #if display: print(neural_net.predict(net, test_input))
             actions.append(action)
             grids.append(generate_array(grid))
+            
+            #updates previous train pos input grid for neural_net.predict function
+            last_train = np.zeros((grid.size,grid.size),dtype=int)
+            train_pos = grid.train.pos
+            last_train[train_pos[0]][train_pos[1]] = 3
+            
             grid.T(action)
             if display: display_grid(grid)
         return np.array(grids), np.array(actions)
@@ -162,11 +170,11 @@ class Agent:
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=True)
+    testgrid = grid.Grid(5,random=False)
     agent = Agent()
     model_based = False
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
-        print(agent.run_final_policy(testgrid.copy(), Q,display=True))
+        agent.run_final_policy(testgrid.copy(), Q,display=True)
     else:
-        print(agent.run_model_free_policy(testgrid.copy(),display=True))
+        agent.run_model_free_policy(testgrid.copy(),display=True)
