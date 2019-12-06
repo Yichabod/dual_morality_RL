@@ -132,7 +132,7 @@ class Grid:
         new_x = self.agent_pos[0] + action[0]
         new_y = self.agent_pos[1] + action[1]
         new_agent_pos = (new_x,new_y)
-        self.train.update()
+
 
         #episode ends if train leaves screen or collides
         if not self.train.on_screen:
@@ -146,6 +146,8 @@ class Grid:
             new_agent_pos = self.agent_pos #agent
             self.train.velocity = (self.train.velocity[1], self.train.velocity[0]) #move perpindicular
             self.switch.activated = True
+
+        self.train.update() #update train AFTER switch is hit
 
         #collision detect
         if new_agent_pos == self.train.pos:
