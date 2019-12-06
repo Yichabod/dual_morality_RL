@@ -5,7 +5,7 @@ from graphics import display_grid
 from utils import generate_array
 from grid import Grid
 
-ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
+ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4} #
 
 class Agent:
     """
@@ -42,26 +42,18 @@ class Agent:
         type of grid (agent hit by train, agent push switch, agent push others, train hit others): str
         """
         if display: display_grid(grid)
+        grids_array = np.empty((1,grid.size,grid.size),dtype=int)
         grids = []
         actions = []
         net = self.train_load_neural_net()
-        last_train = np.zeros((grid.size,grid.size),dtype=int)
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
             state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
-            test_input = np.stack((state_array,last_train))
-            action_ind = np.argmax(neural_net.predict(net, test_input))
+            action_ind = np.argmax(neural_net.predict(net, state_array))
             action = grid.all_actions[action_ind]
             if display: print(action)
-            #if display: print(neural_net.predict(net, test_input))
             actions.append(action)
             grids.append(generate_array(grid))
-            
-            #updates previous train pos input grid for neural_net.predict function
-            last_train = np.zeros((grid.size,grid.size),dtype=int)
-            train_pos = grid.train.pos
-            last_train[train_pos[0]][train_pos[1]] = 3
-            
             grid.T(action)
             if display: display_grid(grid)
         return np.array(grids), np.array(actions)
@@ -177,11 +169,11 @@ def create_pushing_only_grid(grid):
 if __name__ == "__main__":
     import grid
     testgrid = grid.Grid(5,random=False)
-   # create_pushing_only_grid(testgrid)
+    # create_pushing_only_grid(testgrid)
     agent = Agent()
-    model_based = False
+    model_based = True
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
-        agent.run_final_policy(testgrid.copy(), Q,display=True)
+        print(agent.run_final_policy(testgrid.copy(), Q,display=True))
     else:
-        agent.run_model_free_policy(testgrid.copy(),display=True)
+        print(agent.run_model_free_policy(testgrid.copy(),display=True))

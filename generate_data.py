@@ -36,7 +36,7 @@ def collect_random_grid(size=5):
     return _add_previous_train_step(grids), action_values
 
 
-def data_gen(num_grids=1000,grid_size=5):
+def data_gen(num_grids=10,grid_size=5):
     """
     Saves 2 ndarrays, actions_val_array (n,5) and grids_array (n, size, size) generated
     by the MC agent from num_grids randomly generated grids of size grid_size
@@ -61,4 +61,4 @@ def data_gen(num_grids=1000,grid_size=5):
 
 
 if __name__ == "__main__":
-    data_gen(10000)
+    data_gen()
