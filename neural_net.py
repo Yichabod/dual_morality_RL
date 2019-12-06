@@ -8,6 +8,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+cuda = True if torch.cuda.is_available() else False
+
 class Net(nn.Module):
     def __init__(self, C=7):
         super(Net, self).__init__()
@@ -27,54 +29,75 @@ def train(num_epochs=400, C=7):
     '''
     C is the number of channels in input array
     '''
-    train_xs = np.load("grids_data.npy")
-    train_ys = np.load("actions_data.npy")
-    #
-    previous_trains = train_xs[:, 0:1, :, :]
+    batch_size = 1000
+    
+    xs = np.load("grids_data.npy")
+    ys = np.load("actions_data.npy")
+    
+    previous_trains = xs[:, 0:1, :, :]
     #only keep current trains
-    train_xs = train_xs[:, 1, :, :]
-    #grid = Grid(5)
-    #action_dict = {action:ind for ind, action in enumerate(grid.all_actions)}
+    xs = xs[:, 1, :, :]
 
-    B, H, W = train_xs.shape
+    B, H, W = xs.shape
     #C = int(np.max(train_xs))+2
 
     net = Net(C)
     criterion = nn.MSELoss()#CrossEntropyLoss()
-    optimizer = optim.Adam(net.parameters(), lr=0.01)
+    optimizer = optim.Adam(net.parameters(), lr=0.003)
 
 
     # input shape b x c x h x w to net
     # so need to unsqueeze to make channel dimension of 1, could also make each agent its own channel instead
-    train_xs = torch.from_numpy(train_xs).unsqueeze(1).to(torch.long)
-    onehot_train_xs = torch.zeros([B, C-1, H, W], dtype = torch.float32)
+    xs = torch.from_numpy(xs).unsqueeze(1).to(torch.long)
+    onehot_xs = torch.zeros([B, C-1, H, W], dtype = torch.float32)
 
-    onehot_train_xs.scatter_(1, train_xs, torch.ones(onehot_train_xs.shape))
+    onehot_xs.scatter_(1, xs, torch.ones(onehot_xs.shape))
     #add previous train obeservation
-    onehot_train_xs = torch.cat((onehot_train_xs, torch.from_numpy(previous_trains).float()), dim=1)
-
-    train_ys = torch.from_numpy(train_ys).float()#.to(torch.long)
+    onehot_xs = torch.cat((onehot_xs, torch.from_numpy(previous_trains).float()), dim=1)
+    ys = torch.from_numpy(ys).float()
+    if cuda:
+        onehot_xs = onehot_xs.cuda()
+        ys = ys.cuda()
+        net = net.cuda()
+        
+    onehot_train_xs = onehot_xs[:9*B//10]
+    train_ys = ys[:9*B//10]
+    
+    onehot_test_xs = onehot_xs[9*B//10:]
+    test_ys = ys[9*B//10:]
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
-        print("epoch",epoch)
-        running_loss = 0.0
+        running_loss = []
+        
+        #trains on the remainder if not gully divisible
+        for j in range((len(train_ys)-1)//batch_size+1):
+            inputs, labels = onehot_train_xs[batch_size*j:batch_size*(j+1)], train_ys[batch_size*j:batch_size*(j+1)]
 
-        inputs, labels = onehot_train_xs, train_ys
+            # zero the parameter gradients
+            optimizer.zero_grad()
 
-        # zero the parameter gradients
-        optimizer.zero_grad()
+            # forward + backward + optimize
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            # print statistics
+            running_loss.append(loss.item())
+        
+        if epoch%10==9:
+            test_loss = []
+            with torch.no_grad():
+                for j in range((len(test_ys)-1)//batch_size+1):
+                    inputs, labels = onehot_test_xs[batch_size*j:batch_size*(j+1)], test_ys[batch_size*j:batch_size*(j+1)]
 
-        # forward + backward + optimize
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-
-        # print statistics
-        running_loss += loss.item()
-        if epoch%100==99:
-            print('Epoch:{}, loss: {:.3f}'.format(epoch + 1, running_loss))
+                    # forward + backward + optimize
+                    outputs = net(inputs)
+                    loss = criterion(outputs, labels)
+                    test_loss.append(loss.item())
+            
+            print('Epoch:{}, train loss: {:.3f}, test loss: {:.3f}'.format(epoch + 1, np.mean(running_loss), np.mean(test_loss)))
             running_loss = 0.0
+            
     torch.save(net.state_dict(), 'nn_model')
     print("Model saved as nn_model")
 

@@ -62,3 +62,4 @@ def data_gen(num_grids=10,grid_size=5):
 
 if __name__ == "__main__":
     data_gen()
+
