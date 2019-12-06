@@ -36,7 +36,7 @@ class Grid:
         self._place_all(random)
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
 
-        self.rewards_dict = {'agent hit by train': -5, 'agent pushes others':-1,
+        self.rewards_dict = {'agent hit by train': -5, 'agent pushes others':-0.5,
                             'others hit by train':-2*self.other_agents.num, 'agent push switch': -0.5,
                             'do nothing':0}
 

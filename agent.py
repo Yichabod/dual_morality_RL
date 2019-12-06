@@ -168,7 +168,7 @@ def create_pushing_only_grid(grid):
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=False)
+    testgrid = grid.Grid(5,random=True)
     # create_pushing_only_grid(testgrid)
     agent = Agent()
     model_based = True
