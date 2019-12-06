@@ -46,14 +46,23 @@ class Agent:
         grids = []
         actions = []
         net = self.train_load_neural_net()
+        last_train = np.zeros((grid.size,grid.size),dtype=int)	
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
             state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
-            action_ind = np.argmax(neural_net.predict(net, state_array))
+            test_input = np.stack((state_array,last_train))
+            action_ind = np.argmax(neural_net.predict(net, test_input))
             action = grid.all_actions[action_ind]
+            if display: print(neural_net.predict(net, test_input))
             if display: print(action)
             actions.append(action)
             grids.append(generate_array(grid))
+            
+            #updates previous train pos input grid for neural_net.predict function
+            last_train = np.zeros((grid.size,grid.size),dtype=int)	
+            train_pos = grid.train.pos	
+            last_train[train_pos[0]][train_pos[1]] = 3	
+
             grid.T(action)
             if display: display_grid(grid)
         return np.array(grids), np.array(actions)
@@ -99,6 +108,7 @@ class Agent:
         while not grid.terminal_state: # max number of steps per episode
             action_probs = policy(state)
             action_ind = np.argmax(action_probs)
+            print(Q_dict[state])
             action = grid.all_actions[action_ind]
             if display: print(action)
 
@@ -168,12 +178,12 @@ def create_pushing_only_grid(grid):
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=True)
-    # create_pushing_only_grid(testgrid)
+    testgrid = grid.Grid(5,random=False)
+    #create_pushing_only_grid(testgrid)
     agent = Agent()
     model_based = True
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
-        print(agent.run_final_policy(testgrid.copy(), Q,display=True))
+        agent.run_final_policy(testgrid.copy(), Q,display=True)
     else:
-        print(agent.run_model_free_policy(testgrid.copy(),display=True))
+        agent.run_model_free_policy(testgrid.copy(),display=True)
