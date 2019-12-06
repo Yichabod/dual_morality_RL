@@ -1,3 +1,5 @@
 __pycache__/
 #compiled files
-.pyc
+*.pyc
+#don't push data
+*.npy 
