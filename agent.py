@@ -108,7 +108,8 @@ class Agent:
         while not grid.terminal_state: # max number of steps per episode
             action_probs = policy(state)
             action_ind = np.argmax(action_probs)
-            print(Q_dict[state])
+            if display:
+                print(Q_dict[state])
             action = grid.all_actions[action_ind]
             if display: print(action)
 
@@ -181,7 +182,7 @@ if __name__ == "__main__":
     testgrid = grid.Grid(5,random=False)
     #create_pushing_only_grid(testgrid)
     agent = Agent()
-    model_based = True
+    model_based = False
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
         agent.run_final_policy(testgrid.copy(), Q,display=True)
