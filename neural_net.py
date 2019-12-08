@@ -106,7 +106,10 @@ def train(num_epochs=400, C=6):
 
 def load(C=6):
     model = Net(C)
-    model.load_state_dict(torch.load('nn_model'))
+    if not cuda:
+        model.load_state_dict(torch.load('nn_model',map_location='cpu'))
+    else:
+        model.load_state_dict(torch.load('nn_model'))
     return model
 
 def predict(model, state, C=6):
