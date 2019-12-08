@@ -106,7 +106,6 @@ class Agent:
         action_val_array = np.empty((1,grid.size),dtype=int)
         while not grid.terminal_state: # max number of steps per episode
             action_probs = policy(state)
-            print("Q values:",action_probs)
             action_ind = np.argmax(action_probs)
             if display:
                 print(Q_dict[state])
