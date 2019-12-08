@@ -4,6 +4,7 @@ import neural_net
 from graphics import display_grid
 from utils import generate_array, in_bounds
 from grid import Grid
+import torch
 
 ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4} #
 
@@ -22,11 +23,13 @@ class Agent:
         Attempt to load neural net from 'neural_net' file. If not present, train neural net
         and then return the network
         """
-        try:
+        cuda = torch.cuda.is_available()
+        # try:
+        if not cuda:
             net = neural_net.load()
-        except:
-            neural_net.train()
-            net = neural_net.load()
+        # except:
+        #     neural_net.train()
+        #     net = neural_net.load()
         return net
 
     def run_model_free_policy(self, grid, display=False):
