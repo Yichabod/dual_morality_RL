@@ -46,7 +46,7 @@ class Agent:
         grids = []
         actions = []
         net = self.train_load_neural_net()
-        last_train = np.zeros((grid.size,grid.size),dtype=int)	
+        last_train = np.zeros((grid.size,grid.size),dtype=int)
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
             state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
@@ -57,11 +57,11 @@ class Agent:
             if display: print(action)
             actions.append(action)
             grids.append(generate_array(grid))
-            
+
             #updates previous train pos input grid for neural_net.predict function
-            last_train = np.zeros((grid.size,grid.size),dtype=int)	
-            train_pos = grid.train.pos	
-            last_train[train_pos[0]][train_pos[1]] = 3	
+            last_train = np.zeros((grid.size,grid.size),dtype=int)
+            train_pos = grid.train.pos
+            last_train[train_pos[0]][train_pos[1]] = 3
 
             grid.T(action)
             if display: display_grid(grid)
@@ -108,7 +108,7 @@ class Agent:
         while not grid.terminal_state: # max number of steps per episode
             action_probs = policy(state)
             action_ind = np.argmax(action_probs)
-            print(Q_dict[state])
+            # print(Q_dict[state])
             action = grid.all_actions[action_ind]
             if display: print(action)
 
@@ -172,16 +172,16 @@ class Agent:
 
 def create_pushing_only_grid(grid):
     grid.train.pos = (3,0)
-    grid.agent_pos = (2,2)
+    grid.agent_pos = (4,3)#(2,2)
     grid.other_agents.pos = set((3,3))
-    grid.switch.pos = (4,4)
+    grid.switch.pos = (1,1)#(4,4)  TODO weirdness when assigning new positions to elements in the grid
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=False)
-    #create_pushing_only_grid(testgrid)
+    testgrid = grid.Grid(5,random=True)
+    # create_pushing_only_grid(testgrid)
     agent = Agent()
-    model_based = True
+    model_based = False
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
         agent.run_final_policy(testgrid.copy(), Q,display=True)
