@@ -4,7 +4,7 @@ import numpy as np
 from agent import Agent
 import time
 
-ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch(h)':4,'switch(v)':5}
+ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch':4}
 
 def _add_next_train_step(grids):
     """
@@ -62,4 +62,4 @@ def data_gen(num_grids=1000,grid_size=5):
 
 
 if __name__ == "__main__":
-    data_gen()
+    data_gen(10)
