@@ -1,6 +1,6 @@
 import numpy as np
 
-ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch(h)':4,'switch(v)':5}
+ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch':4}
 INT_ELEMENT_DICT = {1:'◉',2:'O',3:'T',4:'S'}
 
 def in_bounds(size,position:tuple) -> bool:
@@ -31,15 +31,7 @@ def generate_array(mdp, action=None):
 
     grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
     
-    #determines if train is moving horizontally or vertically, and assigns 
-    #switch state accordingly so NN gets information on switch state
-    htrain = False
-    if mdp.train.velocity[0] == 0:
-        htrain = True
-    if htrain:    
-        grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch(h)'] #switch
-    else: 
-        grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch(v)'] #switch
+    grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch'] #switch
     
     if mdp.train.on_screen == True:
         grid[0,mdp.train.pos[0],mdp.train.pos[1]] = ELEMENT_INT_DICT['train']
