@@ -47,16 +47,16 @@ class Agent:
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
             state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
-            
+
             #updates next train pos input grid for neural_net.predict function
-            next_train = np.zeros((grid.size,grid.size),dtype=int)	
-            next_train_y = grid.train.pos[0]+grid.train.velocity[0]	
-            next_train_x = grid.train.pos[1]+grid.train.velocity[1]	
+            next_train = np.zeros((grid.size,grid.size),dtype=int)
+            next_train_y = grid.train.pos[0]+grid.train.velocity[0]
+            next_train_x = grid.train.pos[1]+grid.train.velocity[1]
             if in_bounds(grid.size, (next_train_y,next_train_x)):
-                next_train[next_train_y][next_train_x] = 3	            
+                next_train[next_train_y][next_train_x] = 3
             test_input = np.stack((state_array,next_train))
             print(test_input)
-            
+
             action_ind = np.argmax(neural_net.predict(net, test_input))
             action = grid.all_actions[action_ind]
             if display: print(neural_net.predict(net, test_input))
@@ -64,7 +64,7 @@ class Agent:
 
             grid.T(action)
             if display: display_grid(grid)
-        
+
 
 
     def _create_epsilon_greedy_policy(self, Q_dict, nn_initialization=False, epsilon=0.2):
