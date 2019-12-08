@@ -140,7 +140,7 @@ class Grid:
         if new_agent_pos == self.switch.pos:
             new_agent_pos = self.agent_pos #agent
             self.train.velocity = (self.train.velocity[1], self.train.velocity[0]) #move perpindicular
-
+        old_train_pos = self.train.pos
         self.train.update() #update train AFTER switch is hit
         #episode ends if train leaves screen or collides
         if not self.train.on_screen:
@@ -153,6 +153,12 @@ class Grid:
         #collision detect
         if new_agent_pos == self.train.pos:
             #agent intersect train: death, terminal state
+            self.train.velocity = (0,0)
+            self.terminal_state = True
+            pass
+
+        if (self.agent_pos == self.train.pos) and (new_agent_pos == old_train_pos):
+            #agent should not be able to pass through train
             self.train.velocity = (0,0)
             self.terminal_state = True
             pass
@@ -200,6 +206,10 @@ class Grid:
             new_train_pos = self.train.get_next_position((self.train.velocity[1], self.train.velocity[0]))
 
         if new_agent_pos == new_train_pos:
+            #agent intersect train: death
+            reward += self.rewards_dict['agent hit by train']
+
+        if (self.agent_pos == new_train_pos) or (new_agent_pos == self.train.pos):
             #agent intersect train: death
             reward += self.rewards_dict['agent hit by train']
 
