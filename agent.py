@@ -55,7 +55,6 @@ class Agent:
             if in_bounds(grid.size, (next_train_y,next_train_x)):
                 next_train[next_train_y][next_train_x] = 3
             test_input = np.stack((state_array,next_train))
-            print(test_input)
 
             action_ind = np.argmax(neural_net.predict(net, test_input))
             action = grid.all_actions[action_ind]
@@ -175,10 +174,10 @@ def create_pushing_only_grid(grid):
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=True)
+    testgrid = grid.Grid(5,random=False)
     # create_pushing_only_grid(testgrid)
     agent = Agent()
-    model_based = True
+    model_based = False
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
         agent.run_final_policy(testgrid.copy(), Q,display=True)
