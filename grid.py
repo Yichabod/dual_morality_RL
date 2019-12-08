@@ -140,9 +140,11 @@ class Grid:
         if new_agent_pos == self.switch.pos:
             new_agent_pos = self.agent_pos #agent
             self.train.velocity = (self.train.velocity[1], self.train.velocity[0]) #move perpindicular
-            self.switch.activated = True
 
         self.train.update() #update train AFTER switch is hit
+        #episode ends if train leaves screen or collides
+        if not self.train.on_screen:
+            self.terminal_state = True
 
         #episode ends if train leaves screen or collides
         if not self.train.on_screen:
@@ -188,14 +190,14 @@ class Grid:
         new_x = self.agent_pos[0] + action[0]
         new_y = self.agent_pos[1] + action[1]
         new_agent_pos = (new_x,new_y)
-        new_train_pos = self.train.get_next_position()
+        new_train_pos = self.train.get_next_position(self.train.velocity)
 
         if action not in self.legal_actions():
             new_agent_pos = self.agent_pos
 
-        if self.switch.activated:
+        if new_agent_pos == self.switch.pos:
             reward += self.rewards_dict['agent push switch']
-            self.switch.activated = False
+            new_train_pos = self.train.get_next_position((self.train.velocity[1], self.train.velocity[0]))
 
         if new_agent_pos == new_train_pos:
             #agent intersect train: death
