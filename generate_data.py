@@ -65,6 +65,5 @@ def data_gen(num_grids=10000,grid_size=5):
     print("finished in", time.time()-start)
     print("reward_dist: ", reward_dist)
 
-
 if __name__ == "__main__":
-    data_gen(100)
+    data_gen(10000)
