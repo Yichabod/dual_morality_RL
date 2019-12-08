@@ -30,10 +30,10 @@ def train(num_epochs=400, C=7):
     C is the number of channels in input array
     '''
     batch_size = 1000
-    
+
     xs = np.load("grids_data.npy")
     ys = np.load("actions_data.npy")
-    
+
     previous_trains = xs[:, 0:1, :, :]
     #only keep current trains
     xs = xs[:, 1, :, :]
@@ -59,16 +59,16 @@ def train(num_epochs=400, C=7):
         onehot_xs = onehot_xs.cuda()
         ys = ys.cuda()
         net = net.cuda()
-        
+
     onehot_train_xs = onehot_xs[:9*B//10]
     train_ys = ys[:9*B//10]
-    
+
     onehot_test_xs = onehot_xs[9*B//10:]
     test_ys = ys[9*B//10:]
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         running_loss = []
-        
+
         #trains on the remainder if not gully divisible
         for j in range((len(train_ys)-1)//batch_size+1):
             inputs, labels = onehot_train_xs[batch_size*j:batch_size*(j+1)], train_ys[batch_size*j:batch_size*(j+1)]
@@ -83,7 +83,7 @@ def train(num_epochs=400, C=7):
             optimizer.step()
             # print statistics
             running_loss.append(loss.item())
-        
+
         if epoch%10==9:
             test_loss = []
             with torch.no_grad():
@@ -94,10 +94,10 @@ def train(num_epochs=400, C=7):
                     outputs = net(inputs)
                     loss = criterion(outputs, labels)
                     test_loss.append(loss.item())
-            
+
             print('Epoch:{}, train loss: {:.3f}, test loss: {:.3f}'.format(epoch + 1, np.mean(running_loss), np.mean(test_loss)))
             running_loss = 0.0
-            
+
     torch.save(net.state_dict(), 'nn_model')
     print("Model saved as nn_model")
 

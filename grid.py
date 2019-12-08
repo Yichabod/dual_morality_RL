@@ -133,11 +133,6 @@ class Grid:
         new_y = self.agent_pos[1] + action[1]
         new_agent_pos = (new_x,new_y)
 
-
-        #episode ends if train leaves screen or collides
-        if not self.train.on_screen:
-            self.terminal_state = True
-
         if action not in self.legal_actions():
             new_agent_pos = self.agent_pos
 
@@ -148,6 +143,10 @@ class Grid:
             self.switch.activated = True
 
         self.train.update() #update train AFTER switch is hit
+
+        #episode ends if train leaves screen or collides
+        if not self.train.on_screen:
+            self.terminal_state = True
 
         #collision detect
         if new_agent_pos == self.train.pos:
