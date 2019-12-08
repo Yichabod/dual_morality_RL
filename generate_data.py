@@ -33,8 +33,8 @@ def collect_random_grid(size=5):
     testgrid = Grid(size,random=True)
     a = Agent()
     Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
-    grids, action_values, _type = a.run_final_policy(testgrid.copy(), Q)
-    return _add_next_train_step(grids), action_values
+    grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q)
+    return _add_next_train_step(grids), action_values, reward
 
 
 def data_gen(num_grids=1000,grid_size=5):
@@ -49,8 +49,13 @@ def data_gen(num_grids=1000,grid_size=5):
     start = time.time()
     grids_data = np.empty((1,2,grid_size,grid_size),dtype=int)
     actions_data = np.empty((1, grid_size),dtype=int)
+    reward_dist = {}
     for i in range(num_grids):
-        grids, actions = collect_random_grid(grid_size)
+        grids, actions,reward = collect_random_grid(grid_size)
+        if reward not in reward_dist:
+            reward_dist[reward] = 1
+        else:
+            reward_dist[reward] += 1
         actions_data = np.concatenate((actions_data,actions))
         grids_data = np.vstack((grids_data,grids))
         if i % 100 == 0:
@@ -59,6 +64,7 @@ def data_gen(num_grids=1000,grid_size=5):
     np.save("grids_data",grids_data[1:])
     np.save("actions_data",actions_data[1:])
     print("finished in", time.time()-start)
+    print("reward_dist: ", reward_dist)
 
 
 if __name__ == "__main__":
