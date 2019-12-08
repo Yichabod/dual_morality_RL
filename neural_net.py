@@ -33,13 +33,10 @@ def train(num_epochs=400, C=7):
 
     xs = np.load("grids_data.npy")
     ys = np.load("actions_data.npy")
-<<<<<<< HEAD
 
-    previous_trains = xs[:, 0:1, :, :]
-=======
-    
+    # previous_trains = xs[:, 0:1, :, :]
     next_trains = xs[:, 1:2, :, :]
->>>>>>> d3c6398c06a08da27076ccfa936aa9650b4a0a9e
+
     #only keep current trains
     xs = xs[:, 0, :, :]
 
@@ -64,11 +61,8 @@ def train(num_epochs=400, C=7):
         onehot_xs = onehot_xs.cuda()
         ys = ys.cuda()
         net = net.cuda()
-<<<<<<< HEAD
 
-=======
     print(onehot_xs[0])
->>>>>>> d3c6398c06a08da27076ccfa936aa9650b4a0a9e
     onehot_train_xs = onehot_xs[:9*B//10]
     train_ys = ys[:9*B//10]
 
