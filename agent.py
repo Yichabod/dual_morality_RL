@@ -1,4 +1,4 @@
-import numpy as np
+saimport numpy as np
 from collections import Counter, defaultdict
 import neural_net
 from graphics import display_grid
@@ -108,7 +108,8 @@ class Agent:
         while not grid.terminal_state: # max number of steps per episode
             action_probs = policy(state)
             action_ind = np.argmax(action_probs)
-            # print(Q_dict[state])
+            if display:
+                print(Q_dict[state])
             action = grid.all_actions[action_ind]
             if display: print(action)
 

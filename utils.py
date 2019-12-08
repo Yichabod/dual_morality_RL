@@ -107,9 +107,9 @@ class Train:
         self.pos = (newx,newy)
         if not in_bounds(self.size,self.pos):
             self.on_screen = False
-    def get_next_position(self):
-        newx = self.pos[0]+self.velocity[0]
-        newy = self.pos[1]+self.velocity[1]
+    def get_next_position(self,velocity):
+        newx = self.pos[0]+velocity[0]
+        newy = self.pos[1]+velocity[1]
         return (newx,newy)
     def copy(self):
         return Train(self.size, self.pos,self.velocity)
