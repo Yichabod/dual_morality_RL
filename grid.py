@@ -209,6 +209,10 @@ class Grid:
             #agent intersect train: death
             reward += self.rewards_dict['agent hit by train']
 
+        if (self.agent_pos == new_train_pos) or (new_agent_pos == self.train.pos):
+            #agent intersect train: death
+            reward += self.rewards_dict['agent hit by train']
+
         if self.other_agents.positions.intersection({new_agent_pos}):
             #agent intersect other: push
             #moves both agent and other given that it will not push anyone out of bounds
