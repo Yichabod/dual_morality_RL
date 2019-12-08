@@ -178,7 +178,7 @@ if __name__ == "__main__":
     testgrid = grid.Grid(5,random=True)
     # create_pushing_only_grid(testgrid)
     agent = Agent()
-    model_based = False
+    model_based = True
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
         agent.run_final_policy(testgrid.copy(), Q,display=True)
