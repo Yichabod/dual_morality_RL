@@ -13,15 +13,15 @@ cuda = True if torch.cuda.is_available() else False
 class Net(nn.Module):
     def __init__(self, C=7):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(C, 10, 5, padding=2)
+        self.conv1 = nn.Conv2d(C, 50, 5, padding=2)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(10, 30, 3, padding=1)
-        self.fc1 = nn.Linear(30 * 1 * 1, 5)
+        self.conv2 = nn.Conv2d(50, 50, 3, padding=1)
+        self.fc1 = nn.Linear(50 * 1 * 1, 5)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 30 * 1 * 1)
+        x = x.view(-1, 50 * 1 * 1)
         x = self.fc1(x)
         return x
 
