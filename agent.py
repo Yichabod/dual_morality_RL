@@ -100,29 +100,25 @@ class Agent:
         policy = self._create_epsilon_greedy_policy(Q_dict,epsilon=0) #optimal policy, eps=0 always chooses best value
         if display: display_grid(grid)
         state = grid.current_state
-        min_reward = float('inf') #to keep track of most significant action taken by agent
-        rewards_dict = {value: key for key, value in grid.rewards_dict.items()}
+        total_reward = 0 #to keep track of most significant action taken by agent
         grids_array = np.empty((1,grid.size,grid.size),dtype=int)
         action_val_array = np.empty((1,grid.size),dtype=int)
         while not grid.terminal_state: # max number of steps per episode
             action_probs = policy(state)
-            print("Q values:",action_probs)
             action_ind = np.argmax(action_probs)
             if display:
                 print(Q_dict[state])
             action = grid.all_actions[action_ind]
             if display: print(action)
 
-            ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4}
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
             grids_array = np.vstack((grids_array,generate_array(grid)))
 
+            total_reward += grid.R(action)
             newstate = grid.T(action)
-            min_reward = min(min_reward, grid.R(action))
             state = newstate
             if display: display_grid(grid)
-        grid_type = rewards_dict[min_reward] if min_reward in rewards_dict else None
-        return grids_array[1:], action_val_array[1:], grid_type
+        return grids_array[1:], action_val_array[1:], total_reward
 
 
     def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2) -> tuple:
