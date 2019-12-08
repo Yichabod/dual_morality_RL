@@ -18,8 +18,7 @@ def _add_next_train_step(grids):
             stacked = np.stack((grid,np.zeros(shape,dtype=int)))
         else:
             next_grid = grids[ind+1]
-            # right now leaves 3s in the array, would be more clean if 1s instead
-            next_train = np.where(next_grid==ELEMENT_INT_DICT['train'], next_grid,0) #zeros except for prev train pos
+            next_train = np.where(next_grid==ELEMENT_INT_DICT['train'], 1, 0) #zeros except for prev train pos
             stacked = np.stack([grid,next_train])
         ans.append(stacked)
     return np.array(ans)
@@ -37,7 +36,7 @@ def collect_random_grid(size=5):
     return _add_next_train_step(grids), action_values
 
 
-def data_gen(num_grids=1000,grid_size=5):
+def data_gen(num_grids=10000,grid_size=5):
     """
     Saves 2 ndarrays, actions_val_array (n,5) and grids_array (n, size, size) generated
     by the MC agent from num_grids randomly generated grids of size grid_size
@@ -62,4 +61,4 @@ def data_gen(num_grids=1000,grid_size=5):
 
 
 if __name__ == "__main__":
-    data_gen(10)
+    data_gen(10000)
