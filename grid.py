@@ -23,7 +23,7 @@ class Grid:
     '''
 
 
-    def __init__(self, size, random=False):
+    def __init__(self, size, random=False, extra_person=False, init_pos={}):
         assert isinstance(size, int)
 
         # available actions: stay, north, east, south, west
@@ -33,11 +33,11 @@ class Grid:
         self.size = size
         self.terminal_state = False
 
-        self._place_all(random)
+        self._place_all(random,extra_person)
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
 
         self.rewards_dict = {'agent hit by train': -5, 'agent pushes others':-0.5,
-                            'others hit by train':-2*self.other_agents.num, 'agent push switch': -0.2,
+                            'others hit by train':-2*self.other_agents.num, 'agent push switch': -0.5,
                             'do nothing':0}
 
     def copy(self):
@@ -53,7 +53,7 @@ class Grid:
         copy.current_state = self.current_state
         return copy
 
-    def _place_all(self, place_random, return_placement_type=True) -> None:
+    def _place_all(self, place_random, extra_person) -> None:
         """
         places agent, train, switch, and other people
         :params:
@@ -209,7 +209,7 @@ class Grid:
             #agent intersect train: death
             reward += self.rewards_dict['agent hit by train']
 
-        if (self.agent_pos == new_train_pos) or (new_agent_pos == self.train.pos):
+        elif (self.agent_pos == new_train_pos) and (new_agent_pos == self.train.pos):
             #agent intersect train: death
             reward += self.rewards_dict['agent hit by train']
 
