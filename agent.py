@@ -1,4 +1,4 @@
-saimport numpy as np
+import numpy as np
 from collections import Counter, defaultdict
 import neural_net
 from graphics import display_grid
@@ -179,10 +179,10 @@ def create_pushing_only_grid(grid):
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=True)
+    testgrid = grid.Grid(5,random=False)
     # create_pushing_only_grid(testgrid)
     agent = Agent()
-    model_based = False
+    model_based = True
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
         agent.run_final_policy(testgrid.copy(), Q,display=True)
