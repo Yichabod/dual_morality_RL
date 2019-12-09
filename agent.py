@@ -23,14 +23,16 @@ class Agent:
         Attempt to load neural net from 'neural_net' file. If not present, train neural net
         and then return the network
         """
-        cuda = torch.cuda.is_available()
-        # try:
-        if not cuda:
-            net = neural_net.load()
-        # except:
-        #     neural_net.train()
-        #     net = neural_net.load()
-        return net
+        try:
+            return self.net
+        except(AttributeError):
+            try:
+                net = neural_net.load()
+            except:
+                neural_net.train()
+                net = neural_net.load()
+            self.net = net
+            return net
 
     def neural_net_output(self, grid):
         net = self.train_load_neural_net()
@@ -172,21 +174,28 @@ class Agent:
         return grids_array[1:], action_val_array[1:], total_reward
 
 
-    def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2) -> tuple:
+    def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2, nn_init=False) -> tuple:
         """
         Monte Carlo first visit control. Uses epsilon greedy strategy
         to find optimal policy. Details can be found page 101 of Sutton
         Barto RL Book
-        Args: mdp - Grid class
+        Args: nn_init whether to initialize Q-values with neural net outputs
         Returns: (Q_values, policy)
                 Q(s,a) = val, policy(state) = action
         """
         # Q is a dictionary mapping state to [value of action1, value of action2,...]
         grid = start_grid.copy()
 
-        Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
+        if nn_init:
+            Q = {}
+        else:
+            Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
 
-        policy = self._create_epsilon_greedy_policy(Q, epsilon) #initialized random policy
+        if nn_init:
+            policy = self._create_epsilon_greedy_nn_init(Q, epsilon)
+        else:
+            policy = self._create_epsilon_greedy_policy(Q, epsilon) #initialized random policy
+
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(n_episodes):
             # generate episode
@@ -194,7 +203,11 @@ class Agent:
             grid = start_grid.copy() #copy because running episode mutates grid object
             state = grid.current_state
             while not grid.terminal_state: # max number of steps per episode
-                action_probs = policy(state)
+                if nn_init:
+                    action_probs = policy(grid)
+                else:
+                    action_probs = policy(state)
+
                 action_ind = np.random.choice(np.arange(len(action_probs)), p=action_probs)
                 action = grid.all_actions[action_ind]
 
@@ -217,56 +230,11 @@ class Agent:
                     sa_reward_sum[sa_pair] += G
                     total_sa_counts[sa_pair] += 1
                     Q[state][action_index] = sa_reward_sum[sa_pair]/total_sa_counts[sa_pair] #average reward over all episodes
-                    policy = self._create_epsilon_greedy_policy(Q, epsilon)
-        return Q, policy
+                    if nn_init:
+                        policy = self._create_epsilon_greedy_nn_init(Q, epsilon)
+                    else:
+                        policy = self._create_epsilon_greedy_policy(Q, epsilon)
 
-    def mc_first_visit_nn_init(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2) -> tuple:
-        """
-        Monte Carlo first visit control. Uses epsilon greedy strategy
-        to find optimal policy. Details can be found page 101 of Sutton
-        Barto RL Book
-        Args: mdp - Grid class
-        Returns: (Q_values, policy)
-                Q(s,a) = val, policy(state) = action
-        """
-        # Q is a dictionary mapping state to [value of action1, value of action2,...]
-        grid = start_grid.copy()
-
-        Q = {}
-        #defaultdict(lambda x: neural_net_output(x))
-
-        policy = self._create_epsilon_greedy_nn_init(Q, epsilon) #initialized random policy
-        sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
-        for n in range(n_episodes):
-            # generate episode
-            episode = []
-            grid = start_grid.copy() #copy because running episode mutates grid object
-            state = grid.current_state
-            while not grid.terminal_state: # max number of steps per episode
-                action_probs = policy(grid)
-                action_ind = np.random.choice(np.arange(len(action_probs)), p=action_probs)
-                action = grid.all_actions[action_ind]
-
-                #must calculate reward before transitioning state, otherwise reward will be calculated for action in newstate
-                reward = grid.R(action)
-                newstate = grid.T(action)
-                episode.append((state, action, reward))
-                state = newstate
-                #display_grid(grid)
-            sa_counts = Counter([(x[0],x[1]) for x in episode]) #dictionary: [s,a]=count
-            G = 0 #averaged reward
-            for t in range(len(episode)-1,-1,-1):
-                G = discount_factor*G + episode[t][2] #reward at the next time step
-                state = episode[t][0]
-                action = episode[t][1]
-                action_index = grid.all_actions.index(action)
-                sa_pair = state, action
-                sa_counts[sa_pair] -= 1
-                if sa_counts[sa_pair] == 0: #appears for the first time
-                    sa_reward_sum[sa_pair] += G
-                    total_sa_counts[sa_pair] += 1
-                    Q[state][action_index] = sa_reward_sum[sa_pair]/total_sa_counts[sa_pair] #average reward over all episodes
-                    policy = self._create_epsilon_greedy_nn_init(Q, epsilon)
         return Q, policy
 
 def create_pushing_only_grid(grid):
