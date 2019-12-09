@@ -20,10 +20,15 @@ class Grid:
     Provides base grid environment with which the agents interact.
     Keeps track of agent positions, others positions, and train
     Note positions are (y,x) with (0,0) in the top left corner of the grid
+    Args:
+        size - size of grid
+        random - whether placement of agents is random
+        init_pos - initial positions for the elements in the grid. Should be in
+            this format: {'train':(1,1),'agent':(2,2),'other1':(2,1),'switch':(4,1),'other2':(2,0),'other1num':3,...}
     '''
 
 
-    def __init__(self, size, random=False, extra_person=False, init_pos={}):
+    def __init__(self, size, random=False, init_pos={}):
         assert isinstance(size, int)
 
         # available actions: stay, north, east, south, west
@@ -33,7 +38,7 @@ class Grid:
         self.size = size
         self.terminal_state = False
 
-        self._place_all(random,extra_person)
+        self._place_all(random, init_pos)
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
 
         self.rewards_dict = {'agent hit by train': -5, 'agent pushes others':-0.5,
@@ -53,7 +58,7 @@ class Grid:
         copy.current_state = self.current_state
         return copy
 
-    def _place_all(self, place_random, extra_person) -> None:
+    def _place_all(self, place_random, init_pos) -> None:
         """
         places agent, train, switch, and other people
         :params:
@@ -62,12 +67,22 @@ class Grid:
             Switch cannot be located in the path of the train
         """
         #all possible coordinates as a y,x tuple
-        if not place_random:
+        if not place_random or len(init_pos) > 0:
             #default positions. Train, switch and other defaults found in utils.py
-            self.train = Train(self.size)
-            self.other_agents = OtherMask(self.size)
-            self.switch = Switch(self.size)
-            self.agent_pos = (0,2)
+            if len(init_pos) == 0:
+                self.train = Train(self.size)
+                self.other_agents = OtherMask(self.size)
+                self.switch = Switch(self.size)
+                self.agent_pos = (0,2)
+            else:
+                self.train = Train(self.size,pos=init_pos['train'])
+                self.agent_pos = init_pos['agent']
+                self.switch = Switch(self,size,pos=init_pos['switch'])
+                others_pos = {'other1':init_pos['other1'],'other1num':init_pos['other1num']}
+                if 'other2num' in init_pos:
+                    other_nums['other2'] = init_pos['other2']
+                    other_nums['other2num'] = init_pos['other2num']
+                self.other_agents = OtherMask(self.size, init_dict=others_pos)
         else:
             open_grid_coords = set((i,j) for i in range(self.size) for j in range(self.size))
 
@@ -85,13 +100,13 @@ class Grid:
             open_grid_coords.remove(self.agent_pos)
 
             #sets others position based on open coordinates
-            random_others_pos = random.sample(open_grid_coords,1)[0]
+            random_others_pos = set(random.sample(open_grid_coords, 1))
 
             #just one other for now - no NN representation exists yet
             #self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=np.random.choice(PEOPLE_RANGE))
-            self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=1)
+            self.other_agents = OtherMask(self.size, positions=random_others_pos)
 
-            open_grid_coords.remove(random_others_pos)
+            open_grid_coords -= random_others_pos
 
             #places switch so that it cannot be in path of train
             for i in range(self.size):
