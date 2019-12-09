@@ -30,9 +30,9 @@ def generate_array(mdp, action=None):
         grid[0,other[0],other[1]] = ELEMENT_INT_DICT['other']
 
     grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
-    
+
     grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch'] #switch
-    
+
     if mdp.train.on_screen == True:
         grid[0,mdp.train.pos[0],mdp.train.pos[1]] = ELEMENT_INT_DICT['train']
 
@@ -56,13 +56,19 @@ class OtherMask:
     Represents other agents in Grid MDP including their position and number
     """
 
-    def __init__(self, size, positions={(1,3)}, num=1):
+    def __init__(self, size, positions={(1,3)}, init_dict={}, num=1):
         self.mask = {}
         self.positions = positions
         self.size = size
         self.num = num
-        for pos in positions:
-            self.mask[pos] = num
+        if len(init_dict) > 0:
+            mask[init_dict['other1']] = init_dict['other1num']
+            if 'other2' in init_dict:
+                mask[init_dict['other2']] = init_dict['other2num']
+        else:
+            for pos in positions:
+                self.mask[pos] = num
+                
     def push(self, position, action):
         num_pushed = self.mask.pop(position)
         new_pos_y = position[0] + action[0]
