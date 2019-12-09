@@ -56,7 +56,7 @@ class OtherMask:
     Represents other agents in Grid MDP including their position and number
     """
 
-    def __init__(self, size, positions={(1,3)}, init_dict={}, num=1):
+    def __init__(self, size, positions={(1,3)}, num=1, init_dict={}):
         self.mask = {}
         self.positions = positions
         self.size = size
@@ -68,7 +68,7 @@ class OtherMask:
         else:
             for pos in positions:
                 self.mask[pos] = num
-                
+
     def push(self, position, action):
         num_pushed = self.mask.pop(position)
         new_pos_y = position[0] + action[0]
