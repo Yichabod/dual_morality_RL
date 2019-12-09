@@ -31,7 +31,7 @@ class Agent:
         #     neural_net.train()
         #     net = neural_net.load()
         return net
-    
+
     def neural_net_output(self, grid):
         net = self.train_load_neural_net()
 
@@ -60,9 +60,9 @@ class Agent:
         """
         if display: display_grid(grid)
         net = self.train_load_neural_net()
-        
+
         total_reward = 0
-        
+
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
             state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
@@ -79,7 +79,7 @@ class Agent:
             action = grid.all_actions[action_ind]
             if display: print(neural_net.predict(net, test_input))
             if display: print(action)
-            
+
             total_reward += grid.R(action)
             grid.T(action)
             if display: display_grid(grid)
@@ -108,7 +108,7 @@ class Agent:
                     action_probs[i] = epsilon/len(Q_values)
             return action_probs
         return policy
-    
+
     def _create_epsilon_greedy_nn_init(self, Q_dict, epsilon=0.2):
         """
         Use Q_dict to create a greedy policy
@@ -122,7 +122,7 @@ class Agent:
             if state not in Q_dict:
                 Q_dict[state] = self.neural_net_output(grid)
             Q_values = Q_dict[state]
-            
+
             action_probs = [0 for k in range(len(Q_values))]
             best_action = np.argmax(Q_values)
             for i in range(len(Q_values)):
@@ -151,7 +151,7 @@ class Agent:
         total_reward = 0 #to keep track of most significant action taken by agent
         grids_array = np.empty((1,grid.size,grid.size),dtype=int)
         action_val_array = np.empty((1,grid.size),dtype=int)
-        
+
         while not grid.terminal_state: # max number of steps per episode
             if nn_init:
                 action_probs = policy(grid)
@@ -183,9 +183,9 @@ class Agent:
         """
         # Q is a dictionary mapping state to [value of action1, value of action2,...]
         grid = start_grid.copy()
-        
+
         Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
-        
+
         policy = self._create_epsilon_greedy_policy(Q, epsilon) #initialized random policy
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(n_episodes):
@@ -231,10 +231,10 @@ class Agent:
         """
         # Q is a dictionary mapping state to [value of action1, value of action2,...]
         grid = start_grid.copy()
-        
+
         Q = {}
         #defaultdict(lambda x: neural_net_output(x))
-        
+
         policy = self._create_epsilon_greedy_nn_init(Q, epsilon) #initialized random policy
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(n_episodes):
@@ -268,7 +268,7 @@ class Agent:
                     Q[state][action_index] = sa_reward_sum[sa_pair]/total_sa_counts[sa_pair] #average reward over all episodes
                     policy = self._create_epsilon_greedy_nn_init(Q, epsilon)
         return Q, policy
-    
+
 def create_pushing_only_grid(grid):
     grid.train.pos = (3,0)
     grid.agent_pos = (4,3)#(2,2)
@@ -277,10 +277,11 @@ def create_pushing_only_grid(grid):
 
 if __name__ == "__main__":
     import grid
-    testgrid = grid.Grid(5,random=False)
-    # create_pushing_only_grid(testgrid)
+    # testgrid = grid.Grid(5,random=False)
+    init_pos = {'train':(2,0),'agent':(4,3),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
+    testgrid = grid.Grid(5,init_pos=init_pos)
     agent = Agent()
-    model_based = False
+    model_based = True
     if model_based == True:
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
         agent.run_final_policy(testgrid.copy(), Q,display=True)
