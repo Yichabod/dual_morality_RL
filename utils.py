@@ -56,28 +56,38 @@ class OtherMask:
     Represents other agents in Grid MDP including their position and number
     """
 
-    def __init__(self, size, positions={(1,3)}, num=1, init_dict={}):
+    def __init__(self, size, positions=[(1,3)], num=1, init={}):
         self.mask = {}
-        self.positions = positions
         self.size = size
         self.num = num
-        if len(init_dict) > 0:
-            mask[init_dict['other1']] = init_dict['other1num']
-            if 'other2' in init_dict:
-                mask[init_dict['other2']] = init_dict['other2num']
+        self.init = init
+        if len(init) > 0:
+            self.mask[init['other1']] = init['other1num']
+            if 'other2' in init:
+                self.mask[init['other2']] = init['other2num']
+                self.positions = [init['other1'], init['other2']]
+            else:
+                self.positions = [init['other1']]
         else:
+            self.positions = positions
             for pos in positions:
                 self.mask[pos] = num
 
     def push(self, position, action):
         num_pushed = self.mask.pop(position)
-        new_pos_y = position[0] + action[0]
-        new_pos_x = position[1] + action[1]
-        new_pos = (new_pos_y,new_pos_x)
+        new_pos = (position[0] + action[0], position[1] + action[1])
         self.mask[new_pos] = num_pushed
-        self.positions = set(self.mask.keys())
+        old_pos_index = self.positions.index(position)
+        self.positions[old_pos_index] = new_pos
+
     def copy(self):
-        return OtherMask(self.size, self.positions, self.num)
+        othernum = self.num if 'other1num' not in self.init else self.init['other1num']
+        new_init = {'other1':self.positions[0], 'other1num':othernum}
+        if 'other2' in self.init:
+            new_init['other2'] = self.positions[1]
+            new_init['other2num'] = self.init['other2num']
+        other = OtherMask(self.size,init=new_init)
+        return other
 
 class Switch:
     """

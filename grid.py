@@ -28,7 +28,7 @@ class Grid:
     '''
 
 
-    def __init__(self, size, random=False, init_pos={}):
+    def __init__(self, size=5, random=False, init_pos={}):
         assert isinstance(size, int)
 
         # available actions: stay, north, east, south, west
@@ -39,10 +39,11 @@ class Grid:
         self.terminal_state = False
 
         self._place_all(random, init_pos)
-        self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
+        # self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
+        self.current_state = (self.agent_pos,self.train.pos)+tuple(self.other_agents.positions)
 
         self.rewards_dict = {'agent hit by train': -5, 'agent pushes others':-0.5,
-                            'others hit by train':-2*self.other_agents.num, 'agent push switch': -0.2,
+                            'others hit by train':-2, 'agent push switch': -0.2,
                             'do nothing':0}
 
     def copy(self):
@@ -77,12 +78,12 @@ class Grid:
             else:
                 self.train = Train(self.size,pos=init_pos['train'])
                 self.agent_pos = init_pos['agent']
-                self.switch = Switch(self,size,pos=init_pos['switch'])
+                self.switch = Switch(self.size,pos=init_pos['switch'])
                 others_pos = {'other1':init_pos['other1'],'other1num':init_pos['other1num']}
                 if 'other2num' in init_pos:
-                    other_nums['other2'] = init_pos['other2']
-                    other_nums['other2num'] = init_pos['other2num']
-                self.other_agents = OtherMask(self.size, init_dict=others_pos)
+                    others_pos['other2'] = init_pos['other2']
+                    others_pos['other2num'] = init_pos['other2num']
+                self.other_agents = OtherMask(self.size, init=others_pos)
         else:
             open_grid_coords = set((i,j) for i in range(self.size) for j in range(self.size))
 
@@ -178,7 +179,7 @@ class Grid:
             self.terminal_state = True
             pass
 
-        if self.other_agents.positions.intersection({new_agent_pos}):
+        if new_agent_pos in self.other_agents.positions:
             #agent intersect other: push
             #moves both agent and other given that it will not push anyone out of bounds
             new_other_y = new_agent_pos[0] + action[0]
@@ -189,7 +190,7 @@ class Grid:
             else:
                 new_agent_pos = self.agent_pos
 
-        if self.other_agents.positions.intersection({self.train.pos}):
+        if self.train.pos in self.other_agents.positions:
             #other intersect train: death, terminal state
             self.train.velocity = (0,0)
             self.terminal_state = True
@@ -228,15 +229,17 @@ class Grid:
             #agent intersect train: death
             reward += self.rewards_dict['agent hit by train']
 
-        if self.other_agents.positions.intersection({new_agent_pos}):
+        if new_agent_pos in self.other_agents.positions:
             #agent intersect other: push
             #moves both agent and other given that it will not push anyone out of bounds
             reward += self.rewards_dict['agent pushes others']
 
 
-        if self.other_agents.positions.intersection({new_train_pos}):
             #other intersect train: death, terminal state
-            reward += self.rewards_dict['others hit by train']
+        for pos in self.other_agents.positions:
+            if pos == new_train_pos:
+                reward += self.rewards_dict['others hit by train']*self.other_agents.mask[pos]
+
 
         return reward
 
