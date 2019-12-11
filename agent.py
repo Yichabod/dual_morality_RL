@@ -141,6 +141,7 @@ class Agent:
         """
         Use Q_dict to solve MDP (no exploration)
         args: grid = original grid state, Q_dict[state] = [value of action1, value of action2, ...]
+        nn_init = whether we want to use the neural network to initialise the monte carlo policy
         returns: 2 numpy arrays containing grid and optimal action pairs to be
         fed into downstream model
         """
@@ -237,11 +238,6 @@ class Agent:
 
         return Q, policy
 
-def create_pushing_only_grid(grid):
-    grid.train.pos = (3,0)
-    grid.agent_pos = (4,3)#(2,2)
-    grid.other_agents.pos = set((3,3))
-    grid.switch.pos = (1,1)#(4,4)  TODO weirdness when assigning new positions to elements in the grid
 
 if __name__ == "__main__":
     import grid
@@ -249,9 +245,9 @@ if __name__ == "__main__":
     init_pos = {'train':(2,0),'agent':(4,3),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
     testgrid = grid.Grid(5,init_pos=init_pos)
     agent = Agent()
-    model_based = False
+    model_based = True
     if model_based == True:
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000)
-        agent.run_final_policy(testgrid.copy(), Q,display=True)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 100)
+        agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
     else:
         agent.run_model_free_policy(testgrid.copy(),display=True)
