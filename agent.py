@@ -241,10 +241,9 @@ class Agent:
 
 if __name__ == "__main__":
     import grid
-    # testgrid = grid.Grid(5,random=False)
     push_init_pos = {'train':(2,0),'agent':(4,2),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
     switch_init_pos = {'train':(2,0),'agent':(4,3),'other1':(3,2),'switch':(4,4),'other2':(2,4),'other1num':1,'other2num':4}
-    testgrid = grid.Grid(5,init_pos=switch_init_pos)
+    testgrid = grid.Grid(5,random=True)#init_pos=switch_init_pos)
     agent = Agent()
     model = 'based'
     if model == 'dual':
