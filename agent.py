@@ -242,12 +242,16 @@ class Agent:
 if __name__ == "__main__":
     import grid
     # testgrid = grid.Grid(5,random=False)
-    init_pos = {'train':(2,0),'agent':(4,3),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
-    testgrid = grid.Grid(5,init_pos=init_pos)
+    push_init_pos = {'train':(2,0),'agent':(4,2),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
+    switch_init_pos = {'train':(2,0),'agent':(4,3),'other1':(3,2),'switch':(4,4),'other2':(2,4),'other1num':1,'other2num':4}
+    testgrid = grid.Grid(5,init_pos=switch_init_pos)
     agent = Agent()
-    model_based = True
-    if model_based == True:
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 100)
+    model = 'based'
+    if model == 'dual':
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
-    else:
+    if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
+    if model == 'based':
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=True)
+        agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
