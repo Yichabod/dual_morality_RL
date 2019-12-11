@@ -107,7 +107,7 @@ class Grid:
             #self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=np.random.choice(PEOPLE_RANGE))
             self.other_agents = OtherMask(self.size, positions=random_others_pos)
 
-            open_grid_coords -= random_others_pos
+            open_grid_coords -= set(random_others_pos)
 
             #places switch so that it cannot be in path of train
             for i in range(self.size):
