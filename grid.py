@@ -101,7 +101,7 @@ class Grid:
             open_grid_coords.remove(self.agent_pos)
 
             #sets others position based on open coordinates
-            random_others_pos = set(random.sample(open_grid_coords, 1))
+            random_others_pos = list(random.sample(open_grid_coords, 1))
 
             #just one other for now - no NN representation exists yet
             #self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=np.random.choice(PEOPLE_RANGE))
