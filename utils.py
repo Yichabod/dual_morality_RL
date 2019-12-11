@@ -13,7 +13,7 @@ def in_bounds(size,position:tuple) -> bool:
     else:
         return False
 
-def generate_array(mdp, action=None):
+def generate_array(mdp,action=None):
 
     """
     Takes in a Grid mdp environment and an agent, with optional action to
@@ -22,6 +22,10 @@ def generate_array(mdp, action=None):
     in the grid of given dimensions.
     Intended to be able to feed into a network
     """
+    # TODO:
+    # Change this function to output 1xCx5x5 instead to allow different numbers of other agents and change
+    # neural_net.py accordingly
+    #
     dims = (1,mdp.size,mdp.size) #tuple eg (1,11,11)
     grid = np.full(dims, 0, dtype=int) #np has nice display built in
     others_dict = mdp.other_agents.mask
