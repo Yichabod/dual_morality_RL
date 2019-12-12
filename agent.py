@@ -243,9 +243,9 @@ if __name__ == "__main__":
     import grid
     push_init_pos = {'train':(2,0),'agent':(4,2),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
     switch_init_pos = {'train':(2,0),'agent':(4,3),'other1':(3,2),'switch':(4,4),'other2':(2,4),'other1num':1,'other2num':4}
-    testgrid = grid.Grid(5,random=True)#init_pos=switch_init_pos)
+    testgrid = grid.Grid(5,init_pos=push_init_pos)#switch_init_pos)
     agent = Agent()
-    model = 'based'
+    model = 'dual'
     if model == 'dual':
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
