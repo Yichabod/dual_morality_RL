@@ -217,6 +217,7 @@ class Grid:
 
         if new_agent_pos == self.switch.pos:
             reward += self.rewards_dict['agent push switch']
+            new_agent_pos = self.agent_pos
             new_train_pos = self.train.get_next_position((self.train.velocity[1], self.train.velocity[0]))
 
         if new_agent_pos == new_train_pos:
