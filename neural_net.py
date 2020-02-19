@@ -13,19 +13,23 @@ cuda = True if torch.cuda.is_available() else False
 class Net(nn.Module):
     def __init__(self, C=6):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(C, 50, 5, padding=2)
+        self.conv1 = nn.Conv2d(C, 100, 3, padding=1)
+        self.conv2 = nn.Conv2d(100, 100, 3, padding=1)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(50, 50, 3, padding=1)
-        self.fc1 = nn.Linear(50 * 1 * 1, 5)
+        self.conv3 = nn.Conv2d(100, 100, 3, padding=1)
+        self.conv4 = nn.Conv2d(100, 100, 3, padding=1)
+        self.fc1 = nn.Linear(100 * 1 * 1, 5)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
+        x = F.relu(self.conv1(x))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 50 * 1 * 1)
+        x = F.relu(self.conv3(x))
+        x = self.pool(F.relu(self.conv4(x)))
+        x = x.view(-1, 100 * 1 * 1)
         x = self.fc1(x)
         return x
 
-def train(num_epochs=400, C=6):
+def train(num_epochs=100, C=6):
     '''
     C is the number of channels in input array
     '''
@@ -45,7 +49,7 @@ def train(num_epochs=400, C=6):
 
     net = Net(C)
     criterion = nn.MSELoss()#CrossEntropyLoss()
-    optimizer = optim.Adam(net.parameters(), lr=0.003)
+    optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 
     # input shape b x c x h x w to net
@@ -87,7 +91,7 @@ def train(num_epochs=400, C=6):
             # print statistics
             running_loss.append(loss.item())
 
-        if epoch%10==9:
+        if epoch%10==0 or (epoch == num_epochs-1):
             test_loss = []
             with torch.no_grad():
                 for j in range((len(test_ys)-1)//batch_size+1):
