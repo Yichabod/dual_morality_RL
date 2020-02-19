@@ -3,7 +3,7 @@ from collections import Counter, defaultdict
 import neural_net
 from graphics import display_grid
 from utils import generate_array, in_bounds
-from grid import Grid
+import grid
 import torch
 
 ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4} #
@@ -240,14 +240,22 @@ class Agent:
 
 
 if __name__ == "__main__":
-    import grid
     # testgrid = grid.Grid(5,random=False)
-    init_pos = {'train':(2,0),'agent':(4,3),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
-    testgrid = grid.Grid(5,init_pos=init_pos)
+    init_must_move = {'train':(2,0),'agent':(2,2),'other1':(0,1),'switch':(0,0),'other1num':1}
+    init_must_push = {'train':(2,0),'agent':(3,3),'other1':(2,3),'switch':(0,0),'other1num':1}
+    # the default grid setup means agent must hit switch for optimal payoff
+    init_must_kill = {'train':(2,0),'agent':(4,3),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
+
+    testgrid = grid.Grid(5,init_pos=init_must_move)
     agent = Agent()
     model_based = True
     if model_based == True:
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 100)
-        agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
+        deaths = 0
+        trials = 100
+        for i in range(trials):
+            Q, policy = agent.mc_first_visit_control(testgrid.copy(), 15)
+            _,_, reward = agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=False)
+            deaths = deaths + 1 if reward == -5 else deaths
+        print("died",deaths/trials)
     else:
         agent.run_model_free_policy(testgrid.copy(),display=True)
