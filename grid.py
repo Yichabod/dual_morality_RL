@@ -107,7 +107,7 @@ class Grid:
             #self.other_agents = OtherMask(self.size, positions={random_others_pos}, num=np.random.choice(PEOPLE_RANGE))
             self.other_agents = OtherMask(self.size, positions=random_others_pos)
 
-            open_grid_coords -= random_others_pos
+            open_grid_coords -= set(random_others_pos)
 
             #places switch so that it cannot be in path of train
             for i in range(self.size):
@@ -158,10 +158,7 @@ class Grid:
             self.train.velocity = (self.train.velocity[1], self.train.velocity[0]) #move perpindicular
         old_train_pos = self.train.pos
         self.train.update() #update train AFTER switch is hit
-        #episode ends if train leaves screen or collides
-        if not self.train.on_screen:
-            self.terminal_state = True
-
+        
         #episode ends if train leaves screen or collides
         if not self.train.on_screen:
             self.terminal_state = True
@@ -203,6 +200,7 @@ class Grid:
     def R(self, action:tuple) -> int:
         """
         """
+
         if self.terminal_state:
             return 0
 
@@ -219,6 +217,7 @@ class Grid:
 
         if new_agent_pos == self.switch.pos:
             reward += self.rewards_dict['agent push switch']
+            new_agent_pos = self.agent_pos
             new_train_pos = self.train.get_next_position((self.train.velocity[1], self.train.velocity[0]))
 
         if new_agent_pos == new_train_pos:
@@ -229,16 +228,24 @@ class Grid:
             #agent intersect train: death
             reward += self.rewards_dict['agent hit by train']
 
-        if new_agent_pos in self.other_agents.positions:
-            #agent intersect other: push
-            #moves both agent and other given that it will not push anyone out of bounds
-            reward += self.rewards_dict['agent pushes others']
+        new_agent_mask = {}
+        for other_pos in self.other_agents.mask.keys():
+            if new_agent_pos == other_pos:
+                reward += self.rewards_dict['agent pushes others']
+                new_other_y = new_agent_pos[0] + action[0]
+                new_other_x = new_agent_pos[1] + action[1]
+                new_other_pos = (new_other_y,new_other_x)
+                if not in_bounds(self.size,new_other_pos):
+                    new_other_pos = other_pos
+                new_agent_mask[new_other_pos] = self.other_agents.mask[other_pos]
+            new_agent_mask[other_pos] = self.other_agents.mask[other_pos]
+                
 
 
             #other intersect train: death, terminal state
-        for pos in self.other_agents.positions:
+        for pos in new_agent_mask.keys():
             if pos == new_train_pos:
-                reward += self.rewards_dict['others hit by train']*self.other_agents.mask[pos]
+                reward += self.rewards_dict['others hit by train']*new_agent_mask[pos]
 
 
         return reward
