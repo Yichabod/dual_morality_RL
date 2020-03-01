@@ -87,32 +87,25 @@ class Agent:
             if display: display_grid(grid)
         return total_reward
 
-    def _create_softmax_policy(self,Q):
-        pass
-
-    def _create_epsilon_greedy_policy(self, Q_dict, epsilon=0.2):
-        """
-        Use Q_dict to create a greedy policy
-        args: Q_dict[state] = [value of action1, value of action2, ...]
-                where state is defined as result of grid.current_state (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
-              TODO
-        returns: policy function takes in state and chooses with prob 1-e+(e/|A|) maxQ value action
-        """
-        def policy(state):
+    def _create_softmax_policy(self,Q_dict,cutoff=0, nn_init = False):
+        def policy(grid):
+            state = grid.current_state
+            
+            if state not in Q_dict and nn_init:
+                Q_dict[state] = self.neural_net_output(grid)
+                
             Q_values = Q_dict[state]
-            action_probs = [0 for k in range(len(Q_values))]
-            best_action = np.argmax(Q_values)
-            for i in range(len(Q_values)):
-                if np.count_nonzero(Q_values) == 0: #all are zero
-                    action_probs[i] = 1/len(Q_values)
-                elif i == best_action:
-                    action_probs[i] = 1-epsilon+(epsilon/len(Q_values))
-                else:
-                    action_probs[i] = epsilon/len(Q_values)
-            return action_probs
+            e_x = np.exp(Q_values - np.max(Q_values))
+            softmax = e_x / e_x.sum()
+            for ind,action_prob in enumerate(softmax):
+                if action_prob<cutoff:
+                    softmax[ind] = 0
+            if np.count_nonzero(softmax) == 0:
+                return [1/(len(Q_values)) for k in range(len(Q_values))]
+            return softmax/np.sum(softmax)
         return policy
 
-    def _create_epsilon_greedy_nn_init(self, Q_dict, epsilon=0.2):
+    def _create_epsilon_greedy_policy(self, Q_dict, epsilon=0.2, nn_init = False):
         """
         Use Q_dict to create a greedy policy
         args: Q_dict[state] = [value of action1, value of action2, ...]
@@ -122,8 +115,10 @@ class Agent:
         """
         def policy(grid):
             state = grid.current_state
-            if state not in Q_dict:
+            
+            if state not in Q_dict and nn_init:
                 Q_dict[state] = self.neural_net_output(grid)
+                
             Q_values = Q_dict[state]
 
             action_probs = [0 for k in range(len(Q_values))]
@@ -146,10 +141,7 @@ class Agent:
         returns: 2 numpy arrays containing grid and optimal action pairs to be
         fed into downstream model
         """
-        if nn_init:
-            policy = self._create_epsilon_greedy_nn_init(Q_dict,epsilon=0)
-        else:
-            policy = self._create_epsilon_greedy_policy(Q_dict,epsilon=0) #optimal policy, eps=0 always chooses best value
+        policy = self._create_epsilon_greedy_policy(Q_dict,epsilon=0,nn_init=nn_init) #optimal policy, eps=0 always chooses best value
         if display: display_grid(grid)
         state = grid.current_state
         total_reward = 0 #to keep track of most significant action taken by agent
@@ -157,10 +149,7 @@ class Agent:
         action_val_array = np.empty((1,grid.size),dtype=int)
 
         while not grid.terminal_state: # max number of steps per episode
-            if nn_init:
-                action_probs = policy(grid)
-            else:
-                action_probs = policy(state)
+            action_probs = policy(grid)
             action_ind = np.argmax(action_probs)
             if display:
                 print(Q_dict[state])
@@ -176,7 +165,7 @@ class Agent:
         return grids_array[1:], action_val_array[1:], total_reward
 
 
-    def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2, nn_init=False) -> tuple:
+    def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2, nn_init=False, cutoff = 0, softmax = True) -> tuple:
         """
         Monte Carlo first visit control. Uses epsilon greedy strategy
         to find optimal policy. Details can be found page 101 of Sutton
@@ -193,10 +182,10 @@ class Agent:
         else:
             Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
 
-        if nn_init:
-            policy = self._create_epsilon_greedy_nn_init(Q, epsilon)
+        if softmax:
+            policy = self._create_softmax_policy(Q, cutoff, nn_init)
         else:
-            policy = self._create_epsilon_greedy_policy(Q, epsilon) #initialized random policy
+            policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init)
 
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(n_episodes):
@@ -205,10 +194,7 @@ class Agent:
             grid = start_grid.copy() #copy because running episode mutates grid object
             state = grid.current_state
             while not grid.terminal_state: # max number of steps per episode
-                if nn_init:
-                    action_probs = policy(grid)
-                else:
-                    action_probs = policy(state)
+                action_probs = policy(grid)
 
                 action_ind = np.random.choice(np.arange(len(action_probs)), p=action_probs)
                 action = grid.all_actions[action_ind]
@@ -232,10 +218,10 @@ class Agent:
                     sa_reward_sum[sa_pair] += G
                     total_sa_counts[sa_pair] += 1
                     Q[state][action_index] = sa_reward_sum[sa_pair]/total_sa_counts[sa_pair] #average reward over all episodes
-                    if nn_init:
-                        policy = self._create_epsilon_greedy_nn_init(Q, epsilon)
+                    if softmax:
+                        policy = self._create_softmax_policy(Q,cutoff,nn_init)
                     else:
-                        policy = self._create_epsilon_greedy_policy(Q, epsilon)
+                        policy = self._create_epsilon_greedy_policy(Q, epsilon,nn_init)
 
         return Q, policy
 
@@ -245,12 +231,14 @@ if __name__ == "__main__":
     switch_init_pos = {'train':(2,0),'agent':(4,1),'other1':(0,0),'switch':(3,2),'other2':(2,4),'other1num':1,'other2num':4}
     testgrid = grid.Grid(5,init_pos=switch_init_pos)#switch_init_pos)
     agent = Agent()
-    model = 'based'
+    model = 'dual'
     if model == 'dual':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=True)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = False)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
     if model == 'based':
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
+        
+  
