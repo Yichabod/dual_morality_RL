@@ -233,7 +233,7 @@ if __name__ == "__main__":
     agent = Agent()
     model = 'dual'
     if model == 'dual':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = False)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
