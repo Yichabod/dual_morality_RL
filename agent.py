@@ -228,19 +228,22 @@ class Agent:
 
 if __name__ == "__main__":
     
-    push_init_pos = {'train':(2,0),'agent':(4,1),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
-    switch_init_pos = {'train':(2,0),'agent':(4,1),'other1':(0,0),'switch':(3,2),'other2':(2,4),'other1num':1,'other2num':4}
+    #push_init_pos = {'train':(2,0),'agent':(4,1),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
+    #switch_init_pos = {'train':(2,0),'agent':(4,1),'other1':(0,0),'switch':(3,2),'other2':(2,4),'other1num':1,'other2num':4}
     
-    #push 1 grid init
-    init1 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
+    push1 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
             'switch':(0,0),'agent':(4,2),'other2':(1,4),'num2':2,'target2':(0,3)}
 
-    #push 3 grid init
-    #somewhere between 10,000 and 100,000 iterations the mc finally gets it - seems pretty hard without nn even
-    init3 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
+    #somewhere between 10,000 and 50,000 iterations the mc finally gets it - seems pretty hard without nn even
+    push3 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
             'switch':(4,0),'agent':(3,3),'other2':(2,4),'num2':2,'target2':(1,4)}
 
-    testgrid = grid.Grid(5,init_pos=init3)#switch_init_pos)
+    #this one takes a long time too - perhaps because reward comes too late
+    death1 = {'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(2,2),
+            'switch':(4,0),'agent':(0,3),'other2':(2,4),'num2':2,'target2':(3,3)}
+
+    
+    testgrid = grid.Grid(5,init_pos=death1)
     agent = Agent()
     model = 'based'
     if model == 'dual':
@@ -249,7 +252,7 @@ if __name__ == "__main__":
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
     if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=False, softmax=False)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 50000, nn_init=False, softmax=False, epsilon=0.2)
         display_grid(testgrid.copy())
         agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
         
