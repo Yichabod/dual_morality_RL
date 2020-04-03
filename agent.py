@@ -1,10 +1,10 @@
 import numpy as np
 from collections import Counter, defaultdict
-import neural_net
+#import neural_net
 from graphics import display_grid
 from utils import generate_array, in_bounds
-import grid
-import torch
+import new_grid as grid
+#import torch
 
 ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4} #
 
@@ -154,7 +154,7 @@ class Agent:
             if display:
                 print(Q_dict[state])
             action = grid.all_actions[action_ind]
-            if display: print(action)
+            #if display: print(action)
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
             grids_array = np.vstack((grids_array,generate_array(grid)))
 
@@ -227,18 +227,30 @@ class Agent:
 
 
 if __name__ == "__main__":
+    
     push_init_pos = {'train':(2,0),'agent':(4,1),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
     switch_init_pos = {'train':(2,0),'agent':(4,1),'other1':(0,0),'switch':(3,2),'other2':(2,4),'other1num':1,'other2num':4}
-    testgrid = grid.Grid(5,init_pos=switch_init_pos)#switch_init_pos)
+    
+    #push 1 grid init
+    init1 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
+            'switch':(0,0),'agent':(4,2),'other2':(1,4),'num2':2,'target2':(0,3)}
+
+    #push 3 grid init
+    #somewhere between 10,000 and 100,000 iterations the mc finally gets it - seems pretty hard without nn even
+    init3 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
+            'switch':(4,0),'agent':(3,3),'other2':(2,4),'num2':2,'target2':(1,4)}
+
+    testgrid = grid.Grid(5,init_pos=init3)#switch_init_pos)
     agent = Agent()
-    model = 'dual'
+    model = 'based'
     if model == 'dual':
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
     if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=True)
-        agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=False, softmax=False)
+        display_grid(testgrid.copy())
+        agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
         
   

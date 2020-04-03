@@ -60,38 +60,51 @@ class OtherMask:
     Represents other agents in Grid MDP including their position and number
     """
 
-    def __init__(self, size, positions=[(1,3)], num=1, init={}):
+    def __init__(self, size, positions=[(1,3)], num=[1], init={}, targets=[(1,4)]):
         self.mask = {}
         self.size = size
-        self.num = num
         self.init = init
+        self.targets = []
+        self.positions = []
+        
         if len(init) > 0:
-            self.mask[init['other1']] = init['other1num']
-            if 'other2' in init:
-                self.mask[init['other2']] = init['other2num']
-                self.positions = [init['other1'], init['other2']]
-            else:
-                self.positions = [init['other1']]
+            self.mask = init
+            self.positions = list(self.mask.keys())
+            for pos in self.mask:
+                self.targets.append(self.mask[pos].get_target())
         else:
             self.positions = positions
-            for pos in positions:
-                self.mask[pos] = num
+            for idx,pos in enumerate(positions):
+                self.mask[pos] = Other(num[idx],targets[idx])
+            self.targets = targets
 
     def push(self, position, action):
-        num_pushed = self.mask.pop(position)
+        other_pushed = self.mask.pop(position,None)
         new_pos = (position[0] + action[0], position[1] + action[1])
-        self.mask[new_pos] = num_pushed
+        self.mask[new_pos] = other_pushed
         old_pos_index = self.positions.index(position)
         self.positions[old_pos_index] = new_pos
 
     def copy(self):
-        othernum = self.num if 'other1num' not in self.init else self.init['other1num']
-        new_init = {'other1':self.positions[0], 'other1num':othernum}
-        if 'other2' in self.init:
-            new_init['other2'] = self.positions[1]
-            new_init['other2num'] = self.init['other2num']
+        new_init = {}
+        for pos in self.mask:
+            new_init[pos] = self.mask[pos].copy()
         other = OtherMask(self.size,init=new_init)
         return other
+
+    def get_mask(self):
+        return self.mask
+
+class Other:
+    def __init__(self,num,target):
+        self.target = target
+        self.num = num
+    def copy(self):
+        return Other(self.num,self.target)
+    def get_num(self):
+        return self.num
+    def get_target(self):
+        return self.target
 
 class Switch:
     """
