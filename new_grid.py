@@ -201,6 +201,19 @@ class Grid:
             #other intersect train: death, terminal state
             self.train.velocity = (0,0)
 
+        for pos in self.other_agents.positions:
+            other = self.other_agents.mask[pos]
+            
+            train_hit = pos == self.train.pos and self.train.velocity == (0,0)
+            
+            if other.active:
+                if pos != other.get_target():
+                    other.toggle_active()
+            else:
+                if pos == other.get_target() and not train_hit:
+                    other.toggle_active()
+     
+
         self.agent_pos = new_agent_pos
         self.step += 1
         self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
@@ -250,15 +263,27 @@ class Grid:
                 pos_open = new_other_pos not in self.other_agents.positions and new_other_pos != self.switch.pos
                 if not in_bounds(self.size,new_other_pos) or not pos_open or train_stopped:
                     new_other_pos = other_pos
-                new_agent_mask[new_other_pos] = self.other_agents.mask[other_pos]
-            new_agent_mask[other_pos] = self.other_agents.mask[other_pos]
-                
-        #other intersect train: death, terminal state
+                new_agent_mask[new_other_pos] = self.other_agents.mask[other_pos].copy()
+            else:
+                new_agent_mask[other_pos] = self.other_agents.mask[other_pos].copy()
+
+        #after pushing logic, look at location for train and target collisions  
         for pos in new_agent_mask.keys():
+            other = new_agent_mask[pos]
+            
+            #other intersect train: death, terminal state
             if pos == new_train_pos and train_active:
-                reward += self.rewards_dict['others hit by train'] * new_agent_mask[pos].get_num()
-            if self.step == 5 and pos == new_agent_mask[pos].get_target() and pos != self.train.pos:
-                reward += self.rewards_dict['others on target'] * new_agent_mask[pos].get_num()
+                reward += self.rewards_dict['others hit by train'] * other.get_num()
+            
+            #no points for being in target if hit by train
+            train_hit = pos == self.train.pos and self.train.velocity == (0,0)
+            
+            if other.active:
+                if pos != other.get_target():
+                    reward -= self.rewards_dict['others on target'] * other.get_num()
+            else:
+                if pos == other.get_target() and not train_hit:
+                    reward += self.rewards_dict['others on target'] * other.get_num()
 
         return reward
 
@@ -284,7 +309,7 @@ if __name__ == "__main__":
         action = wasd_dict[i]
 
         print("")
-        reward += grid.R(action)
+        print(grid.R(action))
 
         grid.T(action)
         display_grid(grid)

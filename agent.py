@@ -152,7 +152,7 @@ class Agent:
             action_probs = policy(grid)
             action_ind = np.argmax(action_probs)
             if display:
-                print(Q_dict[state])
+                pass#print(Q_dict[state])
             action = grid.all_actions[action_ind]
             #if display: print(action)
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
@@ -162,6 +162,7 @@ class Agent:
             newstate = grid.T(action)
             state = newstate
             if display: display_grid(grid)
+        if display: print(total_reward)
         return grids_array[1:], action_val_array[1:], total_reward
 
 
@@ -242,8 +243,11 @@ if __name__ == "__main__":
     death1 = {'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(2,2),
             'switch':(4,0),'agent':(0,3),'other2':(2,4),'num2':2,'target2':(3,3)}
 
+    targets_test = {'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(1,3),
+            'switch':(4,4),'agent':(2,1),'other2':(2,2),'num2':2,'target2':(3,2)}
+
     
-    testgrid = grid.Grid(5,init_pos=death1)
+    testgrid = grid.Grid(5,random = True)
     agent = Agent()
     model = 'based'
     if model == 'dual':
@@ -252,7 +256,7 @@ if __name__ == "__main__":
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
     if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 50000, nn_init=False, softmax=False, epsilon=0.2)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=False, softmax=False)
         display_grid(testgrid.copy())
         agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
         

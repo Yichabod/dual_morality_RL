@@ -75,7 +75,7 @@ class OtherMask:
         else:
             self.positions = positions
             for idx,pos in enumerate(positions):
-                self.mask[pos] = Other(num[idx],targets[idx])
+                self.mask[pos] = Other(num[idx],targets[idx],targets[idx]==pos)
             self.targets = targets
 
     def push(self, position, action):
@@ -89,22 +89,26 @@ class OtherMask:
         new_init = {}
         for pos in self.mask:
             new_init[pos] = self.mask[pos].copy()
-        other = OtherMask(self.size,init=new_init)
-        return other
+        othermask = OtherMask(self.size,init=new_init)
+        return othermask
 
     def get_mask(self):
         return self.mask
 
 class Other:
-    def __init__(self,num,target):
+    def __init__(self,num,target,active):
         self.target = target
         self.num = num
+        self.active = active
     def copy(self):
-        return Other(self.num,self.target)
+        return Other(self.num,self.target,self.active)
     def get_num(self):
         return self.num
     def get_target(self):
         return self.target
+    def toggle_active(self):
+        self.active = not self.active
+
 
 class Switch:
     """
