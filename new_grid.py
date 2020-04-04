@@ -35,7 +35,7 @@ class Grid:
         self.current_state = (self.agent_pos,self.train.pos)+tuple(self.other_agents.positions)
 
         self.rewards_dict = {'agent hit by train': -10, 'agent pushes others':0,
-                            'others hit by train':-1, 'agent push switch': 0, 
+                            'others hit by train':-1, 'agent push switch': 0,
                             'others on target': 1, 'do nothing':0}
 
     def copy(self):
@@ -64,7 +64,7 @@ class Grid:
             #default positions. Train, switch and other defaults found in utils.py
             if len(init_pos) == 0:
                 self.train = Train(self.size)
-                self.other_agents = OtherMask(self.size)
+                self.other_agents = OtherMask()
                 self.switch = Switch(self.size)
                 self.agent_pos = (0,2)
             else:
@@ -78,7 +78,7 @@ class Grid:
                     others_pos.append(init_pos['other2'])
                     num.append(init_pos['num2'])
                     targets.append(init_pos['target2'])
-                self.other_agents = OtherMask(self.size, positions=others_pos, num=num, targets=targets)
+                self.other_agents = OtherMask(positions=others_pos, num=num, targets=targets)
         else:
             open_grid_coords = set((i,j) for i in range(self.size) for j in range(self.size))
 
@@ -102,7 +102,7 @@ class Grid:
             open_grid_coords -= set(random_targets_pos)
 
             #feed in pos, num and target, with index 0 corresponding to first object, and idx 1 corresponding to second
-            self.other_agents = OtherMask(self.size, positions=random_others_pos, num=[1,2], targets = random_targets_pos)
+            self.other_agents = OtherMask(positions=random_others_pos, num=[1,2], targets = random_targets_pos)
 
             open_grid_coords -= set(random_others_pos)
 
@@ -164,7 +164,7 @@ class Grid:
             self.train.velocity = (self.train.velocity[1], self.train.velocity[0]) #move perpindicular
         old_train_pos = self.train.pos
         self.train.update() #update train AFTER switch is hit
-        
+
         #episode ends if train leaves screen or collides
         if self.step==5:
             self.terminal_state = True
@@ -178,8 +178,8 @@ class Grid:
             #no pushing allowed if crash has already occured
             train_stopped = new_agent_pos == self.train.pos and self.train.velocity == (0,0)
             #no pushing if another object or switch is in next location
-            pos_open = new_other_pos not in self.other_agents.positions and new_other_pos != self.switch.pos 
-            
+            pos_open = new_other_pos not in self.other_agents.positions and new_other_pos != self.switch.pos
+
             if in_bounds(self.size,new_other_pos) and pos_open and not train_stopped:
                 self.other_agents.push(new_agent_pos,action)
             else:
@@ -203,16 +203,16 @@ class Grid:
 
         for pos in self.other_agents.positions:
             other = self.other_agents.mask[pos]
-            
+
             train_hit = pos == self.train.pos and self.train.velocity == (0,0)
-            
+
             if other.active:
                 if pos != other.get_target():
                     other.toggle_active()
             else:
                 if pos == other.get_target() and not train_hit:
                     other.toggle_active()
-     
+
 
         self.agent_pos = new_agent_pos
         self.step += 1
@@ -267,17 +267,17 @@ class Grid:
             else:
                 new_agent_mask[other_pos] = self.other_agents.mask[other_pos].copy()
 
-        #after pushing logic, look at location for train and target collisions  
+        #after pushing logic, look at location for train and target collisions
         for pos in new_agent_mask.keys():
             other = new_agent_mask[pos]
-            
+
             #other intersect train: death, terminal state
             if pos == new_train_pos and train_active:
                 reward += self.rewards_dict['others hit by train'] * other.get_num()
-            
+
             #no points for being in target if hit by train
             train_hit = pos == self.train.pos and self.train.velocity == (0,0)
-            
+
             if other.active:
                 if pos != other.get_target():
                     reward -= self.rewards_dict['others on target'] * other.get_num()
@@ -290,7 +290,7 @@ class Grid:
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     # makes 5x5 test grid and chooses random action until terminal state is reached
-    
+
     #push 1 grid init
     init1 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
             'switch':(0,0),'agent':(4,2),'other2':(1,4),'num2':2,'target2':(0,3)}

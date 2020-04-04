@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from grid import Grid
+from new_grid import Grid
 import numpy as np
 from agent import Agent
 import time
@@ -31,7 +31,7 @@ def collect_grid(size, grid_type):
     by the MC agent from a single random grid
     """
     testgrid = Grid(size,random=True)
-    
+
     """
     not yet implemented in grid
     if grid_type == 'push only':
@@ -43,19 +43,19 @@ def collect_grid(size, grid_type):
     if grid_type == 'others death':
         other in path of train, agent far from other and switch
     """
-        
+
     a = Agent()
     Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
     grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q)
-    return _add_next_train_step(grids), action_values, reward    
-    
+    return _add_next_train_step(grids), action_values, reward
+
 
 def data_gen(num_grids=1000,grid_size=5,distribution=None):
     """
-    Saves 2 ndarrays, actions_val_array (n,5) and grids_array (n, size, size) generated
-    by the MC agent from num_grids randomly generated grids of size grid_size
-    each grid can generate from 2-5 data points
-    Distribution is a list of 4 floats adding up to 1 representing how many of each type of 
+    Saves 2 ndarrays, actions_val_array (n,5) and grids_array
+    (n,2, grid_size, grid_size) generated, where the second dim is for future train pos
+        each grid can generate from 2-5 data points
+    Distribution is a list of 4 floats adding up to 1 representing how many of each type of
     grid to generate (with each index indicating which fraction should be of a certain type
     corresponding to GRID_TYPE_DICT)
 
@@ -69,10 +69,10 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
     for i in range(num_grids):
         if distribution == None:
             grid_type = 'random'
-        else: 
+        else:
             grid_type = GRID_TYPE_DICT[np.random.choice(np.arange(len(distribution)), p=distribution)]
         grids,actions,reward = collect_grid(grid_size,grid_type)
-        
+
         if reward not in reward_dist:
             reward_dist[reward] = 1
         else:
@@ -82,10 +82,10 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
         if i % 100 == 0:
             print("generated grid",i)
     #print(grids_data[1:],actions_data[1:])
-    np.save("grids_data",grids_data[1:])
-    np.save("actions_data",actions_data[1:])
+    np.save("grids_data_test",grids_data[1:])
+    np.save("actions_data_test",actions_data[1:])
     print("finished in", time.time()-start)
     print("reward_dist: ", reward_dist)
 
 if __name__ == "__main__":
-    data_gen(10000)
+    data_gen(10)

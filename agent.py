@@ -90,10 +90,10 @@ class Agent:
     def _create_softmax_policy(self,Q_dict,cutoff=0, nn_init = False):
         def policy(grid):
             state = grid.current_state
-            
+
             if state not in Q_dict and nn_init:
                 Q_dict[state] = self.neural_net_output(grid)
-                
+
             Q_values = Q_dict[state]
             e_x = np.exp(Q_values - np.max(Q_values))
             softmax = e_x / e_x.sum()
@@ -110,15 +110,14 @@ class Agent:
         Use Q_dict to create a greedy policy
         args: Q_dict[state] = [value of action1, value of action2, ...]
                 where state is defined as result of grid.current_state (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
-              TODO
         returns: policy function takes in state and chooses with prob 1-e+(e/|A|) maxQ value action
         """
         def policy(grid):
             state = grid.current_state
-            
+
             if state not in Q_dict and nn_init:
                 Q_dict[state] = self.neural_net_output(grid)
-                
+
             Q_values = Q_dict[state]
 
             action_probs = [0 for k in range(len(Q_values))]
@@ -166,7 +165,7 @@ class Agent:
         return grids_array[1:], action_val_array[1:], total_reward
 
 
-    def mc_first_visit_control(self, start_grid, n_episodes, discount_factor=0.9, epsilon=0.2, nn_init=False, cutoff = 0, softmax = True) -> tuple:
+    def mc_first_visit_control(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False, cutoff = 0, softmax = True) -> tuple:
         """
         Monte Carlo first visit control. Uses epsilon greedy strategy
         to find optimal policy. Details can be found page 101 of Sutton
@@ -189,7 +188,7 @@ class Agent:
             policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init)
 
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
-        for n in range(n_episodes):
+        for n in range(iters):
             # generate episode
             episode = []
             grid = start_grid.copy() #copy because running episode mutates grid object
@@ -228,10 +227,10 @@ class Agent:
 
 
 if __name__ == "__main__":
-    
+
     #push_init_pos = {'train':(2,0),'agent':(4,1),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
     #switch_init_pos = {'train':(2,0),'agent':(4,1),'other1':(0,0),'switch':(3,2),'other2':(2,4),'other1num':1,'other2num':4}
-    
+
     push1 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
             'switch':(0,0),'agent':(4,2),'other2':(1,4),'num2':2,'target2':(0,3)}
 
@@ -246,8 +245,8 @@ if __name__ == "__main__":
     targets_test = {'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(1,3),
             'switch':(4,4),'agent':(2,1),'other2':(2,2),'num2':2,'target2':(3,2)}
 
-    
-    testgrid = grid.Grid(5,random = True)
+
+    testgrid = grid.Grid(5,random=True)#False, init_pos=push1)
     agent = Agent()
     model = 'based'
     if model == 'dual':
@@ -256,8 +255,6 @@ if __name__ == "__main__":
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
     if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1000, nn_init=False, softmax=False)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=1000, nn_init=False, softmax=False)
         display_grid(testgrid.copy())
         agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
-        
-  
