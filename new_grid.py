@@ -102,7 +102,7 @@ class Grid:
             open_grid_coords -= set(random_targets_pos)
 
             #feed in pos, num and target, with index 0 corresponding to first object, and idx 1 corresponding to second
-            self.other_agents = OtherMask(positions=random_others_pos, num=[1,2], targets = random_targets_pos)
+            self.other_agents = OtherMask(positions=random_others_pos, num=[5,10], targets = random_targets_pos)
 
             open_grid_coords -= set(random_others_pos)
 

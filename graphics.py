@@ -1,5 +1,5 @@
 import numpy as np
-
+import string
 
 def display_grid(mdp, action=None):
 
@@ -15,9 +15,15 @@ def display_grid(mdp, action=None):
     dims = (mdp.size,mdp.size) #tuple eg (11,11)
     grid = np.full(dims, "_", dtype=str) #np has nice display built in
     others_dict = mdp.other_agents.get_mask()
+    others_list = sorted(list(others_dict.values()), key = lambda x: x.num) #sorted lowest num first
 
     #target for 1 displayed as a, target for 2 displayed as b
-    target_dict = {1:'a',2:'b'}
+    target_dict = {}
+    for ind, other in enumerate(others_list):
+        target_dict[other.num] = string.ascii_lowercase[ind]
+
+    # target_dict = {others_list[0]:'a',others_list[1]:'b'}
+
     velocity_dict = {(1,0):'v',(0,1):'>',(-1,0):'^',(0,-1):'<'}
 
     grid[mdp.switch.pos[0], mdp.switch.pos[1]] = "S"
