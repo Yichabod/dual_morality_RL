@@ -6,11 +6,11 @@ def display_grid(mdp, action=None):
     """
     Takes ina Grid mdp environment and an agent, with optional action to
     show which direction next move should be in
-    Displays main agent(◉), other agents(numbers), switch(S) and train (T)
+    Displays main agent(◉), other agents(numbers), switch(S) and train (V,<,>,^),
+    targets ('a' for cargo 1, 'b' for cargo 2)
     in the grid of given dimensions
     Call the displayGrid function right after next action is generated
     but before it moves
-    To Do: add support for collision
     """
     dims = (mdp.size,mdp.size) #tuple eg (11,11)
     grid = np.full(dims, "_", dtype=str) #np has nice display built in
@@ -27,7 +27,6 @@ def display_grid(mdp, action=None):
         target_pos = others_dict[other].get_target()
         grid[target_pos[0],target_pos[1]] = target_dict[num]
         grid[other[0],other[1]] = str(num)
-       
 
     grid[mdp.agent_pos[0],mdp.agent_pos[1]] = "◉" #where the agent is
     if mdp.train.on_screen == True:
@@ -42,4 +41,5 @@ def display_grid(mdp, action=None):
             grid[mdp.train.pos[0],mdp.train.pos[1]] = velocity_dict[train_velocity]
 
     print(grid)
+    print("="*len(grid))
     return grid

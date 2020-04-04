@@ -30,8 +30,10 @@ def generate_array(mdp,action=None):
     grid = np.full(dims, 0, dtype=int) #np has nice display built in
     others_dict = mdp.other_agents.mask
 
-    for other in others_dict:
-        grid[0,other[0],other[1]] = ELEMENT_INT_DICT['other']
+    for other_coord, other_obj in others_dict.items():
+        #the value of the other in the grid will be the num of
+        # non other elements + value of other
+        grid[0,other_coord[0],other_coord[1]] = len(ELEMENT_INT_DICT)+other_obj.num
 
     grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
 
@@ -60,13 +62,14 @@ class OtherMask:
     Represents other agents in Grid MDP including their position and number
     """
 
-    def __init__(self, size, positions=[(1,3)], num=[1], init={}, targets=[(1,4)]):
+    def __init__(self, positions=[(1,3)], num=[1], init={}, targets=[(1,4)]):
+        """
+        """
         self.mask = {}
-        self.size = size
         self.init = init
         self.targets = []
         self.positions = []
-        
+
         if len(init) > 0:
             self.mask = init
             self.positions = list(self.mask.keys())
@@ -89,7 +92,7 @@ class OtherMask:
         new_init = {}
         for pos in self.mask:
             new_init[pos] = self.mask[pos].copy()
-        othermask = OtherMask(self.size,init=new_init)
+        othermask = OtherMask(init=new_init)
         return othermask
 
     def get_mask(self):
