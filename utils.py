@@ -18,7 +18,8 @@ def generate_array(mdp,action=None):
     """
     Takes in a Grid mdp environment and an agent, with optional action to
     show which direction next move should be in
-    Generates numpy array with main agent(1), other agents(2), train(3), switch(4)
+    Generates numpy array with main agent(1), other agents(depends on value), train(3),
+    switch(4), targets(depends on value of other agent)
     in the grid of given dimensions.
     Intended to be able to feed into a network
     """
@@ -33,7 +34,9 @@ def generate_array(mdp,action=None):
     for other_coord, other_obj in others_dict.items():
         #the value of the other in the grid will be the num of
         # non other elements + value of other
+        target = other_obj.target
         grid[0,other_coord[0],other_coord[1]] = len(ELEMENT_INT_DICT)+other_obj.num
+        grid[0, target[0], target[1]] = len(ELEMENT_INT_DICT)+other_obj.num + 1
 
     grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
 
