@@ -34,7 +34,7 @@ class Grid:
         # self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
         self.current_state = (self.agent_pos,self.train.pos)+tuple(self.other_agents.positions)
 
-        self.rewards_dict = {'agent hit by train': -10, 'agent pushes others':0,
+        self.rewards_dict = {'agent hit by train': -4, 'agent pushes others':0,
                             'others hit by train':-1, 'agent push switch': 0,
                             'others on target': 1, 'do nothing':0}
 
@@ -102,7 +102,7 @@ class Grid:
             open_grid_coords -= set(random_targets_pos)
 
             #feed in pos, num and target, with index 0 corresponding to first object, and idx 1 corresponding to second
-            self.other_agents = OtherMask(positions=random_others_pos, num=[5,10], targets = random_targets_pos)
+            self.other_agents = OtherMask(positions=random_others_pos, num=[1,2], targets = random_targets_pos)
 
             open_grid_coords -= set(random_others_pos)
 
@@ -186,15 +186,13 @@ class Grid:
                 new_agent_pos = self.agent_pos
 
         #collision detect
-        if new_agent_pos == self.train.pos:
-            #agent intersect train: death, terminal state
-            self.train.velocity = (0,0)
-            self.alive = False
-
         if (self.agent_pos == self.train.pos) and (new_agent_pos == old_train_pos):
             #agent should not be able to pass through train
-            self.train.velocity = (0,0)
             new_agent_pos = self.agent_pos
+
+        if new_agent_pos == self.train.pos and self.train.velocity != (0,0):
+            #agent intersect train: death, terminal state
+            self.train.velocity = (0,0)
             self.alive = False
 
         if self.train.pos in self.other_agents.positions:
@@ -216,7 +214,7 @@ class Grid:
 
         self.agent_pos = new_agent_pos
         self.step += 1
-        self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
+        self.current_state = (self.agent_pos,self.train.pos,*self.other_agents.positions)
         return self.current_state
 
     def R(self, action:tuple) -> int:
@@ -228,29 +226,23 @@ class Grid:
         if self.terminal_state:
             return reward
 
+        if not self.alive:
+            action = (0,0)
+
         #check that action is legal
         new_x = self.agent_pos[0] + action[0]
         new_y = self.agent_pos[1] + action[1]
         new_agent_pos = (new_x,new_y)
-        new_train_pos = self.train.get_next_position(self.train.velocity)
-
         if action not in self.legal_actions():
             new_agent_pos = self.agent_pos
+
+        new_train_pos = self.train.get_next_position(self.train.velocity)
+        train_active = self.train.velocity != (0,0)
 
         if new_agent_pos == self.switch.pos:
             reward += self.rewards_dict['agent push switch']
             new_agent_pos = self.agent_pos
             new_train_pos = self.train.get_next_position((self.train.velocity[1], self.train.velocity[0]))
-
-        train_active = self.train.velocity != (0,0)
-
-        if new_agent_pos == new_train_pos and train_active:
-            #agent intersect train: death
-            reward += self.rewards_dict['agent hit by train']
-
-        elif (self.agent_pos == new_train_pos) and (new_agent_pos == self.train.pos) and train_active:
-            #agent intersect train: death
-            reward += self.rewards_dict['agent hit by train']
 
         new_agent_mask = {}
         for other_pos in self.other_agents.mask.keys():
@@ -263,9 +255,18 @@ class Grid:
                 pos_open = new_other_pos not in self.other_agents.positions and new_other_pos != self.switch.pos
                 if not in_bounds(self.size,new_other_pos) or not pos_open or train_stopped:
                     new_other_pos = other_pos
+                    new_agent_pos = self.agent_pos
                 new_agent_mask[new_other_pos] = self.other_agents.mask[other_pos].copy()
             else:
                 new_agent_mask[other_pos] = self.other_agents.mask[other_pos].copy()
+
+        if (self.agent_pos == new_train_pos) and (new_agent_pos == self.train.pos):
+            #agent should not be able to pass through train
+            new_agent_pos = self.agent_pos
+
+        if new_agent_pos == new_train_pos and self.train.velocity != (0,0):
+            #agent intersect train: death, terminal state
+            reward += self.rewards_dict['agent hit by train']
 
         #after pushing logic, look at location for train and target collisions
         for pos in new_agent_mask.keys():
@@ -299,7 +300,10 @@ if __name__ == "__main__":
     init3 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
             'switch':(4,0),'agent':(3,3),'other2':(2,4),'num2':2,'target2':(1,4)}
 
-    grid = Grid(5,random=True,init_pos={})
+    weird1 = {'train':(4,3),'trainvel':(-1,0),'other1':(1,3),'num1':1,'target1':(3,1),
+            'switch':(0,4),'agent':(1,1),'other2':(2,4),'num2':2,'target2':(2,1)}
+
+    grid = Grid(5,random=True )
     display_grid(grid)
     print(grid.current_state)
     reward = 0
@@ -310,6 +314,7 @@ if __name__ == "__main__":
 
         print("")
         print(grid.R(action))
+        reward += grid.R(action)
 
         grid.T(action)
         display_grid(grid)
