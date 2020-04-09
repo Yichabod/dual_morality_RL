@@ -141,7 +141,7 @@ class Agent:
         fed into downstream model
         """
         policy = self._create_epsilon_greedy_policy(Q_dict,epsilon=0,nn_init=nn_init) #optimal policy, eps=0 always chooses best value
-        if display: display_grid(grid)
+        #if display: display_grid(grid)
         state = grid.current_state
         total_reward = 0 #to keep track of most significant action taken by agent
         grids_array = np.empty((1,grid.size,grid.size),dtype=int)
@@ -153,7 +153,7 @@ class Agent:
             if display:
                 pass#print(Q_dict[state])
             action = grid.all_actions[action_ind]
-            #if display: print(action)
+            if display: print(action)
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
             grids_array = np.vstack((grids_array,generate_array(grid)))
 
@@ -245,8 +245,11 @@ if __name__ == "__main__":
     targets_test = {'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(1,3),
             'switch':(4,4),'agent':(2,1),'other2':(2,2),'num2':2,'target2':(3,2)}
 
+    weird1 = {'train':(4,2),'trainvel':(-1,0),'other1':(4,3),'num1':1,'target1':(0,3),
+            'switch':(1,0),'agent':(3,0),'other2':(2,2),'num2':2,'target2':(2,4)}
 
-    testgrid = grid.Grid(5,random=True)#False, init_pos=push1)
+
+    testgrid = grid.Grid(5,random=False, init_pos=weird1)
     agent = Agent()
     model = 'based'
     if model == 'dual':
@@ -255,6 +258,6 @@ if __name__ == "__main__":
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
     if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=1000, nn_init=False, softmax=False)
-        display_grid(testgrid.copy())
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=50000, nn_init=False, softmax=False)
+        #display_grid(testgrid.copy())
         agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)

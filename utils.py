@@ -34,9 +34,7 @@ def generate_array(mdp,action=None):
     for other_coord, other_obj in others_dict.items():
         #the value of the other in the grid will be the num of
         # non other elements + value of other
-        target = other_obj.target
         grid[0,other_coord[0],other_coord[1]] = len(ELEMENT_INT_DICT)+other_obj.num
-        grid[0, target[0], target[1]] = len(ELEMENT_INT_DICT)+other_obj.num + 1
 
     grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
 
