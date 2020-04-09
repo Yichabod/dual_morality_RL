@@ -156,11 +156,14 @@ def grid_get_targets(size):
     if move_vector[1]>0: move_vector[1] = 1
     if move_vector[1]<0: move_vector[1] = -1
 
-    agent_pos_choices = get_within(1,(other_1[0]-move_vector[0],other_1[1])).union(get_within(1,(other_1[0],other_1[1]-move_vector[1])))
+    agent_pos_choices = get_within(2,(other_1[0]-move_vector[0],other_1[1])).union(get_within(2,(other_1[0],other_1[1]-move_vector[1])))
     agent_pos_choices = open_grid_coords.intersection(agent_pos_choices)
+    if len(agent_pos_choices) == 0:
+        return False
     agent_pos = random.sample(agent_pos_choices,1)[0]
     open_grid_coords.remove(agent_pos)
 
+    open_grid_coords -= get_within(2,other_1)
     other_2, target_2, switch_pos = random.sample(open_grid_coords,3)
 
     if np.random.choice(2) == 1:
@@ -212,35 +215,31 @@ def collect_grid(size, grid_type):
     by the MC agent from a single random grid
     """
 
-    #must saves only really legit if reward == 0
-    must_save_push = grid_must_push(size)
+    func_dict = {'push': grid_must_push,'switch':grid_must_switch,'targets':grid_get_targets,'lose':grid_nothing_lose}
+    
+    #PUSH includes save or save and put into target (Rewards 0,1,2)
+    #SWITCH includes same as push. -1 excluded because either mc is bad or there is a dilemma. 
+    #1 is excluded because may have let 1 die to get targets for 2
+    #TARGETS includes 1,2,3 for successfully getting any combo of boxes into targets
+    #LOSE means one box must be hit by train, possible to get 2nd into target
+    valid_dict = {'push':[0,1,2],'switch':[0,2],'targets':[1,2,3],'lose':[-2,-1,1]}
+    
+    valid_rewards = valid_dict[grid_type]
+    reward = -100 #invalid
+    while reward not in valid_rewards:
+        init_pos = func_dict[grid_type](size)
+        while init_pos == False:
+            init_pos = grid_get_targets(size)
+        testgrid = Grid(size,init_pos=init_pos)
 
-    #if -1, throw out - either mistrain or dilemma, if 2, if 1, either chose to push 2 instead of save one, or also got points for 1. 
-    #if 2, saved 1 and target 2 
-    must_save_switch = grid_must_switch(size)
-
-    #1,2,3 is get target. 0 should be removed, some are 'death cases', at 1000 iters
-    get_targets = grid_get_targets(size)
-
-    #1 box must die, other can maybe go in place
-    nothing_lose = grid_nothing_lose(size)
-
-    #do nothing cant reach
-
-    testgrid = Grid(size,init_pos=nothing_lose)
-
-
-    a = Agent()
-    #seems like needs 50,000 iters to solve reliably....
-    Q, policy = a.mc_first_visit_control(testgrid.copy(), 500) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
-    grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q)
-
-    display_grid(testgrid)
-    print(reward)
+        a = Agent()
+        #seems like needs 50,000 iters to solve reliably....
+        Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
+        grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q)
 
     target1 = testgrid.other_agents.targets[0]
     target2 = testgrid.other_agents.targets[1]
-    return _add_next_train_targets(grids,target1,target2), action_values, reward
+    return _add_next_train_targets(grids,target1,target2), action_values, reward, testgrid
 
 
 def data_gen(num_grids=1000,grid_size=5,distribution=None):
@@ -259,26 +258,64 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
     grids_data = np.empty((1,3,grid_size,grid_size),dtype=int)
     actions_data = np.empty((1, grid_size),dtype=int)
     reward_dist = {}
-    for i in range(num_grids):
-        if distribution == None:
-            grid_type = 'random'
-        else:
-            grid_type = GRID_TYPE_DICT[np.random.choice(np.arange(len(distribution)), p=distribution)]
-        grids,actions,reward = collect_grid(grid_size,grid_type)
+ 
+    if distribution == None:
+        distribution = {'push':25,'switch':25,'targets':25,'lose':25}
 
-        if reward not in reward_dist:
-            reward_dist[reward] = 1
-        else:
-            reward_dist[reward] += 1
-        actions_data = np.concatenate((actions_data,actions))
-        grids_data = np.vstack((grids_data,grids))
-        if i % 100 == 0:
-            print("generated grid",i)
-    #print(grids_data[1:],actions_data[1:])
-    np.save("grids_data_test",grids_data[1:])
-    np.save("actions_data_test",actions_data[1:])
+    user_testing_grids = [] #accumulates grid objects, to have playable ui
+
+    count = 0
+    for type in distribution:
+        num_type = int(distribution[type]*num_grids/100)
+        for i in range(num_type):
+            grids,actions,reward,grid_obj = collect_grid(grid_size,type)
+            user_testing_grids.append((grid_obj,reward))
+
+            if reward not in reward_dist:
+                reward_dist[reward] = 1
+            else:
+                reward_dist[reward] += 1
+
+            actions_data = np.concatenate((actions_data,actions))
+            grids_data = np.vstack((grids_data,grids))
+
+            count += 1
+            if count % 100 == 0:
+                print("generated grid",count)
+
+    np.save("grids_data_final_apr9",grids_data[1:])
+    np.save("actions_data_final_apr9",actions_data[1:])
     print("finished in", time.time()-start)
     print("reward_dist: ", reward_dist)
 
+    return user_testing_grids
+
+wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
-    data_gen(10)
+    #num grids should always be multiple of 100
+    grids = data_gen(10000, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+
+"""
+    random.shuffle(grids)
+    for sample in grids:
+        grid = sample[0]
+        best_reward = sample[1]
+        display_grid(grid)
+        print(grid.current_state)
+        reward = 0
+        while not grid.terminal_state:
+             #wasd-space (space to stay in place)
+            i = None
+            while i not in wasd_dict:
+                i = input('next step: ')
+            action = wasd_dict[i]
+
+            reward += grid.R(action)
+
+            grid.T(action)
+            display_grid(grid)
+            print(grid.current_state)
+        print('your reward: ', reward)
+        print('best reward: ', best_reward)
+        print('')
+"""
