@@ -1,6 +1,6 @@
 import numpy as np
 from collections import Counter, defaultdict
-#import neural_net
+import neural_net
 from graphics import display_grid
 from utils import generate_array, in_bounds
 import new_grid as grid
@@ -28,7 +28,9 @@ class Agent:
         except(AttributeError):
             try:
                 net = neural_net.load()
+                print("neural net loaded")
             except:
+                print("training neural net")
                 neural_net.train()
                 net = neural_net.load()
             self.net = net
@@ -231,6 +233,10 @@ if __name__ == "__main__":
     #push_init_pos = {'train':(2,0),'agent':(4,1),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
     #switch_init_pos = {'train':(2,0),'agent':(4,1),'other1':(0,0),'switch':(3,2),'other2':(2,4),'other1num':1,'other2num':4}
 
+    #here agent only needs to push cargo into target. To test model free
+    easy1 = {'train':(1,0),'trainvel':(0,1),'other1':(3,2),'num1':1,'target1':(2,2),
+            'switch':(0,0),'agent':(4,2),'other2':(1,4),'num2':2,'target2':(0,3)}
+
     push1 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
             'switch':(0,0),'agent':(4,2),'other2':(1,4),'num2':2,'target2':(0,3)}
 
@@ -249,9 +255,10 @@ if __name__ == "__main__":
             'switch':(1,0),'agent':(3,0),'other2':(2,2),'num2':2,'target2':(2,4)}
 
 
-    testgrid = grid.Grid(5,random=False, init_pos=weird1)
+    testgrid = grid.Grid(5,random=False, init_pos=easy1)
     agent = Agent()
-    model = 'based'
+    print("got here")
+    model = 'free'
     if model == 'dual':
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
