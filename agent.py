@@ -255,7 +255,11 @@ if __name__ == "__main__":
             'switch':(1,0),'agent':(3,0),'other2':(2,2),'num2':2,'target2':(2,4)}
 
 
+<<<<<<< HEAD
     testgrid = grid.Grid(5,random=False, init_pos=easy1)
+=======
+    testgrid = grid.Grid(5,random=False, init_pos=push3)
+>>>>>>> 453e54a5bbebd6550dc36510ef6bf725c6ce6860
     agent = Agent()
     print("got here")
     model = 'free'
@@ -265,6 +269,6 @@ if __name__ == "__main__":
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
     if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=50000, nn_init=False, softmax=False)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=1000, nn_init=False, softmax=False)
         #display_grid(testgrid.copy())
         agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
