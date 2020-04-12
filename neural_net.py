@@ -9,9 +9,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 cuda = True if torch.cuda.is_available() else False
+NUM_TARGETS = 2
+CHANNELS = 9
 
 class Net(nn.Module):
-    def __init__(self, C=6):
+    def __init__(self, C=CHANNELS):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(C, 100, 3, padding=1)
         self.conv2 = nn.Conv2d(100, 100, 3, padding=1)
@@ -29,20 +31,21 @@ class Net(nn.Module):
         x = self.fc1(x)
         return x
 
-def train(num_epochs=100, C=6):
+def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs=100, C=CHANNELS):
     '''
     C is the number of channels in input array
+    C = overall pos mask, agent, empty, obj1, obj2, train, train_next, switch, target1, target2
     '''
     batch_size = 1000
 
-    xs = np.load("grids_data.npy")
-    ys = np.load("actions_data.npy")
+    xs = np.load(grids_file)
+    ys = np.load(actions_file)
 
     # previous_trains = xs[:, 0:1, :, :]
     next_trains = xs[:, 1:2, :, :]
-
+    targets = xs[:, 2:3, :, :]
     #only keep current trains
-    xs = xs[:, 0, :, :]
+    xs = xs[:, 0, :, :] #might consider doing 0:1
 
     B, H, W = xs.shape
     #C = int(np.max(train_xs))+2
@@ -55,11 +58,23 @@ def train(num_epochs=100, C=6):
     # input shape b x c x h x w to net
     # so need to unsqueeze to make channel dimension of 1, could also make each agent its own channel instead
     xs = torch.from_numpy(xs).unsqueeze(1).to(torch.long)
-    onehot_xs = torch.zeros([B, C-1, H, W], dtype = torch.float32)
+    # C - 3 (for targets and next train) + 1 since zero indexed?
+    onehot_xs = torch.zeros([B, C-2, H, W], dtype=torch.float32)
 
+    #put agent, others, switch, train into their own layer
     onehot_xs.scatter_(1, xs, torch.ones(onehot_xs.shape))
-    #add previous train obeservation
+
+    targets = torch.from_numpy(targets).to(torch.long)
+    onehot_targets = torch.zeros([B, NUM_TARGETS+1, H, W], dtype=torch.float32) #+1 for zero index
+    onehot_targets.scatter_(1, targets, torch.ones(onehot_targets.shape))
+    onehot_targets = onehot_targets[:,1:,:,:] #get rid of zero mask
+
+    #add previous train observations
     onehot_xs = torch.cat((onehot_xs, torch.from_numpy(next_trains).float()), dim=1)
+    #add targets
+    onehot_xs = torch.cat((onehot_xs, onehot_targets), dim=1)
+    onehot_xs = torch.cat((onehot_xs[:,:2,:,:], onehot_xs[:,3:,:,:]), dim=1)
+
     ys = torch.from_numpy(ys).float()
     if cuda:
         onehot_xs = onehot_xs.cuda()
@@ -108,7 +123,7 @@ def train(num_epochs=100, C=6):
     torch.save(net.state_dict(), 'nn_model')
     print("Model saved as nn_model")
 
-def load(C=6):
+def load(C=CHANNELS):
     model = Net(C)
     if not cuda:
         model.load_state_dict(torch.load('nn_model',map_location='cpu'))
@@ -116,7 +131,7 @@ def load(C=6):
         model.load_state_dict(torch.load('nn_model'))
     return model
 
-def predict(model, state, C=6):
+def predict(model, state, C=CHANNELS):
     '''
     model: pytorch model, output of load()
     input_state: 2xHxW(5x5) numpy array
@@ -138,7 +153,8 @@ def predict(model, state, C=6):
 if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
-    train()
+
+    train(grids_file='grids_data_final_apr9.npy',actions_file='actions_data_final_apr9.npy')
     model = load()
     state = np.random.random([2,5,5])
     print(predict(model, state))
