@@ -71,11 +71,11 @@ class Grid:
                 self.train = Train(self.size,pos=init_pos['train'],velocity=init_pos['trainvel'])
                 self.agent_pos = init_pos['agent']
                 self.switch = Switch(self.size,pos=init_pos['switch'])
-                others_pos = [init_pos['other1'],]
+                others_pos = [init_pos['cargo1'],]
                 targets = [init_pos['target1']]
                 num = [init_pos['num1'],]
                 if 'num2' in init_pos:
-                    others_pos.append(init_pos['other2'])
+                    others_pos.append(init_pos['cargo2'])
                     num.append(init_pos['num2'])
                     targets.append(init_pos['target2'])
                 self.other_agents = OtherMask(positions=others_pos, num=num, targets=targets)

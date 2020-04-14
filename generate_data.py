@@ -5,6 +5,7 @@ from agent import Agent
 import time
 from graphics import display_grid
 import random
+import json
 
 
 ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch':4}
@@ -85,8 +86,8 @@ def grid_must_push(size):
         other_1, other_2 = other_2, other_1
         target_1, target_2 = target_2, target_1
 
-    return {'train':train_pos,'trainvel':train_vel,'other1':other_1,'num1':1,'target1':target_1,
-            'switch':switch_pos,'agent':agent_pos,'other2':other_2,'num2':2,'target2':target_2}
+    return {'train':train_pos,'trainvel':train_vel,'cargo1':other_1,'num1':1,'target1':target_1,
+            'switch':switch_pos,'agent':agent_pos,'cargo2':other_2,'num2':2,'target2':target_2}
 
 def grid_must_switch(size):
     #encompasses switch only and switch or push choice cases. also doesnt exclude switch dilemma
@@ -124,8 +125,8 @@ def grid_must_switch(size):
         other_1, other_2 = other_2, other_1
         target_1, target_2 = target_2, target_1
 
-    return {'train':train_pos,'trainvel':train_vel,'other1':other_1,'num1':1,'target1':target_1,
-            'switch':switch_pos,'agent':agent_pos,'other2':other_2,'num2':2,'target2':target_2}
+    return {'train':train_pos,'trainvel':train_vel,'cargo1':other_1,'num1':1,'target1':target_1,
+            'switch':switch_pos,'agent':agent_pos,'cargo2':other_2,'num2':2,'target2':target_2}
 
 def grid_get_targets(size):
     open_grid_coords = set((i,j) for i in range(size) for j in range(size))
@@ -171,8 +172,8 @@ def grid_get_targets(size):
         target_1, target_2 = target_2, target_1
 
 
-    return {'train':train_pos,'trainvel':train_vel,'other1':other_1,'num1':1,'target1':target_1,
-            'switch':switch_pos,'agent':agent_pos,'other2':other_2,'num2':2,'target2':target_2}
+    return {'train':train_pos,'trainvel':train_vel,'cargo1':other_1,'num1':1,'target1':target_1,
+            'switch':switch_pos,'agent':agent_pos,'cargo2':other_2,'num2':2,'target2':target_2}
 
 
 def grid_nothing_lose(size):
@@ -203,8 +204,8 @@ def grid_nothing_lose(size):
         other_1, other_2 = other_2, other_1
         target_1, target_2 = target_2, target_1
 
-    return {'train':train_pos,'trainvel':train_vel,'other1':other_1,'num1':1,'target1':target_1,
-            'switch':switch_pos,'agent':agent_pos,'other2':other_2,'num2':2,'target2':target_2}
+    return {'train':train_pos,'trainvel':train_vel,'cargo1':other_1,'num1':1,'target1':target_1,
+            'switch':switch_pos,'agent':agent_pos,'cargo2':other_2,'num2':2,'target2':target_2}
 
 
 
@@ -239,7 +240,7 @@ def collect_grid(size, grid_type):
 
     target1 = testgrid.other_agents.targets[0]
     target2 = testgrid.other_agents.targets[1]
-    return _add_next_train_targets(grids,target1,target2), action_values, reward, testgrid
+    return _add_next_train_targets(grids,target1,target2), action_values, reward, init_pos
 
 
 def data_gen(num_grids=1000,grid_size=5,distribution=None):
@@ -268,8 +269,8 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
     for type in distribution:
         num_type = int(distribution[type]*num_grids/100)
         for i in range(num_type):
-            grids,actions,reward,grid_obj = collect_grid(grid_size,type)
-            user_testing_grids.append((grid_obj,reward))
+            grids,actions,reward,init_info = collect_grid(grid_size,type)
+            user_testing_grids.append((init_info,reward))
 
             if reward not in reward_dist:
                 reward_dist[reward] = 1
@@ -290,32 +291,24 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
 
     return user_testing_grids
 
+def make_train_json(num):
+    grids = data_gen(40, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    random.shuffle(grids)
+    data = {}
+    for idx,sample in enumerate(grids):
+        init_pos = sample[0]
+        del init_pos['num1']
+        del init_pos['num2']
+        init_pos['best_reward'] = sample[1]
+        data[idx] = init_pos
+
+    with open('data.json', 'w') as outfile:
+        json.dump(data, outfile)
+        
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    grids = data_gen(10000, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    #data_gen(100, distribution={'push':23,'switch':23,'targets':39,'lose':15})
 
-"""
-    random.shuffle(grids)
-    for sample in grids:
-        grid = sample[0]
-        best_reward = sample[1]
-        display_grid(grid)
-        print(grid.current_state)
-        reward = 0
-        while not grid.terminal_state:
-             #wasd-space (space to stay in place)
-            i = None
-            while i not in wasd_dict:
-                i = input('next step: ')
-            action = wasd_dict[i]
+    make_train_json(40)
 
-            reward += grid.R(action)
-
-            grid.T(action)
-            display_grid(grid)
-            print(grid.current_state)
-        print('your reward: ', reward)
-        print('best reward: ', best_reward)
-        print('')
-"""
