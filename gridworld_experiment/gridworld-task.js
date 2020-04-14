@@ -45121,69 +45121,44 @@ var REWARD_DICT = {
     'cargo2_target': 2
 };
 
+String.prototype.replaceAt = function (index, replacement) {
+    return this.substr(0, index) + replacement + this.substr(index + replacement.length);
+};
+
 var GridWorldMDP = exports.GridWorldMDP = function () {
     function GridWorldMDP(_ref) {
         var _this = this;
 
-        var gridworld_array = _ref.gridworld_array,
-            feature_array = _ref.feature_array,
-            init_state = _ref.init_state,
-            switch_pos = _ref.switch_pos,
-            targets = _ref.targets,
-            _ref$absorbing_states = _ref.absorbing_states,
-            absorbing_states = _ref$absorbing_states === undefined ? [] : _ref$absorbing_states,
-            _ref$absorbing_featur = _ref.absorbing_features,
-            absorbing_features = _ref$absorbing_featur === undefined ? [] : _ref$absorbing_featur,
-            _ref$feature_rewards = _ref.feature_rewards,
-            feature_rewards = _ref$feature_rewards === undefined ? {} : _ref$feature_rewards,
-            _ref$feature_transiti = _ref.feature_transitions,
-            feature_transitions = _ref$feature_transiti === undefined ? {
-            'j': {
-                '2forward': 1.0
-            }
-        } : _ref$feature_transiti,
-            _ref$wall_feature = _ref.wall_feature,
-            wall_feature = _ref$wall_feature === undefined ? "#" : _ref$wall_feature,
-            _ref$step_cost = _ref.step_cost,
-            step_cost = _ref$step_cost === undefined ? 0 : _ref$step_cost;
+        var switch_pos = _ref.switch_pos,
+            targets = _ref.targets;
 
         _classCallCheck(this, GridWorldMDP);
 
-        if (typeof feature_array === 'undefined') {
-            feature_array = gridworld_array;
-        }
+        //setting up blue (target2) and green (target1) squares at target locations
+        var feature_array = ['.....', '.....', '.....', '.....', '.....'];
+        feature_array[4 - targets['target1'][1]] = feature_array[4 - targets['target1'][1]].replaceAt(targets['target1'][0], "g");
+        feature_array[4 - targets['target2'][1]] = feature_array[4 - targets['target2'][1]].replaceAt(targets['target2'][0], "b");
+
         this.height = feature_array.length;
         this.width = feature_array[0].length;
 
+        //class vars for switch and targets pos
         this.switch_pos = switch_pos;
         this.target1 = targets['target1'];
         this.target2 = targets['target2'];
 
         this.states = (0, _cartesianProduct2.default)([(0, _range2.default)(this.width), (0, _range2.default)(this.height)]);
-        this.walls = [];
-        absorbing_states = _.cloneDeep(absorbing_states);
         this.state_features = _.map(this.states, function (s) {
             var _s = _slicedToArray(s, 2),
                 x = _s[0],
                 y = _s[1];
 
             var f = feature_array[_this.height - y - 1][x];
-            if (f === wall_feature) {
-                _this.walls.push(s);
-            }
-            if (_.includes(absorbing_features, f)) {
-                absorbing_states.push(s);
-            }
             return [s, f];
         });
         this.state_features = _.fromPairs(this.state_features);
-        this.absorbing_states = _.map(absorbing_states, String);
         this.actions = ['^', 'v', '<', '>', 'x'];
         this.terminal_state = [-1, -1];
-        this.feature_rewards = feature_rewards;
-        this.feature_transitions = feature_transitions;
-        this.step_cost = step_cost;
-        this.wall_feature = wall_feature;
     }
 
     _createClass(GridWorldMDP, [{
@@ -45272,7 +45247,6 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
                 new_trainvel = [0, 0];
             }
 
-            console.log('here', new_agent, new_cargo1, new_cargo2, new_train, new_trainvel, this.terminal_state);
             return { 'agent': new_agent,
                 'cargo1': new_cargo1,
                 'cargo2': new_cargo2,
@@ -45327,14 +45301,13 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
                 position = nextstate['train'];
             }
             if (!collision_cargo2 && collision_next_cargo2) {
-                if (this.arraysEqual(nextstate['cargo1'], this.target1)) {
+                if (this.arraysEqual(nextstate['cargo2'], this.target2)) {
                     r -= REWARD_DICT['cargo2_target'];
                 }
                 r += REWARD_DICT['cargo2_death'];
                 position = nextstate['train'];
             }
 
-            console.log(r, position);
             return { 'value': r, 'position': position };
         }
     }, {
@@ -45404,8 +45377,6 @@ var GridWorldTask = function () {
         } : _ref$step_callback,
             _ref$endtask_callback = _ref.endtask_callback,
             endtask_callback = _ref$endtask_callback === undefined ? function () {} : _ref$endtask_callback,
-            _ref$annotations = _ref.annotations,
-            annotations = _ref$annotations === undefined ? [] : _ref$annotations,
             _ref$OBJECT_ANIMATION = _ref.OBJECT_ANIMATION_TIME,
             OBJECT_ANIMATION_TIME = _ref$OBJECT_ANIMATION === undefined ? 200 : _ref$OBJECT_ANIMATION,
             _ref$REWARD_ANIMATION = _ref.REWARD_ANIMATION_TIME,
@@ -45419,7 +45390,7 @@ var GridWorldTask = function () {
             _ref$WALL_WIDTH = _ref.WALL_WIDTH,
             WALL_WIDTH = _ref$WALL_WIDTH === undefined ? .08 : _ref$WALL_WIDTH,
             _ref$TILE_SIZE = _ref.TILE_SIZE,
-            TILE_SIZE = _ref$TILE_SIZE === undefined ? 100 : _ref$TILE_SIZE,
+            TILE_SIZE = _ref$TILE_SIZE === undefined ? 90 : _ref$TILE_SIZE,
             _ref$INTENTIONAL_ACTI = _ref.INTENTIONAL_ACTION_TIME_PROP,
             INTENTIONAL_ACTION_TIME_PROP = _ref$INTENTIONAL_ACTI === undefined ? .4 : _ref$INTENTIONAL_ACTI,
             _ref$DELAY_TO_REACTIV = _ref.DELAY_TO_REACTIVATE_UI,
@@ -45434,7 +45405,6 @@ var GridWorldTask = function () {
         this.container = container;
         this.step_callback = step_callback;
         this.endtask_callback = endtask_callback;
-        this.annotations = annotations;
 
         this.painter_config = {
             OBJECT_ANIMATION_TIME: OBJECT_ANIMATION_TIME,
@@ -45459,19 +45429,11 @@ var GridWorldTask = function () {
     _createClass(GridWorldTask, [{
         key: 'init',
         value: function init(_ref2) {
-            var _this = this;
-
-            var gridworld_array = _ref2.gridworld_array,
-                feature_array = _ref2.feature_array,
-                _ref2$walls = _ref2.walls,
+            var _ref2$walls = _ref2.walls,
                 walls = _ref2$walls === undefined ? [] : _ref2$walls,
                 init_state = _ref2.init_state,
                 switch_pos = _ref2.switch_pos,
                 targets = _ref2.targets,
-                absorbing_states = _ref2.absorbing_states,
-                absorbing_features = _ref2.absorbing_features,
-                feature_rewards = _ref2.feature_rewards,
-                step_cost = _ref2.step_cost,
                 include_wait = _ref2.include_wait,
                 _ref2$feature_colors = _ref2.feature_colors,
                 feature_colors = _ref2$feature_colors === undefined ? {
@@ -45479,8 +45441,6 @@ var GridWorldTask = function () {
                 'b': 'lightblue',
                 'g': 'lightgreen'
             } : _ref2$feature_colors,
-                _ref2$feature_transit = _ref2.feature_transitions,
-                feature_transitions = _ref2$feature_transit === undefined ? {} : _ref2$feature_transit,
                 _ref2$show_rewards = _ref2.show_rewards,
                 show_rewards = _ref2$show_rewards === undefined ? true : _ref2$show_rewards;
 
@@ -45527,10 +45487,6 @@ var GridWorldTask = function () {
                 this.painter.draw_object(train_pos[0], train_pos[1], "<", "train");
             }
 
-            this.annotations.forEach(function (annotation_params) {
-                var annotation = _this.painter.add_text(annotation_params);
-                _this.annotations.push(annotation);
-            });
             this.show_rewards = show_rewards;
 
             //flags
@@ -45540,6 +45496,13 @@ var GridWorldTask = function () {
 
             this.iter = 0;
             this.reward = 0;
+            if (this.mdp.arraysEqual(targets['target1'], init_state['cargo1'])) {
+                this.reward += 1;
+            }
+            if (this.mdp.arraysEqual(targets['target2'], init_state['cargo2'])) {
+                this.reward += 1;
+            }
+            this.update_stats();
         }
     }, {
         key: 'start',
@@ -45592,11 +45555,9 @@ var GridWorldTask = function () {
     }, {
         key: '_disable_default_key_response',
         value: function _disable_default_key_response() {
-            var _this2 = this;
-
             (0, _jquery2.default)(document).on("keydown.disable_default", function (e) {
                 var kc = e.keyCode ? e.keyCode : e.which;
-                if (kc === 37 || kc === 38 || kc === 39 || kc === 40 || kc === 32 && _this2.mdp.include_wait) {
+                if (kc === 37 || kc === 38 || kc === 39 || kc === 40 || kc === 32) {
                     e.preventDefault();
                 }
             });
@@ -45609,7 +45570,7 @@ var GridWorldTask = function () {
     }, {
         key: '_enable_response',
         value: function _enable_response() {
-            var _this3 = this;
+            var _this = this;
 
             if (this.input_enabled) {
                 return;
@@ -45626,17 +45587,17 @@ var GridWorldTask = function () {
                     action = ">";
                 } else if (kc === 40) {
                     action = "v";
-                } else if (kc === 32 && _this3.mdp.include_wait) {
+                } else if (kc === 32) {
                     action = "x";
                 } else {
                     return;
                 }
-                _this3.last_key_code = kc;
-                if (_this3.disable_during_movement) {
-                    _this3._disable_response();
+                _this.last_key_code = kc;
+                if (_this.disable_during_movement) {
+                    _this._disable_response();
                 }
-                var step_data = _this3._process_action({ action: action });
-                _this3.step_callback(step_data);
+                var step_data = _this._process_action({ action: action });
+                _this.step_callback(step_data);
             });
         }
     }, {
@@ -45648,14 +45609,13 @@ var GridWorldTask = function () {
     }, {
         key: '_do_animation',
         value: function _do_animation(_ref3) {
-            var _this4 = this;
+            var _this2 = this;
 
             var reward = _ref3.reward,
                 action = _ref3.action,
                 state = _ref3.state,
                 nextstate = _ref3.nextstate;
 
-            console.log(reward);
             var value = reward['value'];
             var r_params = {
                 fill: value < 0 ? 'red' : 'yellow',
@@ -45710,28 +45670,27 @@ var GridWorldTask = function () {
             var animtime = this.painter.OBJECT_ANIMATION_TIME;
             // console.log("Animation-end time: "+((+new Date)+this.painter.OBJECT_ANIMATION_TIME));
             if (this.show_rewards && value !== 0) {
-                console.log('here');
                 setTimeout(function () {
-                    _this4.painter.float_text(reward['position'][0], reward['position'][1], r_string, r_params, undefined, undefined, undefined, undefined, _this4.REWARD_ANIMATION_TIME);
+                    _this2.painter.float_text(reward['position'][0], reward['position'][1], r_string, r_params, undefined, undefined, undefined, undefined, _this2.REWARD_ANIMATION_TIME);
                 }, animtime);
             }
         }
     }, {
         key: '_end_task',
         value: function _end_task() {
+            var _this3 = this;
+
             var animtime = this.painter.OBJECT_ANIMATION_TIME;
             this._disable_response();
-            //setTimeout(() => {
-            //    this.painter.hide_object("agent")
-            //}, animtime*(this.END_OF_ROUND_DELAY_MULTIPLIER - 1));
-            //setTimeout(() => {
-            //    this.endtask_callback();
-            //}, animtime*this.END_OF_ROUND_DELAY_MULTIPLIER);
+
+            setTimeout(function () {
+                _this3.endtask_callback();
+            }, animtime * this.END_OF_ROUND_DELAY_MULTIPLIER);
         }
     }, {
         key: '_setup_trial',
         value: function _setup_trial() {
-            var _this5 = this;
+            var _this4 = this;
 
             var animtime = this.painter.OBJECT_ANIMATION_TIME;
 
@@ -45741,35 +45700,35 @@ var GridWorldTask = function () {
                 if (this.disable_hold_key) {
                     (0, _jquery2.default)(document).on("keyup.enable_resp", function (e) {
                         var kc = e.keyCode ? e.keyCode : e.which;
-                        if (_this5.last_key_code !== kc) {
+                        if (_this4.last_key_code !== kc) {
                             return;
                         }
                         (0, _jquery2.default)(document).off("keyup.enable_resp");
-                        _this5._key_unpressed = true;
+                        _this4._key_unpressed = true;
                     });
                     setTimeout(function () {
-                        if (!_this5._key_unpressed) {
+                        if (!_this4._key_unpressed) {
                             (0, _jquery2.default)(document).off("keyup.enable_resp");
                             (0, _jquery2.default)(document).on("keyup.enable_resp", function (e) {
                                 var kc = e.keyCode ? e.keyCode : e.which;
-                                if (_this5.last_key_code !== kc) {
+                                if (_this4.last_key_code !== kc) {
                                     return;
                                 }
                                 (0, _jquery2.default)(document).off("keyup.enable_resp");
-                                _this5._enable_response();
-                                _this5._key_unpressed = false;
+                                _this4._enable_response();
+                                _this4._key_unpressed = false;
                             });
                         } else {
-                            _this5._key_unpressed = false;
-                            _this5._enable_response();
+                            _this4._key_unpressed = false;
+                            _this4._enable_response();
                         }
 
-                        _this5.start_datetime = +new Date();
+                        _this4.start_datetime = +new Date();
                     }, animtime * this.DELAY_TO_REACTIVATE_UI);
                 } else {
                     setTimeout(function () {
-                        _this5._enable_response();
-                        _this5.start_datetime = +new Date();
+                        _this4._enable_response();
+                        _this4.start_datetime = +new Date();
                     }, animtime * this.DELAY_TO_REACTIVATE_UI);
                 }
             } else {
@@ -45780,7 +45739,6 @@ var GridWorldTask = function () {
         key: 'update_stats',
         value: function update_stats() {
             var stats_text = "Reward = ";
-            console.log(reward);
             stats_text += String(this.reward);
             stats_text += "\r\nStep = ";
             stats_text += String(this.iter + 1);

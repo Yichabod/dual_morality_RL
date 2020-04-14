@@ -14,13 +14,6 @@
                     endtask_callback: () => {console.log('absorbing')}
                 });
                 task.init({
-                    feature_array: [
-                        '.....',
-                        '.....',
-                        '.b.g.',
-                        '.....',
-                        '.....',
-                    ],
                     init_state: {
                         'agent': [1, 0],
                         'cargo1': [3, 2],
@@ -32,18 +25,6 @@
                     targets: {
                         'target1':[3,2],
                         'target2':[1,2]
-                    },
-                    absorbing_states: [
-                        [0, 0]
-                    ],
-                    feature_rewards: {
-                        'b': 2,
-                        'g': 1,
-                    },
-                    feature_transitions: {
-                        'b': {
-                            '2forward': 1.0
-                        }
                     },
                     show_rewards: true
                 });

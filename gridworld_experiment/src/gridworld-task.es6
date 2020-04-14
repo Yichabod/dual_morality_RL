@@ -18,7 +18,6 @@ class GridWorldTask {
         container,
         step_callback = (d) => {console.log(d)},
         endtask_callback = () => {},
-        annotations = [],
 
         OBJECT_ANIMATION_TIME = 200,
         REWARD_ANIMATION_TIME = 800,
@@ -26,7 +25,7 @@ class GridWorldTask {
         disable_during_movement = true,
         disable_hold_key = true,
         WALL_WIDTH = .08,
-        TILE_SIZE = 100,
+        TILE_SIZE = 90,
         INTENTIONAL_ACTION_TIME_PROP = .4,
         DELAY_TO_REACTIVATE_UI = .8,
         END_OF_ROUND_DELAY_MULTIPLIER = 4,
@@ -35,7 +34,6 @@ class GridWorldTask {
         this.container = container;
         this.step_callback = step_callback;
         this.endtask_callback = endtask_callback;
-        this.annotations = annotations;
 
         this.painter_config = {
             OBJECT_ANIMATION_TIME,
@@ -58,16 +56,10 @@ class GridWorldTask {
     }
 
     init({
-        gridworld_array,
-        feature_array,
         walls = [],
         init_state,
         switch_pos,
         targets,
-        absorbing_states,
-        absorbing_features,
-        feature_rewards,
-        step_cost,
         include_wait,
 
         feature_colors = {
@@ -75,8 +67,8 @@ class GridWorldTask {
             'b': 'lightblue',
             'g': 'lightgreen'
         },
-        feature_transitions = {},
         show_rewards = true
+        
     }) {
         let task_params = arguments[0];
         this.mdp = new GridWorldMDP(task_params);
@@ -126,10 +118,6 @@ class GridWorldTask {
             this.painter.draw_object(train_pos[0], train_pos[1], "<", "train");
         }
 
-        this.annotations.forEach((annotation_params) => {
-            let annotation = this.painter.add_text(annotation_params);
-            this.annotations.push(annotation);
-        });
         this.show_rewards = show_rewards;
 
         //flags
@@ -139,6 +127,14 @@ class GridWorldTask {
 
         this.iter = 0;
         this.reward = 0;
+        if (this.mdp.arraysEqual(targets['target1'],init_state['cargo1'])){
+            this.reward += 1
+        } 
+        if (this.mdp.arraysEqual(targets['target2'],init_state['cargo2'])){
+            this.reward += 1
+        } 
+        this.update_stats();
+ 
     }
 
     start() {
@@ -185,7 +181,7 @@ class GridWorldTask {
     _disable_default_key_response() {
         $(document).on("keydown.disable_default", (e) => {
             let kc = e.keyCode ? e.keyCode : e.which;
-            if ((kc === 37) || (kc === 38) || (kc === 39) || (kc === 40) || (kc === 32  && this.mdp.include_wait)) {
+            if ((kc === 37) || (kc === 38) || (kc === 39) || (kc === 40) || (kc === 32)) {
                 e.preventDefault();
             }
         });
@@ -215,7 +211,7 @@ class GridWorldTask {
             else if (kc === 40) {
                 action = "v";
             }
-            else if (kc === 32 && this.mdp.include_wait) {
+            else if (kc === 32) {
                 action = "x";
             }
             else {
@@ -236,7 +232,6 @@ class GridWorldTask {
     }
 
     _do_animation({reward, action, state, nextstate}) {
-        console.log(reward)
         var value = reward['value']
         let r_params = {
             fill: value < 0 ? 'red' : 'yellow',
@@ -292,7 +287,6 @@ class GridWorldTask {
         let animtime = this.painter.OBJECT_ANIMATION_TIME;
         // console.log("Animation-end time: "+((+new Date)+this.painter.OBJECT_ANIMATION_TIME));
         if (this.show_rewards && value !== 0) {
-            console.log('here')
             setTimeout(() => {
                 this.painter.float_text(
                     reward['position'][0],
@@ -312,12 +306,10 @@ class GridWorldTask {
     _end_task() {
         let animtime = this.painter.OBJECT_ANIMATION_TIME;
         this._disable_response();
-        //setTimeout(() => {
-        //    this.painter.hide_object("agent")
-        //}, animtime*(this.END_OF_ROUND_DELAY_MULTIPLIER - 1));
-        //setTimeout(() => {
-        //    this.endtask_callback();
-        //}, animtime*this.END_OF_ROUND_DELAY_MULTIPLIER);
+
+        setTimeout(() => {
+            this.endtask_callback();
+        }, animtime*this.END_OF_ROUND_DELAY_MULTIPLIER);
     }
 
     _setup_trial() {
@@ -371,7 +363,6 @@ class GridWorldTask {
 
     update_stats(){
         var stats_text = "Reward = ";
-        console.log(reward);
         stats_text += String(this.reward);
         stats_text += "\r\nStep = ";
         stats_text += String(this.iter+1);
