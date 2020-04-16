@@ -36,6 +36,8 @@ export class GridWorldMDP {
         switch_pos,
         targets,
     }) {
+        console.log('mdp updated')
+        
         //setting up blue (target2) and green (target1) squares at target locations
         var feature_array = ['.....','.....','.....','.....','.....']
         feature_array[4-targets['target1'][1]] = feature_array[4-targets['target1'][1]].replaceAt(targets['target1'][0], "g") 
@@ -151,6 +153,7 @@ export class GridWorldMDP {
         action,
         nextstate,
     }) {
+        
         let r = 0;
         let position = [0,0]
 
