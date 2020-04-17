@@ -255,11 +255,7 @@ if __name__ == "__main__":
             'switch':(1,0),'agent':(3,0),'other2':(2,2),'num2':2,'target2':(2,4)}
 
 
-<<<<<<< HEAD
     testgrid = grid.Grid(5,random=False, init_pos=easy1)
-=======
-    testgrid = grid.Grid(5,random=False, init_pos=push3)
->>>>>>> 453e54a5bbebd6550dc36510ef6bf725c6ce6860
     agent = Agent()
     print("got here")
     model = 'free'
