@@ -10,7 +10,7 @@ import concat from 'lodash/concat';
 const _ = {forOwn, map, fromPairs, includes, concat};
 let GridWorldPainter = require("gridworld-painter");
 import * as gwmdp from "./gridworld-mdp.es6";
-
+var Raphael = require('raphael');
 let GridWorldMDP = gwmdp.GridWorldMDP;
 
 class GridWorldTask {
@@ -18,7 +18,6 @@ class GridWorldTask {
         container,
         step_callback = (d) => {console.log(d)},
         endtask_callback = () => {},
-        annotations = [],
 
         OBJECT_ANIMATION_TIME = 200,
         REWARD_ANIMATION_TIME = 800,
@@ -26,7 +25,7 @@ class GridWorldTask {
         disable_during_movement = true,
         disable_hold_key = true,
         WALL_WIDTH = .08,
-        TILE_SIZE = 100,
+        TILE_SIZE = 90,
         INTENTIONAL_ACTION_TIME_PROP = .4,
         DELAY_TO_REACTIVATE_UI = .8,
         END_OF_ROUND_DELAY_MULTIPLIER = 4,
@@ -35,7 +34,6 @@ class GridWorldTask {
         this.container = container;
         this.step_callback = step_callback;
         this.endtask_callback = endtask_callback;
-        this.annotations = annotations;
 
         this.painter_config = {
             OBJECT_ANIMATION_TIME,
@@ -58,25 +56,20 @@ class GridWorldTask {
     }
 
     init({
-        gridworld_array,
-        feature_array,
         walls = [],
         init_state,
         switch_pos,
         targets,
-        absorbing_states,
-        absorbing_features,
-        feature_rewards,
-        step_cost,
         include_wait,
+        best_reward,
 
         feature_colors = {
             '.': 'white',
             'b': 'lightblue',
             'g': 'lightgreen'
         },
-        feature_transitions = {},
         show_rewards = true
+        
     }) {
         let task_params = arguments[0];
         this.mdp = new GridWorldMDP(task_params);
@@ -99,37 +92,51 @@ class GridWorldTask {
 
         this.painter.draw_walls(walls);
 
+        // code to add all objects in init locations
+        // text 1, text 2 and train are maintained outside of gridworld painter
+
         this.painter.add_object("circle", "switch1", {"fill" : "red",'r':25});
         this.painter.add_object("rect", "switch2", {"fill" : "black","object_length":.7, "object_width": .7});
         this.painter.draw_object(switch_pos[0],switch_pos[1], "<", "switch2");
         this.painter.draw_object(switch_pos[0],switch_pos[1], "<", "switch1");
 
-        if (typeof(init_state) !== 'undefined') {
-            this.painter.add_object("circle", "agent", {"fill" : "black"});
-            var agent_pos = init_state['agent']
-            this.painter.draw_object(agent_pos[0], agent_pos[1], undefined, "agent");
-            this.state = init_state;
+        this.painter.add_object("circle", "agent", {"fill" : "black"});
+        var agent_pos = init_state['agent']
+        this.painter.draw_object(agent_pos[0], agent_pos[1], undefined, "agent");
+        this.state = init_state;
 
-            this.painter.add_object("rect","cargo2",{"fill":"lightblue","object_length":.7, "object_width": .7});
-            var cargo2_pos = init_state['cargo2'];
-            this.painter.draw_object(cargo2_pos[0], cargo2_pos[1], "<", "cargo2");
-            this.painter.add_text(cargo2_pos[0], cargo2_pos[1], "2", {"font-size":40});
+        this.painter.add_object("rect","cargo2",{"fill":"lightblue","object_length":.7, "object_width": .7});
+        var cargo2_pos = init_state['cargo2'];
+        this.painter.draw_object(cargo2_pos[0], cargo2_pos[1], "<", "cargo2");
+        this.text2 = this.painter.add_text(cargo2_pos[0], cargo2_pos[1], "2", {"font-size":40});
 
-            this.painter.add_object("rect","cargo1",{"fill":"lightgreen","object_length":.7, "object_width": .7});
-            var cargo1_pos = init_state['cargo1']
-            this.painter.draw_object(cargo1_pos[0], cargo1_pos[1], "<", "cargo1");
-            this.painter.add_text(cargo1_pos[0], cargo1_pos[1],"1", {"font-size":40});
+        this.painter.add_object("rect","cargo1",{"fill":"lightgreen","object_length":.7, "object_width": .7});
+        var cargo1_pos = init_state['cargo1']
+        this.painter.draw_object(cargo1_pos[0], cargo1_pos[1], "<", "cargo1");
+        this.text1 = this.painter.add_text(cargo1_pos[0], cargo1_pos[1],"1", {"font-size":40});
 
-            var train_pos = init_state['train'];
-            var train_vel = init_state['trainvel'];
-            this.painter.add_object("rect","train",{"fill":"black","object_length":.7, "object_width": .4});
-            this.painter.draw_object(train_pos[0], train_pos[1], "<", "train");
+        var train_pos = init_state['train'];
+        this.vel_mapping = {"1,0":"1","-1,0":"2","0,1":"3","0,-1":"4"}
+        var src = "/assets/train" + this.vel_mapping[String(init_state['trainvel'])] + ".png"
+        
+        if (init_state['trainvel'][0] == 0){
+            this.train_width = 40
+            this.train_height = 80
+        } else {
+            this.train_width = 80
+            this.train_height = 40
         }
+        
+        var train_x = (train_pos[0] + .5)*this.painter.TILE_SIZE+this.painter.DISPLAY_BORDER-this.train_width/2
+        var train_y = (this.painter.y_to_h(train_pos[1]) + .5)*this.painter.TILE_SIZE+this.painter.DISPLAY_BORDER-this.train_height/2
+        this.train = this.painter.paper.image(src,train_x,train_y, this.train_width,this.train_height);
 
-        this.annotations.forEach((annotation_params) => {
-            let annotation = this.painter.add_text(annotation_params);
-            this.annotations.push(annotation);
-        });
+        this.best_reward = best_reward
+
+
+        //this.painter.add_object("rect","train",{"fill":"black","object_length":.7, "object_width": .4});
+        //this.painter.draw_object(train_pos[0], train_pos[1], "<", "train");
+    
         this.show_rewards = show_rewards;
 
         //flags
@@ -139,6 +146,15 @@ class GridWorldTask {
 
         this.iter = 0;
         this.reward = 0;
+        if (this.mdp.arraysEqual(targets['target1'],init_state['cargo1'])){
+            this.reward += 1
+        } 
+        if (this.mdp.arraysEqual(targets['target2'],init_state['cargo2'])){
+            this.reward += 1
+        } 
+        this.update_stats()
+        
+ 
     }
 
     start() {
@@ -185,7 +201,7 @@ class GridWorldTask {
     _disable_default_key_response() {
         $(document).on("keydown.disable_default", (e) => {
             let kc = e.keyCode ? e.keyCode : e.which;
-            if ((kc === 37) || (kc === 38) || (kc === 39) || (kc === 40) || (kc === 32  && this.mdp.include_wait)) {
+            if ((kc === 37) || (kc === 38) || (kc === 39) || (kc === 40) || (kc === 32)) {
                 e.preventDefault();
             }
         });
@@ -215,7 +231,7 @@ class GridWorldTask {
             else if (kc === 40) {
                 action = "v";
             }
-            else if (kc === 32 && this.mdp.include_wait) {
+            else if (kc === 32) {
                 action = "x";
             }
             else {
@@ -236,7 +252,6 @@ class GridWorldTask {
     }
 
     _do_animation({reward, action, state, nextstate}) {
-        console.log(reward)
         var value = reward['value']
         let r_params = {
             fill: value < 0 ? 'red' : 'yellow',
@@ -249,7 +264,7 @@ class GridWorldTask {
 
         this.painter.add_text(state['cargo1'][0],state['cargo1'][1],"")
 
-        //animate things
+        //animate agent
         this.painter.animate_object_movement({
             action: action,
             new_x: nextstate['agent'][0],
@@ -257,6 +272,7 @@ class GridWorldTask {
             object_id: 'agent'
         });
 
+        // animate cargo1
         this.painter.animate_object_movement({
             action: action,
             new_x: nextstate['cargo1'][0],
@@ -264,12 +280,25 @@ class GridWorldTask {
             object_id: 'cargo1'
         });
 
+        //animate cargo1 text individually - not included in painter lib
+        var move1 = Raphael.animation({
+            x : (nextstate['cargo1'][0] + .5)*this.painter.TILE_SIZE+this.painter.DISPLAY_BORDER,
+            y : (this.painter.y_to_h(nextstate['cargo1'][1])+.5)*this.painter.TILE_SIZE+this.painter.DISPLAY_BORDER
+        },this.painter.OBJECT_ANIMATION_TIME, 'easeInOut');
+        this.text1.animate(move1);
+
         this.painter.animate_object_movement({
             action: action,
             new_x: nextstate['cargo2'][0],
             new_y: nextstate['cargo2'][1],
             object_id: 'cargo2'
         });
+
+        var move2 = Raphael.animation({
+            x : (nextstate['cargo2'][0] + .5)*this.painter.TILE_SIZE+this.painter.DISPLAY_BORDER,
+            y : (this.painter.y_to_h(nextstate['cargo2'][1])+.5)*this.painter.TILE_SIZE+this.painter.DISPLAY_BORDER
+        },this.painter.OBJECT_ANIMATION_TIME, 'easeInOut');
+        this.text2.animate(move2);
 
         let ACTION_CODES = {
             '1,0' : '>',
@@ -279,20 +308,27 @@ class GridWorldTask {
             '0,0' : 'x'
         };
 
+        var transform = ""
+        var train_stopped = this.mdp.arraysEqual(nextstate['trainvel'], [0,0])
+        if (!this.mdp.arraysEqual(nextstate['trainvel'], state['trainvel']) && !train_stopped){
+            transform = "r-90"
+            this.train_height, this.train_width = this.train_width, this.train_height
+        }
+        var src = "/assets/train" + this.vel_mapping[String(nextstate['trainvel'])] + ".png"
         if (state['trainvel'][0] != 0 || state['trainvel'][1] != 0){
-            this.painter.animate_object_movement({
-                action: ACTION_CODES[state['trainvel'].toString()],
-                new_x: nextstate['train'][0],
-                new_y: nextstate['train'][1],
-                object_id: 'train'
-            });
+            var move_train = Raphael.animation({
+                src: src,
+                x: (nextstate["train"][0] + .5)*this.painter.TILE_SIZE+this.painter.DISPLAY_BORDER-this.train_width/2,
+                y: (this.painter.y_to_h(nextstate["train"][1]) + .5)*this.painter.TILE_SIZE+this.painter.DISPLAY_BORDER-this.train_height/2,
+                transform: transform,
+            }, this.painter.OBJECT_ANIMATION_TIME, 'easeInOut')
+            this.train.animate(move_train)
         } 
 
 
         let animtime = this.painter.OBJECT_ANIMATION_TIME;
         // console.log("Animation-end time: "+((+new Date)+this.painter.OBJECT_ANIMATION_TIME));
         if (this.show_rewards && value !== 0) {
-            console.log('here')
             setTimeout(() => {
                 this.painter.float_text(
                     reward['position'][0],
@@ -311,13 +347,29 @@ class GridWorldTask {
 
     _end_task() {
         let animtime = this.painter.OBJECT_ANIMATION_TIME;
+        
+        var result_color = "green"
+        if (this.reward<this.best_reward){ 
+            result_color = "red"
+        }
+        this.painter.add_object("rect", "results", {"fill" : result_color,"object_length":2.5, "object_width":1.5});
+        this.painter.draw_object(2,2, "<", "results");
+        this.painter.add_object("rect", "results2", {"fill" : "white","object_length":2.25, "object_width":1.25});
+        this.painter.draw_object(2,2, "<", "results2");
+        var scoretext = "YOUR SCORE: " + String(this.reward) + "\nBEST SCORE: " + String(this.best_reward)
+        scoretext += "\npress n to continue"
+        this.painter.add_text(2,2, scoretext, {"font-size":20});
+
         this._disable_response();
-        //setTimeout(() => {
-        //    this.painter.hide_object("agent")
-        //}, animtime*(this.END_OF_ROUND_DELAY_MULTIPLIER - 1));
-        //setTimeout(() => {
-        //    this.endtask_callback();
-        //}, animtime*this.END_OF_ROUND_DELAY_MULTIPLIER);
+        $(document).on("keydown.task_response", (e) => {
+            let kc = e.keyCode ? e.keyCode : e.which;
+            if (kc === 78) {
+                setTimeout(() => {
+                    this.painter.paper.remove()
+                    this.endtask_callback();
+                }, animtime*this.END_OF_ROUND_DELAY_MULTIPLIER);
+            }
+        })
     }
 
     _setup_trial() {
@@ -371,7 +423,6 @@ class GridWorldTask {
 
     update_stats(){
         var stats_text = "Reward = ";
-        console.log(reward);
         stats_text += String(this.reward);
         stats_text += "\r\nStep = ";
         stats_text += String(this.iter+1);

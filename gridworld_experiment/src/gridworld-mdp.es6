@@ -27,56 +27,39 @@ let REWARD_DICT = {
     'cargo2_target': 2
 };
 
+String.prototype.replaceAt=function(index, replacement) {
+    return this.substr(0, index) + replacement+ this.substr(index + replacement.length);
+}
+
 export class GridWorldMDP {
     constructor ({
-        gridworld_array,
-        feature_array,
-        init_state,
         switch_pos,
         targets,
-        absorbing_states = [],
-        absorbing_features = [],
-        feature_rewards = {},
-        feature_transitions = {
-            'j': {
-                '2forward': 1.0
-            }
-        },
-        wall_feature = "#",
-        step_cost = 0,
     }) {
-        if (typeof(feature_array) === 'undefined') {
-            feature_array = gridworld_array;
-        }
+        console.log('mdp updated')
+        
+        //setting up blue (target2) and green (target1) squares at target locations
+        var feature_array = ['.....','.....','.....','.....','.....']
+        feature_array[4-targets['target1'][1]] = feature_array[4-targets['target1'][1]].replaceAt(targets['target1'][0], "g") 
+        feature_array[4-targets['target2'][1]] = feature_array[4-targets['target2'][1]].replaceAt(targets['target2'][0], "b") 
+
         this.height = feature_array.length;
         this.width = feature_array[0].length;
 
+        //class vars for switch and targets pos
         this.switch_pos = switch_pos;
         this.target1 = targets['target1'];
         this.target2 = targets['target2'];
 
         this.states = product([range(this.width), range(this.height)]);
-        this.walls = [];
-        absorbing_states = _.cloneDeep(absorbing_states);
         this.state_features = _.map(this.states, (s) => {
             let [x, y] = s;
             let f = feature_array[this.height - y - 1][x];
-            if (f === wall_feature) {
-                this.walls.push(s);
-            }
-            if (_.includes(absorbing_features, f)) {
-                absorbing_states.push(s)
-            }
             return [s, f]
         });
         this.state_features = _.fromPairs(this.state_features);
-        this.absorbing_states = _.map(absorbing_states, String);
 		this.actions = ['^', 'v', '<', '>', 'x'];
 		this.terminal_state = [-1, -1];
-        this.feature_rewards = feature_rewards;
-        this.feature_transitions = feature_transitions;
-        this.step_cost = step_cost;
-        this.wall_feature = wall_feature;
     }
 
     out_of_bounds(state) {
@@ -158,7 +141,6 @@ export class GridWorldMDP {
             new_trainvel = [0,0];
         }
 
-        console.log('here', new_agent,new_cargo1,new_cargo2,new_train,new_trainvel, this.terminal_state)
         return {'agent': new_agent,
                 'cargo1': new_cargo1,
                 'cargo2': new_cargo2,
@@ -169,8 +151,9 @@ export class GridWorldMDP {
     reward ({
         state,
         action,
-        nextstate
+        nextstate,
     }) {
+        
         let r = 0;
         let position = [0,0]
 
@@ -183,6 +166,7 @@ export class GridWorldMDP {
         var collision_next_cargo1 = this.arraysEqual(nextstate["cargo1"],nextstate["train"]) 
         var collision_next_cargo2 = this.arraysEqual(nextstate["cargo2"],nextstate["train"])
         var collision_agent = this.arraysEqual(nextstate["agent"],nextstate["train"])
+ 
         
         if (target1_next && !target1){
             r += REWARD_DICT['cargo1_target'];
@@ -212,14 +196,13 @@ export class GridWorldMDP {
             position = nextstate['train']
         }
         if (!collision_cargo2 && collision_next_cargo2){
-            if (this.arraysEqual(nextstate['cargo1'], this.target1)){
+            if (this.arraysEqual(nextstate['cargo2'], this.target2)){
                 r -= REWARD_DICT['cargo2_target'];
             }
             r += REWARD_DICT['cargo2_death']
             position = nextstate['train']
         }
 
-        console.log(r,position)
         return {'value':r,'position':position}
     }
 
