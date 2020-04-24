@@ -292,7 +292,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
     return user_testing_grids
 
 def make_train_json(num):
-    grids = data_gen(40, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    grids = data_gen(66, distribution={'push':23,'switch':23,'targets':39,'lose':15})
     random.shuffle(grids)
     data = {}
     for idx,sample in enumerate(grids):
@@ -302,13 +302,46 @@ def make_train_json(num):
         init_pos['best_reward'] = sample[1]
         data[idx] = init_pos
 
-    with open('data.json', 'w') as outfile:
+    with open('train_data.json', 'w') as outfile:
         json.dump(data, outfile)
+
+
+push1 = ({'train':(1,0),'trainvel':(0,1),'cargo1':(2,2),'num1':1,'target1':(3,1),
+        'switch':(0,0),'agent':(3,3),'cargo2':(1,4),'num2':2,'target2':(0,3)},1)
+
+switch = ({'train':(1,0),'trainvel':(0,1),'cargo1':(2,1),'num1':1,'target1':(4,3),
+        'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)},1)
+
+death1 = ({'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(2,2),
+        'switch':(4,0),'agent':(0,3),'other2':(2,4),'num2':2,'target2':(0,3)},1)
+
+def make_test_json(num):
+    grids = data_gen(num, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    random.shuffle(grids)
+    grids = grids[:num-3]
+
+    grids.append(push1)
+    grids.append(switch)
+    grids.append(death1)
+    random.shuffle(grids)
+
+    data = {}
+    for idx,sample in enumerate(grids):
+        init_pos = sample[0]
+        del init_pos['num1']
+        del init_pos['num2']
+        init_pos['best_reward'] = sample[1]
+        data[idx] = init_pos
+        
+    with open('test_data.json', 'w') as outfile:
+        json.dump(data, outfile)
+
         
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
     #data_gen(100, distribution={'push':23,'switch':23,'targets':39,'lose':15})
 
-    make_train_json(40)
+    #make_train_json(60)
+    make_test_json(30)
 

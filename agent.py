@@ -237,34 +237,41 @@ if __name__ == "__main__":
     easy1 = {'train':(1,0),'trainvel':(0,1),'other1':(3,2),'num1':1,'target1':(2,2),
             'switch':(0,0),'agent':(4,2),'other2':(1,4),'num2':2,'target2':(0,3)}
 
-    push1 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
-            'switch':(0,0),'agent':(4,2),'other2':(1,4),'num2':2,'target2':(0,3)}
 
     #somewhere between 10,000 and 50,000 iterations the mc finally gets it - seems pretty hard without nn even
     push3 = {'train':(1,0),'trainvel':(0,1),'other1':(2,3),'num1':1,'target1':(3,1),
             'switch':(4,0),'agent':(3,3),'other2':(2,4),'num2':2,'target2':(1,4)}
 
     #this one takes a long time too - perhaps because reward comes too late
-    death1 = {'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(2,2),
-            'switch':(4,0),'agent':(0,3),'other2':(2,4),'num2':2,'target2':(3,3)}
+    death1 = {'train':(0,0),'trainvel':(0,1),'cargo1':(1,2),'num1':1,'target1':(2,2),
+            'switch':(4,0),'agent':(0,3),'cargo2':(2,4),'num2':2,'target2':(3,3)}
 
+    push1 = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,2),'num1':1,'target1':(3,1),
+        'switch':(0,0),'agent':(3,3),'cargo2':(1,4),'num2':2,'target2':(0,3)}
+    
     targets_test = {'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(1,3),
             'switch':(4,4),'agent':(2,1),'other2':(2,2),'num2':2,'target2':(3,2)}
 
     weird1 = {'train':(4,2),'trainvel':(-1,0),'other1':(4,3),'num1':1,'target1':(0,3),
             'switch':(1,0),'agent':(3,0),'other2':(2,2),'num2':2,'target2':(2,4)}
 
+    switch = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,1),'num1':1,'target1':(4,3),
+            'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)}
 
-    testgrid = grid.Grid(5,random=False, init_pos=easy1)
+
+    push4 = {'train':(2,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(0,1),
+        'switch':(4,0),'agent':(4,2),'cargo2':(3,3),'num2':2,'target2':(0,3)}
+
+    testgrid = grid.Grid(5,random=False, init_pos=death1)
     agent = Agent()
     print("got here")
-    model = 'free'
+    model = 'based'
     if model == 'dual':
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(),display=True)
     if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=1000, nn_init=False, softmax=False)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=10000, nn_init=False, softmax=False)
         #display_grid(testgrid.copy())
         agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
