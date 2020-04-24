@@ -1,6 +1,5 @@
 from utils import generate_array
 from graphics import display_grid
-from grid import Grid
 import numpy as np
 import time
 
