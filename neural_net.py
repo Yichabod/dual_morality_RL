@@ -2,6 +2,7 @@ from utils import generate_array
 from graphics import display_grid
 from grid import Grid
 import numpy as np
+import time
 
 import torch
 import torch.nn as nn
@@ -87,7 +88,7 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
 
     onehot_test_xs = onehot_xs[9*B//10:]
     test_ys = ys[9*B//10:]
-
+    start = time.time()
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         running_loss = []
 
@@ -119,7 +120,7 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
 
             print('Epoch:{}, train loss: {:.3f}, test loss: {:.3f}'.format(epoch + 1, np.mean(running_loss), np.mean(test_loss)))
             running_loss = 0.0
-
+    print("training took", time.time() - start, "seconds")
     torch.save(net.state_dict(), 'nn_model')
     print("Model saved as nn_model")
 
