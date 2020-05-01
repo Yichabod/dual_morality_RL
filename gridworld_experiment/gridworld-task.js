@@ -45486,13 +45486,23 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
             var new_cargo1 = cargo1;
             var new_cargo2 = cargo2;
 
+            var hitswitch = 0;
+            var push1 = 0;
+            var push2 = 0;
+            var hitagent = 0;
+
             if (this.out_of_bounds(new_agent)) {
                 new_agent = agent;
             }
 
             if (this.arraysEqual(new_agent, this.switch_pos)) {
                 new_agent = agent;
-                new_trainvel = [trainvel[1], trainvel[0]];
+                hitswitch = 1;
+                if (trainvel[1] == 0) {
+                    new_trainvel = [0, trainvel[0] - trainvel[1]];
+                } else {
+                    new_trainvel = [trainvel[0] - trainvel[1], 0];
+                }
             }
 
             var new_train = [train[0] + new_trainvel[0], train[1] + new_trainvel[1]];
@@ -45502,6 +45512,7 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
 
             if (this.arraysEqual(new_agent, cargo1)) {
                 var pos_open = !this.arraysEqual(new_cargo, cargo2) && !this.arraysEqual(new_cargo, this.switch_pos);
+                push1 = 1;
                 if (this.out_of_bounds(new_cargo) || !pos_open || train_stopped) {
                     new_agent = agent;
                 } else {
@@ -45511,6 +45522,7 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
 
             if (this.arraysEqual(new_agent, cargo2)) {
                 var pos_open = !this.arraysEqual(new_cargo, cargo1) && !this.arraysEqual(new_cargo, this.switch_pos);
+                push2 = 1;
                 if (this.out_of_bounds(new_cargo) || !pos_open || train_stopped) {
                     new_agent = agent;
                 } else {
@@ -45523,6 +45535,7 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
             }
 
             if (this.arraysEqual(new_agent, new_train) && !this.arraysEqual(new_trainvel, [0, 0])) {
+                hitagent = 1;
                 new_trainvel = [0, 0];
                 this.terminal_state = true;
             }
@@ -45535,7 +45548,11 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
                 'cargo1': new_cargo1,
                 'cargo2': new_cargo2,
                 'train': new_train,
-                'trainvel': new_trainvel };
+                'trainvel': new_trainvel,
+                'hitswitch': hitswitch,
+                'push1': push1,
+                'push2': push2,
+                'hitagent': hitagent };
         }
     }, {
         key: 'reward',
@@ -45558,13 +45575,20 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
             var collision_next_cargo2 = this.arraysEqual(nextstate["cargo2"], nextstate["train"]);
             var collision_agent = this.arraysEqual(nextstate["agent"], nextstate["train"]);
 
+            var hit1 = 0;
+            var hit2 = 0;
+            var get1 = 0;
+            var get2 = 0;
+
             if (target1_next && !target1) {
                 r += REWARD_DICT['cargo1_target'];
                 position = this.target1;
+                get1 = 1;
             }
             if (target2_next && !target2) {
                 r += REWARD_DICT['cargo2_target'];
                 position = this.target2;
+                get2 = 1;
             }
             if (!target1_next && target1) {
                 r -= REWARD_DICT['cargo1_target'];
@@ -45579,6 +45603,7 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
                 position = nextstate["train"];
             }
             if (!collision_cargo1 && collision_next_cargo1) {
+                hit1 = 1;
                 if (this.arraysEqual(nextstate['cargo1'], this.target1)) {
                     r -= REWARD_DICT['cargo1_target'];
                 }
@@ -45586,6 +45611,7 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
                 position = nextstate['train'];
             }
             if (!collision_cargo2 && collision_next_cargo2) {
+                hit2 = 1;
                 if (this.arraysEqual(nextstate['cargo2'], this.target2)) {
                     r -= REWARD_DICT['cargo2_target'];
                 }
@@ -45593,7 +45619,7 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
                 position = nextstate['train'];
             }
 
-            return { 'value': r, 'position': position };
+            return { 'value': r, 'position': position, 'hit1': hit1, 'hit2': hit2, 'get1': get1, 'get2': get2 };
         }
     }, {
         key: 'is_terminal',
@@ -45750,14 +45776,17 @@ var GridWorldTask = function () {
             // code to add all objects in init locations
             // text 1, text 2 and train are maintained outside of gridworld painter
 
-            this.painter.add_object("circle", "switch1", { "fill": "red", 'r': 25 });
-            this.painter.add_object("rect", "switch2", { "fill": "black", "object_length": .7, "object_width": .7 });
-            this.painter.draw_object(switch_pos[0], switch_pos[1], "<", "switch2");
-            this.painter.draw_object(switch_pos[0], switch_pos[1], "<", "switch1");
+            var switch_x = (switch_pos[0] + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - 60 / 2;
+            var switch_y = (this.painter.y_to_h(switch_pos[1]) + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - 60 / 2;
+            this.switch = this.painter.paper.image("/assets/switch.png", switch_x, switch_y, 60, 60);
 
-            this.painter.add_object("circle", "agent", { "fill": "black" });
             var agent_pos = init_state['agent'];
-            this.painter.draw_object(agent_pos[0], agent_pos[1], undefined, "agent");
+            this.agent_height = 58;
+            this.agent_width = 50;
+            var agent_x = (agent_pos[0] + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - this.agent_width / 2;
+            var agent_y = (this.painter.y_to_h(agent_pos[1]) + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - this.agent_height / 2;
+            this.agent = this.painter.paper.image("/assets/player.png", agent_x, agent_y, this.agent_width, this.agent_height);
+
             this.state = init_state;
 
             this.painter.add_object("rect", "cargo2", { "fill": "lightblue", "object_length": .7, "object_width": .7 });
@@ -45841,6 +45870,10 @@ var GridWorldTask = function () {
                 setTimeout(function () {
                     window.clearInterval(mytimer);
                     document.getElementById('timer').innerText = "TIME OUT";
+                    console.log(_this.iter, _this.iter_limit);
+                    if (_this.iter != _this.iter_limit) {
+                        _this.reward = -4;
+                    }
                     _this._end_task();
                 }, this.time_limit * 1000);
             } else {
@@ -45970,12 +46003,12 @@ var GridWorldTask = function () {
             this.painter.add_text(state['cargo1'][0], state['cargo1'][1], "");
 
             //animate agent
-            this.painter.animate_object_movement({
-                action: action,
-                new_x: nextstate['agent'][0],
-                new_y: nextstate['agent'][1],
-                object_id: 'agent'
-            });
+            var move_agent = Raphael.animation({
+                x: (nextstate["agent"][0] + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - this.agent_width / 2,
+                y: (this.painter.y_to_h(nextstate["agent"][1]) + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - this.agent_height / 2,
+                transform: transform
+            }, this.painter.OBJECT_ANIMATION_TIME, 'easeInOut');
+            this.agent.animate(move_agent);
 
             // animate cargo1
             this.painter.animate_object_movement({
@@ -46013,13 +46046,9 @@ var GridWorldTask = function () {
                 '0,0': 'x'
             };
 
-            var train_stopped = this.mdp.arraysEqual(state['trainvel'], [0, 0]);
-            if (!this.mdp.arraysEqual(nextstate['trainvel'], state['trainvel']) && !train_stopped) {
-                if (state['trainvel'][0] != 0) {
-                    this.train_transform -= 90;
-                } else {
-                    this.train_transform += 90;
-                }
+            var train_stopped = this.mdp.arraysEqual(nextstate['trainvel'], [0, 0]);
+            if (!this.mdp.arraysEqual(nextstate['trainvel'], state['trainvel']) && (!train_stopped || nextstate['hitswitch'] == true)) {
+                this.train_transform -= 90;
                 this.train_height, this.train_width = this.train_width, this.train_height;
             }
             var transform = "r" + String(this.train_transform);
@@ -46144,17 +46173,25 @@ var GridWorldTask = function () {
                 nextstate = this.mdp.transition({ state: state, action: action });
                 reward = this.mdp.reward({ state: state, action: action, nextstate: nextstate });
                 this.reward += reward['value'];
+
                 this.data[this.iter].push(reward['value']);
                 this.data[this.iter].push(this.reward);
+                this.data[this.iter].push(nextstate['hitswitch'], nextstate['push1'], nextstate['push2'], nextstate['hitagent']);
+                this.data[this.iter].push(reward['hit1'], reward['hit2'], reward['get1'], reward['get2']);
+
+                var statestring = { 'agent': state['agent'], 'cargo1': state['cargo1'], 'cargo2': state['cargo2'], 'train': state['train'],
+                    'trainvel': state['trainvel'], 'switch': this.mdp.switch_pos, 'target1': this.mdp.target1, 'target2': this.mdp.target2 };
+                statestring = JSON.stringify(statestring);
+                console.log(statestring);
+                this.data[this.iter].push(statestring);
 
                 this._do_animation({ reward: reward, action: action, state: state, nextstate: nextstate });
+                this.update_stats();
 
                 if (this.mdp.is_terminal() || this.task_ended || this.iter >= this.iter_limit - 1) {
-                    this.update_stats();
                     this._end_task();
                 } else {
                     //This handles when/how to re-enable user responses
-                    this.update_stats();
                     this._setup_trial();
                 }
                 this.state = nextstate;

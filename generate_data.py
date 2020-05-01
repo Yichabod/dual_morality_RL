@@ -292,7 +292,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
     return user_testing_grids
 
 def make_train_json(num):
-    grids = data_gen(66, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    grids = data_gen(num, distribution={'push':25,'switch':25,'targets':40,'lose':10})
     random.shuffle(grids)
     data = {}
     for idx,sample in enumerate(grids):
@@ -316,7 +316,7 @@ death1 = ({'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(2,2
         'switch':(4,0),'agent':(0,3),'other2':(2,4),'num2':2,'target2':(0,3)},1)
 
 def make_test_json(num):
-    grids = data_gen(num, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    grids = data_gen(num, distribution={'push':25,'switch':25,'targets':40,'lose':10})
     random.shuffle(grids)
     grids = grids[:num-3]
 
@@ -342,6 +342,6 @@ if __name__ == "__main__":
     #num grids should always be multiple of 100
     #data_gen(100, distribution={'push':23,'switch':23,'targets':39,'lose':15})
 
-    #make_train_json(60)
+    make_train_json(66)
     make_test_json(30)
 

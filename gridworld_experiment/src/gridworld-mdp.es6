@@ -94,13 +94,23 @@ export class GridWorldMDP {
         let new_cargo1 = cargo1;
         let new_cargo2 = cargo2;
 
+        var hitswitch = 0;
+        var push1 = 0;
+        var push2 = 0;
+        var hitagent = 0;
+
         if (this.out_of_bounds(new_agent)) {
             new_agent = agent;
         }
 
         if (this.arraysEqual(new_agent,this.switch_pos)){
             new_agent = agent;
-            new_trainvel = [trainvel[1], trainvel[0]];
+            hitswitch = 1;
+            if (trainvel[1] == 0){
+                new_trainvel = [0, trainvel[0]-trainvel[1]];
+            } else {
+                new_trainvel = [trainvel[0]-trainvel[1], 0];
+            }
         }
 
         let new_train = [train[0]+new_trainvel[0],train[1]+new_trainvel[1]];
@@ -110,6 +120,7 @@ export class GridWorldMDP {
 
         if (this.arraysEqual(new_agent,cargo1)) {
             var pos_open = !this.arraysEqual(new_cargo,cargo2) && !this.arraysEqual(new_cargo,this.switch_pos);
+            push1 = 1;
             if (this.out_of_bounds(new_cargo) || !pos_open || train_stopped){
                 new_agent = agent;
             } else {
@@ -119,6 +130,7 @@ export class GridWorldMDP {
 
         if (this.arraysEqual(new_agent,cargo2)){
             var pos_open = !this.arraysEqual(new_cargo,cargo1) && !this.arraysEqual(new_cargo,this.switch_pos);
+            push2 = 1;
             if (this.out_of_bounds(new_cargo) || !pos_open || train_stopped){
                 new_agent = agent;
             } else {
@@ -131,6 +143,7 @@ export class GridWorldMDP {
         }
 
         if (this.arraysEqual(new_agent,new_train) && !this.arraysEqual(new_trainvel,[0,0])){
+            hitagent = 1;
             new_trainvel = [0,0];
             this.terminal_state = true
         }
@@ -143,7 +156,11 @@ export class GridWorldMDP {
                 'cargo1': new_cargo1,
                 'cargo2': new_cargo2,
                 'train': new_train,
-                'trainvel': new_trainvel}
+                'trainvel': new_trainvel,
+                'hitswitch': hitswitch,
+                'push1': push1,
+                'push2': push2,
+                'hitagent': hitagent}
     }
 
     reward ({
@@ -165,14 +182,20 @@ export class GridWorldMDP {
         var collision_next_cargo2 = this.arraysEqual(nextstate["cargo2"],nextstate["train"])
         var collision_agent = this.arraysEqual(nextstate["agent"],nextstate["train"])
  
-        
+        var hit1 = 0;
+        var hit2 = 0;
+        var get1 = 0;
+        var get2 = 0;
+
         if (target1_next && !target1){
             r += REWARD_DICT['cargo1_target'];
-            position = this.target1
+            position = this.target1;
+            get1 = 1;
         }
         if (target2_next && !target2){
             r += REWARD_DICT['cargo2_target'];
             position = this.target2
+            get2 = 1;
         }
         if (!target1_next && target1){
             r -= REWARD_DICT['cargo1_target'];
@@ -187,6 +210,7 @@ export class GridWorldMDP {
             position = nextstate["train"]
         }
         if (!collision_cargo1 && collision_next_cargo1){
+            hit1 = 1;
             if (this.arraysEqual(nextstate['cargo1'], this.target1)){
                 r -= REWARD_DICT['cargo1_target'];
             }
@@ -194,6 +218,7 @@ export class GridWorldMDP {
             position = nextstate['train']
         }
         if (!collision_cargo2 && collision_next_cargo2){
+            hit2 = 1;
             if (this.arraysEqual(nextstate['cargo2'], this.target2)){
                 r -= REWARD_DICT['cargo2_target'];
             }
@@ -201,7 +226,7 @@ export class GridWorldMDP {
             position = nextstate['train']
         }
 
-        return {'value':r,'position':position}
+        return {'value':r,'position':position,'hit1':hit1,'hit2':hit2,'get1':get1,'get2':get2}
     }
 
     is_terminal(){
