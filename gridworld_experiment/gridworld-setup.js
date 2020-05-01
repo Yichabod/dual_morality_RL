@@ -23,19 +23,26 @@ function test_info(){
     getElementById('test_info').innerText = test_info  
 }
 
-function run_train(data,GridWorldTask,num=1) {
+function run_train(data,GridWorldTask,num=60,idxs=undefined) {
+    if (idxs == undefined){
+        idxs = Array.apply(null, {length: num_training}).map(Number.call, Number)
+    }
+    
+    idx = Math.floor(Math.random() * idxs.length);
+    console.log(idx)
+    idxs.splice(idxs.indexOf(idx), 1);
+    
     document.getElementById('tasknum').innerText = "Trial " + String(num) + "/" + String(num_total);
-    trial_data = data[num-1]
+    trial_data = data[idx]
     let task = new GridWorldTask({
         container: $("#task")[0],
         step_callback: (d) => {},
         endtask_callback: (trial_data,r) => {
-            console.log(trial_data);
             saveData(num, trial_data, r, "train")
             if (num >= num_training){
                 test_info();
             }
-            else {run_train(data,GridWorldTask,num+1)}
+            else {run_train(data,GridWorldTask,num+1,idxs)}
         }
     });
     task.init({
@@ -59,13 +66,13 @@ function run_train(data,GridWorldTask,num=1) {
     task.start();
 }
 
-function run_test(data,GridWorldTask,test_group,num=1) {
+function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     document.getElementById('tasknum').innerText = "Trial " + String(num_training+num) + "/" + String(num_total);
-    console.log(num)
-    trial_data = data[num-1]
 
     var wait_time
     var time_limit
+    
+    test_group = 1
     if (test_group == 0){ //time delay group
         wait_time = 10;
     } else { //time pressure group
@@ -73,13 +80,23 @@ function run_test(data,GridWorldTask,test_group,num=1) {
         time_limit = 5;
     }
 
+    if (idxs == undefined){
+        idxs = Array.apply(null, {length: num_test}).map(Number.call, Number)
+    }
+    idx = Math.floor(Math.random() * idxs.length);
+    idx = idxs[idx]
+    console.log(idx)
+    idxs.splice(idxs.indexOf(idx), 1);
+    trial_data = data[idx]
+    console.log(idxs)
+    
     task = new GridWorldTask({
         container: $("#task")[0],
-        step_callback: (d) => {console.log(d)},
+        step_callback: (d) => {},
         endtask_callback: (trial_data,r) => {
             saveData(num, trial_data, r, "test", test_group)
             if (num >= num_test){clickStart('page1','page3')}
-            else {run_test(data,GridWorldTask, test_group, num+1)}
+            else {run_test(data,GridWorldTask, test_group, num+1, idxs)}
         }
     });
     task.init({
@@ -180,8 +197,6 @@ function saveData(num, trial_data, r, type, time_condition = undefined) {
         'state': undefined
     }
 
-    console.log(datajson)
-    if (time_condition!=undefined) {datajson.timed = time_condition}
     datajson = JSON.stringify(datajson)
 
     var xhr = new XMLHttpRequest();
