@@ -15,9 +15,9 @@ function test_info(){
     test_info += "For the last " + String(num_test) + " trials, you will be placed under a time constraint.\r\n\r\n";   
     test_group = Math.floor(Math.random() * 2);
     if (test_group==0){
-        test_info += "You must take 10 seconds to look at the board before making any moves. When 10 seconds is up, the counter will say \"BEGIN\" and the background will turn green. You may then make moves as you wish" 
+        test_info += "You should take 10 seconds to look at the board and plan your moves. When 10 seconds is up, the counter will turn green and you can then take your 5 steps" 
     } else {
-        test_info += "You will have a time limit of 5 seconds to complete the board. There will be a counter on the right displaying your time remaining. The round will end either when time runs out, or when you have completed 5 moves. If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4"
+        test_info += "You will have a time limit of 5 seconds to complete the board. There will be a counter on the right displaying your time remaining. If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4"
     }
     document.
     getElementById('test_info').innerText = test_info  
@@ -85,7 +85,6 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     }
     idx = Math.floor(Math.random() * idxs.length);
     idx = idxs[idx]
-    console.log(idx)
     idxs.splice(idxs.indexOf(idx), 1);
     trial_data = data[idx]
     console.log(idxs)
