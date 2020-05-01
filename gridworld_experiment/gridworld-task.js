@@ -45838,6 +45838,9 @@ var GridWorldTask = function () {
             this.wait_time = wait_time;
             this.time_limit = time_limit;
             this.time = 0; //to keep track of timed version
+            this.time_out = false;
+            this.time_over = undefined;
+            this.my_timer = undefined;
 
             this.data = {};
         }
@@ -45847,34 +45850,36 @@ var GridWorldTask = function () {
             var _this = this;
 
             if (this.wait_time > 0) {
+                document.getElementById('timer').style.color = 'red';
                 document.getElementById('timer').innerText = String(this.wait_time);
                 this.time = this.wait_time - 1;
-                var mytimer = window.setInterval(function () {
+                this.mytimer = window.setInterval(function () {
                     document.getElementById('timer').innerText = String(_this.time);
                     _this.time -= 1;
                 }, 1000);
                 setTimeout(function () {
-                    document.getElementById('timer').innerText = "BEGIN";
+                    document.getElementById('timer').innerText = "0";
+                    document.getElementById('timer').style.color = 'green';
                     _this.start_datetime = new Date();
                     _this._enable_response();
-                    window.clearInterval(mytimer);
+                    window.clearInterval(_this.mytimer);
                 }, this.wait_time * 1000);
             } else if (this.time_limit != undefined) {
+                document.getElementById('timer').style.color = 'green';
                 document.getElementById('timer').innerText = String(this.time_limit);
                 this.time = this.time_limit - 1;
                 this.start_datetime = new Date();
                 this._enable_response();
-                var mytimer = window.setInterval(function () {
+                this.mytimer = window.setInterval(function () {
                     document.getElementById('timer').innerText = String(_this.time);
                     _this.time -= 1;
                 }, 1000);
-                setTimeout(function () {
-                    window.clearInterval(mytimer);
-                    document.getElementById('timer').innerText = "TIME OUT";
-                    if (_this.iter != _this.iter_limit) {
-                        _this.reward = -4;
-                        _this._end_task();
-                    }
+                this.time_over = setTimeout(function () {
+                    _this.time_out = true;
+                    document.getElementById('timer').innerText = "0";
+                    document.getElementById('timer').style.color = 'red';
+                    _this.reward = -4;
+                    _this._end_task();
                 }, this.time_limit * 1000);
             } else {
                 this.start_datetime = new Date();
@@ -46074,6 +46079,13 @@ var GridWorldTask = function () {
         value: function _end_task() {
             var _this4 = this;
 
+            if (this.time_limit > 0) {
+                window.clearInterval(this.mytimer);
+                if (!this.time_out) {
+                    window.clearTimeout(this.time_over);
+                }
+            }
+
             var animtime = this.painter.OBJECT_ANIMATION_TIME;
 
             var result_color = "green";
@@ -46085,9 +46097,9 @@ var GridWorldTask = function () {
             this.painter.draw_object(2, 2, "<", "results");
             this.painter.add_object("rect", "results2", { "fill": "white", "object_length": 2.25, "object_width": 1.25 });
             this.painter.draw_object(2, 2, "<", "results2");
-            var scoretext = "YOUR SCORE: " + String(this.reward) + "\nBEST SCORE: " + String(this.best_reward);
+            var scoretext = "Your Score: " + String(this.reward) + "\nBest Score: " + String(this.best_reward);
             scoretext += "\npress n to continue";
-            this.painter.add_text(2, 2, scoretext, { "font-size": 20 });
+            this.painter.add_text(2, 2, scoretext, { "font-size": 20, "font-family": "Palatino Linotype, Book Antiqua, Palatino, serif" });
 
             console.log('endtask');
             this._disable_response();
