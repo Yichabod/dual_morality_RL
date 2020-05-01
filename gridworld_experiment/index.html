@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="train.css">
+        <script
+          src="https://code.jquery.com/jquery-3.3.1.min.js"
+          integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+          crossorigin="anonymous"></script>
+        <script src="gridworld-task.js" type="text/javascript"></script>
+        <script src="gridworld-setup.js" type="text/javascript"> </script>
+        <script>
+
+            var train_data;
+            $(document).ready(() => {   
+                $.getJSON("../train_data.json", function(jsondata) {
+                    train_data = jsondata
+                    run_train(train_data, GridWorldTask)
+                });             
+            });
+
+            var test_data
+            function prepare_test(){
+                $.getJSON("../test_data.json", function(jsondata) {
+                    test_data = jsondata
+                    clickStart("page2","page1")
+                    run_test(test_data, GridWorldTask, test_group)
+                });    
+            }
+
+        </script>
+    </head>
+    <body>
+        <div id="page1"> 
+            <div id="task"></div>
+            <div id="info">
+                <div id="reward"> Reward = 0 <br/> Step = 0/5 </div>
+                <div id="timer"></div>
+                <div id="tasknum">Trial = 1/60</div>
+            </div>
+        </div>
+        <div id="page2" style="display:none">
+            <p id="test_info">  </p>
+            <button type="button" name="test_button" id='exampleButton'; onclick="prepare_test();"; >Start</button>
+        </div>
+        <div id="page3" style="display:none">
+            <p> Finish! </p>
+        </div>
+    </body>
+</html>
