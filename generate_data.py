@@ -312,8 +312,8 @@ push1 = ({'train':(1,0),'trainvel':(0,1),'cargo1':(2,2),'num1':1,'target1':(3,1)
 switch = ({'train':(1,0),'trainvel':(0,1),'cargo1':(2,1),'num1':1,'target1':(4,3),
         'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)},1)
 
-death1 = ({'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(2,2),
-        'switch':(4,0),'agent':(0,3),'other2':(2,4),'num2':2,'target2':(0,3)},1)
+death1 = ({'train':(0,0),'trainvel':(0,1),'cargo1':(1,2),'num1':1,'target1':(2,2),
+        'switch':(4,0),'agent':(0,3),'cargo2':(2,4),'num2':2,'target2':(0,3)},1)
 
 def make_test_json(num):
     grids = data_gen(num, distribution={'push':25,'switch':25,'targets':40,'lose':10})

@@ -26,6 +26,7 @@ try {
   // Second stage is to create prepared SQL statement using the column
   // names as a guide to what values might be in the JSON.
   // If a value is missing from a particular trial, then NULL is inserted
+  
   $sql = "INSERT INTO $table VALUES(";
   for($i = 0; $i < count($col_names); $i++){
     $name = $col_names[$i];

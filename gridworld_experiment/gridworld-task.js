@@ -45791,6 +45791,7 @@ var GridWorldTask = function () {
 
             this.painter.add_object("rect", "cargo2", { "fill": "lightblue", "object_length": .7, "object_width": .7 });
             var cargo2_pos = init_state['cargo2'];
+            console.log(init_state, cargo2_pos);
             this.painter.draw_object(cargo2_pos[0], cargo2_pos[1], "<", "cargo2");
             this.text2 = this.painter.add_text(cargo2_pos[0], cargo2_pos[1], "2", { "font-size": 40 });
 
@@ -45870,11 +45871,10 @@ var GridWorldTask = function () {
                 setTimeout(function () {
                     window.clearInterval(mytimer);
                     document.getElementById('timer').innerText = "TIME OUT";
-                    console.log(_this.iter, _this.iter_limit);
                     if (_this.iter != _this.iter_limit) {
                         _this.reward = -4;
+                        _this._end_task();
                     }
-                    _this._end_task();
                 }, this.time_limit * 1000);
             } else {
                 this.start_datetime = new Date();
@@ -46080,6 +46080,7 @@ var GridWorldTask = function () {
             if (this.reward < this.best_reward) {
                 result_color = "red";
             }
+
             this.painter.add_object("rect", "results", { "fill": result_color, "object_length": 2.5, "object_width": 1.5 });
             this.painter.draw_object(2, 2, "<", "results");
             this.painter.add_object("rect", "results2", { "fill": "white", "object_length": 2.25, "object_width": 1.25 });
@@ -46088,6 +46089,7 @@ var GridWorldTask = function () {
             scoretext += "\npress n to continue";
             this.painter.add_text(2, 2, scoretext, { "font-size": 20 });
 
+            console.log('endtask');
             this._disable_response();
             (0, _jquery2.default)(document).on("keydown.task_response", function (e) {
                 var kc = e.keyCode ? e.keyCode : e.which;
@@ -46182,7 +46184,6 @@ var GridWorldTask = function () {
                 var statestring = { 'agent': state['agent'], 'cargo1': state['cargo1'], 'cargo2': state['cargo2'], 'train': state['train'],
                     'trainvel': state['trainvel'], 'switch': this.mdp.switch_pos, 'target1': this.mdp.target1, 'target2': this.mdp.target2 };
                 statestring = JSON.stringify(statestring);
-                console.log(statestring);
                 this.data[this.iter].push(statestring);
 
                 this._do_animation({ reward: reward, action: action, state: state, nextstate: nextstate });
