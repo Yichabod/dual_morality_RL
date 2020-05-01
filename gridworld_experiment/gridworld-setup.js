@@ -17,9 +17,10 @@ function test_info(){
     if (test_group==0){
         test_info += "You must take 10 seconds to look at the board before making any moves. When 10 seconds is up, the counter will say \"BEGIN\" and the background will turn green. You may then make moves as you wish" 
     } else {
-        test_info += "You will have a time limit of 5 seconds to complete the board. There will be a counter on the right displaying your time remaining. The round will end either when time runs out, or when you have completed 5 moves."
+        test_info += "You will have a time limit of 5 seconds to complete the board. There will be a counter on the right displaying your time remaining. The round will end either when time runs out, or when you have completed 5 moves. If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4"
     }
-    document.getElementById('test_info').innerText = test_info  
+    document.
+    getElementById('test_info').innerText = test_info  
 }
 
 function run_train(data,GridWorldTask,num=1) {
@@ -27,8 +28,9 @@ function run_train(data,GridWorldTask,num=1) {
     trial_data = data[num-1]
     let task = new GridWorldTask({
         container: $("#task")[0],
-        step_callback: (d) => {console.log(d)},
+        step_callback: (d) => {},
         endtask_callback: (trial_data,r) => {
+            console.log(trial_data);
             saveData(num, trial_data, r, "train")
             if (num >= num_training){
                 test_info();
@@ -111,12 +113,30 @@ function saveData(num, trial_data, r, type, time_condition = undefined) {
         var millis = undefined;
         var reward_step = undefined;
         var reward_cum = undefined;
+        var hitswitch = undefined;
+        var push1 = undefined;
+        var push2 = undefined;
+        var hitagent = undefined;
+        var hit1 = undefined;
+        var hit2 = undefined;
+        var get1 = undefined;
+        var get2 = undefined
+        var state = undefined;
 
         if (data != undefined){
             action = data[0];
             millis = data[1];
             reward_step = data[2]
             reward_cum = data[3]
+            hitswitch = data[4]
+            push1 = data[5]
+            push2 = data[6]
+            hitagent = data[7]
+            hit1 = data[8]
+            hit2 = data[9]
+            get1 = data[10]
+            get2 = data[11]
+            state = data[12]
         }
         datajson[i] = {
             'userid': 1,
@@ -127,7 +147,16 @@ function saveData(num, trial_data, r, type, time_condition = undefined) {
             'action': action,
             'reaction_millis': millis,
             'reward_step': reward_step,
-            'reward_cum': reward_cum
+            'reward_cum': reward_cum,
+            'hitswitch': hitswitch,
+            'push1': push1,
+            'push2': push2,
+            'hitagent': hitagent,
+            'hit1': hit1,
+            'hit2': hit2,
+            'get1': get1,
+            'get2': get2,
+            'state': state
         }
     }
 
@@ -140,9 +169,18 @@ function saveData(num, trial_data, r, type, time_condition = undefined) {
         'action': undefined,
         'reaction_millis': undefined,
         'reward_step': undefined,
-        'reward_cum': r
+        'reward_cum': r,
+        'push1': undefined,
+        'push2': undefined,
+        'hitagent': undefined,
+        'hit1': undefined,
+        'hit2': undefined,
+        'get1': undefined,
+        'get2': undefined,
+        'state': undefined
     }
 
+    console.log(datajson)
     if (time_condition!=undefined) {datajson.timed = time_condition}
     datajson = JSON.stringify(datajson)
 
