@@ -45778,14 +45778,14 @@ var GridWorldTask = function () {
 
             var switch_x = (switch_pos[0] + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - 60 / 2;
             var switch_y = (this.painter.y_to_h(switch_pos[1]) + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - 60 / 2;
-            this.switch = this.painter.paper.image("/assets/switch.png", switch_x, switch_y, 60, 60);
+            this.switch = this.painter.paper.image("assets/switch.png", switch_x, switch_y, 60, 60);
 
             var agent_pos = init_state['agent'];
             this.agent_height = 58;
             this.agent_width = 50;
             var agent_x = (agent_pos[0] + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - this.agent_width / 2;
             var agent_y = (this.painter.y_to_h(agent_pos[1]) + .5) * this.painter.TILE_SIZE + this.painter.DISPLAY_BORDER - this.agent_height / 2;
-            this.agent = this.painter.paper.image("/assets/player.png", agent_x, agent_y, this.agent_width, this.agent_height);
+            this.agent = this.painter.paper.image("assets/player.png", agent_x, agent_y, this.agent_width, this.agent_height);
 
             this.state = init_state;
 
@@ -45802,7 +45802,7 @@ var GridWorldTask = function () {
 
             var train_pos = init_state['train'];
             this.vel_mapping = { "1,0": "1", "-1,0": "2", "0,1": "3", "0,-1": "4" };
-            var src = "/assets/train" + this.vel_mapping[String(init_state['trainvel'])] + ".png";
+            var src = "assets/train" + this.vel_mapping[String(init_state['trainvel'])] + ".png";
 
             if (init_state['trainvel'][0] == 0) {
                 this.train_width = 40;

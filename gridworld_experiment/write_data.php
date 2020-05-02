@@ -23,6 +23,16 @@ try {
   while($row = $stmt->fetchColumn()) {
     $col_names[] = $row;
   }
+
+  $userid = $data_array[0]['userid'];
+  if($userid == -1){
+    $idstmt = $conn->prepare("SELECT MAX(userid) FROM `$table`");
+    $idstmt->execute();
+    $userid = $idstmt->fetchColumn();
+    $userid = $userid + 1;
+  }
+  
+
   // Second stage is to create prepared SQL statement using the column
   // names as a guide to what values might be in the JSON.
   // If a value is missing from a particular trial, then NULL is inserted
@@ -40,7 +50,9 @@ try {
   for($i=0; $i < count($data_array); $i++){
     for($j = 0; $j < count($col_names); $j++){
       $colname = $col_names[$j];
-      if(!isset($data_array[$i][$colname])){
+      if ($colname == "userid") {
+        $insertstmt->bindValue(":$colname", $userid);
+      } elseif(!isset($data_array[$i][$colname])){
         $insertstmt->bindValue(":$colname", null, PDO::PARAM_NULL);
       } else {
         $insertstmt->bindValue(":$colname", $data_array[$i][$colname]);
@@ -48,9 +60,11 @@ try {
     }
     $insertstmt->execute();
   }
-  echo '{"success": true}';
+
+  echo '{"userid": ' . $userid . '}'; 
+  //echo '{"success": true}';
 } catch(PDOException $e) {
-  echo '{"success": false, "message": ' . $e->getMessage();
+  //echo '{"success": false, "message": ' . $e->getMessage();
 }
 $conn = null;
 ?>

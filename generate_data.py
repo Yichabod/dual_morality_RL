@@ -235,7 +235,7 @@ def collect_grid(size, grid_type):
 
         a = Agent()
         #seems like needs 50,000 iters to solve reliably....
-        Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
+        Q, policy = a.mc_first_visit_control(testgrid.copy(), 10000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
         grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q)
 
     target1 = testgrid.other_agents.targets[0]
@@ -307,13 +307,22 @@ def make_train_json(num):
 
 
 push1 = ({'train':(1,0),'trainvel':(0,1),'cargo1':(2,2),'num1':1,'target1':(3,1),
-        'switch':(0,0),'agent':(3,3),'cargo2':(1,4),'num2':2,'target2':(0,3)},1)
+        'switch':(0,0),'agent':(3,1),'cargo2':(1,4),'num2':2,'target2':(0,3)},-1)
 
-switch = ({'train':(1,0),'trainvel':(0,1),'cargo1':(2,1),'num1':1,'target1':(4,3),
-        'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)},1)
+push2 = ({'train':(0,3),'trainvel':(1,0),'cargo1':(2,2),'num1':1,'target1':(0,4),
+        'switch':(2,4),'agent':(2,1),'cargo2':(4,3),'num2':2,'target2':(3,4)},-1)
 
-death1 = ({'train':(0,0),'trainvel':(0,1),'cargo1':(1,2),'num1':1,'target1':(2,2),
-        'switch':(4,0),'agent':(0,3),'cargo2':(2,4),'num2':2,'target2':(0,3)},1)
+push3 = ({'train':(4,4),'trainvel':(-1,0),'cargo1':(1,3),'num1':1,'target1':(3,2),
+        'switch':(2,0),'agent':(0,3),'cargo2':(0,4),'num2':2,'target2':(0,1)},-1)
+
+switch1 = ({'train':(1,0),'trainvel':(0,1),'cargo1':(0,1),'num1':1,'target1':(4,3),
+        'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)},-1)
+
+switch2 = ({'train':(0,2),'trainvel':(1,0),'cargo1':(1,3),'num1':1,'target1':(2,3),
+        'switch':(4,0),'agent':(2,0),'cargo2':(2,2),'num2':2,'target2':(4,2)},-1)
+
+switch3 = ({'train':(3,4),'trainvel':(0,-1),'cargo1':(4,2),'num1':1,'target1':(2,4),
+        'switch':(2,2),'agent':(0,1),'cargo2':(3,1),'num2':2,'target2':(1,0)},-1)
 
 def make_test_json(num):
     grids = data_gen(num, distribution={'push':25,'switch':25,'targets':40,'lose':10})
@@ -321,8 +330,11 @@ def make_test_json(num):
     grids = grids[:num-3]
 
     grids.append(push1)
-    grids.append(switch)
-    grids.append(death1)
+    grids.append(push2)
+    grids.append(push3)
+    grids.append(switch1)
+    grids.append(switch2)
+    grids.append(switch3)
     random.shuffle(grids)
 
     data = {}

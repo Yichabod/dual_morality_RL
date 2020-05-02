@@ -11,7 +11,7 @@
 
             var train_data;
             $(document).ready(() => {   
-                $.getJSON("../train_data.json", function(jsondata) {
+                $.getJSON("train_data.json", function(jsondata) {
                     train_data = jsondata
                     run_train(train_data, GridWorldTask)
                 });             
@@ -19,7 +19,7 @@
 
             var test_data
             function prepare_test(){
-                $.getJSON("../test_data.json", function(jsondata) {
+                $.getJSON("test_data.json", function(jsondata) {
                     test_data = jsondata
                     clickStart("page2","page1")
                     run_test(test_data, GridWorldTask, test_group)
