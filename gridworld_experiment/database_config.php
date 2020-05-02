@@ -1,8 +1,8 @@
 <?php
   $servername = "localhost";
   $port = 8889;
-  $username = "root";
-  $password = "root";
-  $dbname = "experiment";
-  $table = "data";
+  $username = "user";
+  $password = "password";
+  $dbname = "user";
+  $table = "beta_data";
 ?>

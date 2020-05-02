@@ -161,7 +161,10 @@ class Grid:
         #check if switch is pushed
         if new_agent_pos == self.switch.pos:
             new_agent_pos = self.agent_pos #agent
-            self.train.velocity = (self.train.velocity[1], self.train.velocity[0]) #move perpindicular
+            if self.train.velocity[1] == 0:
+                self.train.velocity = (0, self.train.velocity[0]-self.train.velocity[1]) 
+            else:
+                self.train.velocity = (self.train.velocity[0]-self.train.velocity[1],0)            
         old_train_pos = self.train.pos
         self.train.update() #update train AFTER switch is hit
 
@@ -242,7 +245,10 @@ class Grid:
         if new_agent_pos == self.switch.pos:
             reward += self.rewards_dict['agent push switch']
             new_agent_pos = self.agent_pos
-            new_train_pos = self.train.get_next_position((self.train.velocity[1], self.train.velocity[0]))
+            if self.train.velocity[1] == 0:
+                self.train.get_next_position((self.train.velocity[0]-self.train.velocity[1], 0))
+            else:
+                new_train_pos = self.train.get_next_position((0,self.train.velocity[0]-self.train.velocity[1]))   
 
         new_agent_mask = {}
         for other_pos in self.other_agents.mask.keys():

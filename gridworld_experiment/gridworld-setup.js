@@ -4,7 +4,6 @@ function clickStart(hide, show){
     window.scrollTo(0,0);
 }
 
-
 const num_training = 60
 const num_test = 30
 const num_total = 90
@@ -23,7 +22,7 @@ function test_info(){
     getElementById('test_info').innerText = test_info  
 }
 
-function run_train(data,GridWorldTask,num=60,idxs=undefined) {
+function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     if (idxs == undefined){
         idxs = Array.apply(null, {length: num_training}).map(Number.call, Number)
     }
@@ -38,7 +37,7 @@ function run_train(data,GridWorldTask,num=60,idxs=undefined) {
         container: $("#task")[0],
         step_callback: (d) => {},
         endtask_callback: (trial_data,r) => {
-            saveData(num, trial_data, r, "train")
+            saveData(idx, trial_data, r, "train")
             if (num >= num_training){
                 test_info();
             }
@@ -85,6 +84,7 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     }
     idx = Math.floor(Math.random() * idxs.length);
     idx = idxs[idx]
+    console.log(idx)
     idxs.splice(idxs.indexOf(idx), 1);
     trial_data = data[idx]
     console.log(idxs)
@@ -119,7 +119,9 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     task.start();
 }
 
-function saveData(num, trial_data, r, type, time_condition = undefined) {
+var userid = -1;
+
+function saveData(idx, trial_data, r, type, time_condition = undefined) {
     var datajson = {};
 
     for (i = 0; i < 5; i++){
@@ -155,8 +157,8 @@ function saveData(num, trial_data, r, type, time_condition = undefined) {
             state = data[12]
         }
         datajson[i] = {
-            'userid': 1,
-            'trial': num,
+            'userid': userid,
+            'trial': idx,
             'type': type,
             'timed': time_condition,
             'step': step,
@@ -177,8 +179,8 @@ function saveData(num, trial_data, r, type, time_condition = undefined) {
     }
 
     datajson[5] = {
-        'userid': 1,
-        'trial': num,
+        'userid': userid,
+        'trial': idx,
         'type': type,
         'timed': time_condition,
         'step': 6,
@@ -186,6 +188,7 @@ function saveData(num, trial_data, r, type, time_condition = undefined) {
         'reaction_millis': undefined,
         'reward_step': undefined,
         'reward_cum': r,
+        'hitswitch': undefined,
         'push1': undefined,
         'push2': undefined,
         'hitagent': undefined,
@@ -203,9 +206,9 @@ function saveData(num, trial_data, r, type, time_condition = undefined) {
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onload = function() {
       if(xhr.status == 200){
-        console.log(xhr.responseText);
-        //var response = JSON.parse(xhr.responseText);
-        //console.log(response.success);
+        var response = JSON.parse(xhr.responseText); 
+        userid = response["userid"];
+        console.log(userid);
       }
     };
     xhr.send(datajson);
