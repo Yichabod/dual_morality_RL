@@ -28,16 +28,17 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     }
     
     idx = Math.floor(Math.random() * idxs.length);
+    idx = idxs[idx]
     console.log(idx)
     idxs.splice(idxs.indexOf(idx), 1);
-    
+
     document.getElementById('tasknum').innerText = "Trial " + String(num) + "/" + String(num_total);
     trial_data = data[idx]
     let task = new GridWorldTask({
         container: $("#task")[0],
         step_callback: (d) => {},
-        endtask_callback: (trial_data,r) => {
-            saveData(idx, trial_data, r, "train")
+        endtask_callback: (result_data,r) => {
+            saveData(idx, result_data, r, trial_data['best_reward'],"train")
             if (num >= num_training){
                 test_info();
             }
@@ -92,8 +93,8 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     task = new GridWorldTask({
         container: $("#task")[0],
         step_callback: (d) => {},
-        endtask_callback: (trial_data,r) => {
-            saveData(num, trial_data, r, "test", test_group)
+        endtask_callback: (result_data,r) => {
+            saveData(num, result_data, r, trial_data['best_reward'],"test", test_group)
             if (num >= num_test){clickStart('page1','page3')}
             else {run_test(data,GridWorldTask, test_group, num+1, idxs)}
         }
@@ -121,7 +122,7 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
 
 var userid = -1;
 
-function saveData(idx, trial_data, r, type, time_condition = undefined) {
+function saveData(idx, trial_data, r, rmax, type, time_condition = undefined) {
     var datajson = {};
 
     for (i = 0; i < 5; i++){
@@ -166,6 +167,7 @@ function saveData(idx, trial_data, r, type, time_condition = undefined) {
             'reaction_millis': millis,
             'reward_step': reward_step,
             'reward_cum': reward_cum,
+            'reward_max': undefined,
             'hitswitch': hitswitch,
             'push1': push1,
             'push2': push2,
@@ -188,6 +190,7 @@ function saveData(idx, trial_data, r, type, time_condition = undefined) {
         'reaction_millis': undefined,
         'reward_step': undefined,
         'reward_cum': r,
+        'reward_max': rmax,
         'hitswitch': undefined,
         'push1': undefined,
         'push2': undefined,

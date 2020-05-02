@@ -235,7 +235,7 @@ def collect_grid(size, grid_type):
 
         a = Agent()
         #seems like needs 50,000 iters to solve reliably....
-        Q, policy = a.mc_first_visit_control(testgrid.copy(), 10000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
+        Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
         grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q)
 
     target1 = testgrid.other_agents.targets[0]
@@ -270,6 +270,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
         num_type = int(distribution[type]*num_grids/100)
         for i in range(num_type):
             grids,actions,reward,init_info = collect_grid(grid_size,type)
+            init_info = coords_for_web(init_info)
             user_testing_grids.append((init_info,reward))
 
             if reward not in reward_dist:
@@ -290,6 +291,18 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
     print("reward_dist: ", reward_dist)
 
     return user_testing_grids
+
+def coords_for_web(init_info):
+    new_init = {}
+    for key,value in init_info.items():
+        if key not in ('num1','num2','trainvel'):
+            new_init[key] = (value[1],4-value[0])
+        elif key == 'trainvel':
+            new_init[key] = (value[1],-value[0])
+        else:
+            new_init[key] = value
+    return new_init
+
 
 def make_train_json(num):
     grids = data_gen(num, distribution={'push':25,'switch':25,'targets':40,'lose':10})
