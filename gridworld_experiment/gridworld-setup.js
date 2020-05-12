@@ -36,6 +36,7 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     trial_data = data[idx]
     let task = new GridWorldTask({
         container: $("#task")[0],
+        reward_container: $("#reward")[0],
         step_callback: (d) => {},
         endtask_callback: (result_data,r) => {
             saveData(idx, result_data, r, trial_data['best_reward'],"train")
@@ -72,12 +73,11 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     var wait_time
     var time_limit
     
-    test_group = 1
     if (test_group == 0){ //time delay group
         wait_time = 10;
     } else { //time pressure group
         wait_time = 0;
-        time_limit = 5;
+        time_limit = 7;
     }
 
     if (idxs == undefined){
@@ -92,6 +92,7 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     
     task = new GridWorldTask({
         container: $("#task")[0],
+        reward_container: $("#reward"),
         step_callback: (d) => {},
         endtask_callback: (result_data,r) => {
             saveData(num, result_data, r, trial_data['best_reward'],"test", test_group)

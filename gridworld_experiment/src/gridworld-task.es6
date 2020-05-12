@@ -16,6 +16,7 @@ let GridWorldMDP = gwmdp.GridWorldMDP;
 class GridWorldTask {
     constructor({
         container,
+        reward_container,
         step_callback = (d) => {console.log(d)},
         endtask_callback = () => {},
 
@@ -32,6 +33,7 @@ class GridWorldTask {
         prevent_default_key_event = true
     }) {
         this.container = container;
+        this.reward_container = reward_container
         this.step_callback = step_callback;
         this.endtask_callback = endtask_callback;
 
@@ -480,7 +482,7 @@ class GridWorldTask {
     update_stats(){
         var stats_text = "Reward = " + String(this.reward);
         stats_text += "\r\nStep = " + String(this.iter+1) + "/5"
-        document.getElementById('reward').innerText = stats_text;
+        this.reward_container.innerText = stats_text;
     }
 
     _process_action({action}) {

@@ -1,3 +1,57 @@
+
+/* for text/images div of instructions pages */
+#instructions {
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    margin: auto;
+    width: 60%;
+    margin-top:60px;
+    margin-bottom:100px;
+    overflow:scroll;
+}
+
+
+/* next and back blue bar div of instructions pages */
+#buttonbar{
+    position: fixed;
+    overflow: hidden;
+    margin-left:-8px;
+    width: 100%;
+    height: 50px;
+    background-color:cadetblue;
+    bottom: 0;
+    display:block;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+button{
+    background-color: cadetblue; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+
+}
+
+/* for mini images on info page 2 */
+#samples{
+    width:auto;
+    height:30;
+    vertical-align:middle;
+}
+
+#centerimg{
+    height:auto;
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+    width:40%;
+}
 #page1, #page2 {
     margin: 0;
     position: absolute;
