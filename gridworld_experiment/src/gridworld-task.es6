@@ -17,6 +17,7 @@ class GridWorldTask {
     constructor({
         container,
         reward_container,
+        reset,
         step_callback = (d) => {console.log(d)},
         endtask_callback = () => {},
 
@@ -32,6 +33,7 @@ class GridWorldTask {
         END_OF_ROUND_DELAY_MULTIPLIER = 4,
         prevent_default_key_event = true
     }) {
+        this.reset = reset
         this.container = container;
         this.reward_container = reward_container
         this.step_callback = step_callback;
@@ -413,7 +415,8 @@ class GridWorldTask {
         this.painter.add_object("rect", "results2", {"fill" : "white","object_length":2.25, "object_width":1.25});
         this.painter.draw_object(2,2, "<", "results2");
         var scoretext = "Your Score: " + String(this.reward) + "\nBest Score: " + String(this.best_reward)
-        scoretext += "\npress n to continue"
+        if (this.reset == true){ scoretext += "\npress n to try again"}
+        else { scoretext += "\npress n to continue" }
         this.painter.add_text(2,2, scoretext, {"font-size":20, "font-family": "Palatino Linotype, Book Antiqua, Palatino, serif"});
 
         console.log('endtask');
@@ -481,11 +484,12 @@ class GridWorldTask {
 
     update_stats(){
         var stats_text = "Reward = " + String(this.reward);
-        stats_text += "\r\nStep = " + String(this.iter+1) + "/5"
+        stats_text += "\r\nStep = " + String(this.iter+0) + "/5"
         this.reward_container.innerText = stats_text;
     }
 
     _process_action({action}) {
+        console.log(this.iter)
         let response_datetime = +new Date;
         let state, nextstate, reward;
 
@@ -510,9 +514,10 @@ class GridWorldTask {
             this.data[this.iter].push(statestring)
 
             this._do_animation({reward, action, state, nextstate});
+            this.iter += 1;
             this.update_stats();
 
-            if (this.mdp.is_terminal() || this.task_ended || this.iter >= this.iter_limit-1) {
+            if (this.mdp.is_terminal() || this.task_ended || this.iter >= this.iter_limit) {
                 this._end_task();
             }
             else {
@@ -522,7 +527,7 @@ class GridWorldTask {
             this.state = nextstate;
         }
 
-        this.iter += 1;
+        
 
         return {
             state,
