@@ -18,8 +18,7 @@ function test_info(){
     } else {
         test_info += "You will have a time limit of 5 seconds to complete the board. There will be a counter on the right displaying your time remaining. If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4"
     }
-    document.
-    getElementById('test_info').innerText = test_info  
+    document.getElementById('test_info').innerText = test_info  
 }
 
 function run_train(data,GridWorldTask,num=1,idxs=undefined) {
@@ -35,6 +34,7 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     document.getElementById('tasknum').innerText = "Trial " + String(num) + "/" + String(num_total);
     trial_data = data[idx]
     let task = new GridWorldTask({
+        reset: false,
         container: $("#task")[0],
         reward_container: $("#reward")[0],
         step_callback: (d) => {},
@@ -91,6 +91,7 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     console.log(idxs)
     
     task = new GridWorldTask({
+        reset: false,
         container: $("#task")[0],
         reward_container: $("#reward"),
         step_callback: (d) => {},

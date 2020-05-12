@@ -1,5 +1,4 @@
-
-/* for text/images div of instructions pages */
+/* holds text, images, and task of instructions pages */
 #instructions {
     font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
     margin: auto;
@@ -9,6 +8,18 @@
     overflow:scroll;
 }
 
+#taskinfo4 {
+    float: right;
+    width: 70%;
+    overflow: hidden;   
+}
+
+#rewardinfo4 {
+    font-size: 22pt;
+    float: left;
+    overflow: hidden;
+    margin-top: 200px;
+}
 
 /* next and back blue bar div of instructions pages */
 #buttonbar{
@@ -45,13 +56,15 @@ button{
     vertical-align:middle;
 }
 
+/* for larger centered images in info sections */
 #centerimg{
     height:auto;
     display:block;
     margin-left:auto;
     margin-right:auto;
-    width:40%;
+    width:50%;
 }
+
 #page1, #page2 {
     margin: 0;
     position: absolute;
