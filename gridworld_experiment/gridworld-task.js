@@ -45683,6 +45683,7 @@ var GridWorldTask = function () {
     function GridWorldTask(_ref) {
         var container = _ref.container,
             reward_container = _ref.reward_container,
+            reset = _ref.reset,
             _ref$step_callback = _ref.step_callback,
             step_callback = _ref$step_callback === undefined ? function (d) {
             console.log(d);
@@ -45714,6 +45715,7 @@ var GridWorldTask = function () {
 
         _classCallCheck(this, GridWorldTask);
 
+        this.reset = reset;
         this.container = container;
         this.reward_container = reward_container;
         this.step_callback = step_callback;
@@ -46100,7 +46102,11 @@ var GridWorldTask = function () {
             this.painter.add_object("rect", "results2", { "fill": "white", "object_length": 2.25, "object_width": 1.25 });
             this.painter.draw_object(2, 2, "<", "results2");
             var scoretext = "Your Score: " + String(this.reward) + "\nBest Score: " + String(this.best_reward);
-            scoretext += "\npress n to continue";
+            if (this.reset == true) {
+                scoretext += "\npress n to try again";
+            } else {
+                scoretext += "\npress n to continue";
+            }
             this.painter.add_text(2, 2, scoretext, { "font-size": 20, "font-family": "Palatino Linotype, Book Antiqua, Palatino, serif" });
 
             console.log('endtask');
@@ -46168,7 +46174,7 @@ var GridWorldTask = function () {
         key: 'update_stats',
         value: function update_stats() {
             var stats_text = "Reward = " + String(this.reward);
-            stats_text += "\r\nStep = " + String(this.iter + 1) + "/5";
+            stats_text += "\r\nStep = " + String(this.iter + 0) + "/5";
             this.reward_container.innerText = stats_text;
         }
     }, {
@@ -46176,6 +46182,7 @@ var GridWorldTask = function () {
         value: function _process_action(_ref4) {
             var action = _ref4.action;
 
+            console.log(this.iter);
             var response_datetime = +new Date();
             var state = void 0,
                 nextstate = void 0,
@@ -46201,9 +46208,10 @@ var GridWorldTask = function () {
                 this.data[this.iter].push(statestring);
 
                 this._do_animation({ reward: reward, action: action, state: state, nextstate: nextstate });
+                this.iter += 1;
                 this.update_stats();
 
-                if (this.mdp.is_terminal() || this.task_ended || this.iter >= this.iter_limit - 1) {
+                if (this.mdp.is_terminal() || this.task_ended || this.iter >= this.iter_limit) {
                     this._end_task();
                 } else {
                     //This handles when/how to re-enable user responses
@@ -46211,8 +46219,6 @@ var GridWorldTask = function () {
                 }
                 this.state = nextstate;
             }
-
-            this.iter += 1;
 
             return {
                 state: state,
