@@ -99,7 +99,7 @@ def grid_must_switch(size):
     train_map = {0:((0,1),(train_loc,0)),1:((0,-1),(train_loc,size-1)),
                  2:((1,0),(0, train_loc)),3:((-1,0),(size-1, train_loc))}
     train_vel, train_pos = train_map[train_orientation]
-    
+
     train_path = set()
     for i in range(5):
         train_path.add((train_pos[0]+i*train_vel[0],train_pos[1]+i*train_vel[1]))
@@ -217,14 +217,14 @@ def collect_grid(size, grid_type):
     """
 
     func_dict = {'push': grid_must_push,'switch':grid_must_switch,'targets':grid_get_targets,'lose':grid_nothing_lose}
-    
+
     #PUSH includes save or save and put into target (Rewards 0,1,2)
-    #SWITCH includes same as push. -1 excluded because either mc is bad or there is a dilemma. 
+    #SWITCH includes same as push. -1 excluded because either mc is bad or there is a dilemma.
     #1 is excluded because may have let 1 die to get targets for 2
     #TARGETS includes 1,2,3 for successfully getting any combo of boxes into targets
     #LOSE means one box must be hit by train, possible to get 2nd into target
     valid_dict = {'push':[0,1,2],'switch':[0,2],'targets':[1,2,3],'lose':[-2,-1,1]}
-    
+
     valid_rewards = valid_dict[grid_type]
     reward = -100 #invalid
     while reward not in valid_rewards:
@@ -236,14 +236,14 @@ def collect_grid(size, grid_type):
         a = Agent()
         #seems like needs 50,000 iters to solve reliably....
         Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
-        grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q)
+        grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q, display=True)
 
     target1 = testgrid.other_agents.targets[0]
     target2 = testgrid.other_agents.targets[1]
     return _add_next_train_targets(grids,target1,target2), action_values, reward, init_pos
 
 
-def data_gen(num_grids=1000,grid_size=5,distribution=None):
+def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True):
     """
     Saves 2 ndarrays, actions_val_array (n,5) and grids_array
     (n,2, grid_size, grid_size) generated, where the second dim is for future train pos
@@ -259,7 +259,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
     grids_data = np.empty((1,3,grid_size,grid_size),dtype=int)
     actions_data = np.empty((1, grid_size),dtype=int)
     reward_dist = {}
- 
+
     if distribution == None:
         distribution = {'push':25,'switch':25,'targets':25,'lose':25}
 
@@ -283,9 +283,9 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None):
             count += 1
             if count % 100 == 0:
                 print("generated grid",count)
-
-    np.save("grids_data_final_apr9",grids_data[1:])
-    np.save("actions_data_final_apr9",actions_data[1:])
+    if save:
+        np.save("grids_data_final_apr9",grids_data[1:])
+        np.save("actions_data_final_apr9",actions_data[1:])
     print("finished in", time.time()-start)
     print("reward_dist: ", reward_dist)
 
@@ -332,16 +332,14 @@ def make_test_json(num):
         del init_pos['num2']
         init_pos['best_reward'] = sample[1]
         data[idx] = init_pos
-        
+
     with open('test_data.json', 'w') as outfile:
         json.dump(data, outfile)
 
-        
+
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    #data_gen(100, distribution={'push':23,'switch':23,'targets':39,'lose':15})
-
+    grids = data_gen(10, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=False)
     #make_train_json(60)
-    make_test_json(30)
-
+    # make_test_json(30)
