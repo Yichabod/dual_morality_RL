@@ -45682,6 +45682,7 @@ var GridWorldMDP = gwmdp.GridWorldMDP;
 var GridWorldTask = function () {
     function GridWorldTask(_ref) {
         var container = _ref.container,
+            reward_container = _ref.reward_container,
             _ref$step_callback = _ref.step_callback,
             step_callback = _ref$step_callback === undefined ? function (d) {
             console.log(d);
@@ -45714,6 +45715,7 @@ var GridWorldTask = function () {
         _classCallCheck(this, GridWorldTask);
 
         this.container = container;
+        this.reward_container = reward_container;
         this.step_callback = step_callback;
         this.endtask_callback = endtask_callback;
 
@@ -46167,7 +46169,7 @@ var GridWorldTask = function () {
         value: function update_stats() {
             var stats_text = "Reward = " + String(this.reward);
             stats_text += "\r\nStep = " + String(this.iter + 1) + "/5";
-            document.getElementById('reward').innerText = stats_text;
+            this.reward_container.innerText = stats_text;
         }
     }, {
         key: '_process_action',
