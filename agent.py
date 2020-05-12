@@ -1,6 +1,6 @@
 import numpy as np
 from collections import Counter, defaultdict
-import neural_net
+#import neural_net
 from graphics import display_grid
 from utils import generate_array, in_bounds
 import new_grid as grid
