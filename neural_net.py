@@ -81,7 +81,7 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
         ys = ys.cuda()
         net = net.cuda()
 
-    print(onehot_xs[0])
+    
     onehot_train_xs = onehot_xs[:9*B//10]
     train_ys = ys[:9*B//10]
 
