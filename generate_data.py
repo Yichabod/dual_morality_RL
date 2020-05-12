@@ -270,6 +270,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True):
         num_type = int(distribution[type]*num_grids/100)
         for i in range(num_type):
             grids,actions,reward,init_info = collect_grid(grid_size,type)
+            init_info = coords_for_web(init_info)
             user_testing_grids.append((init_info,reward))
 
             if reward not in reward_dist:
@@ -291,8 +292,20 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True):
 
     return user_testing_grids
 
+def coords_for_web(init_info):
+    new_init = {}
+    for key,value in init_info.items():
+        if key not in ('num1','num2','trainvel'):
+            new_init[key] = (value[1],4-value[0])
+        elif key == 'trainvel':
+            new_init[key] = (value[1],-value[0])
+        else:
+            new_init[key] = value
+    return new_init
+
+
 def make_train_json(num):
-    grids = data_gen(66, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    grids = data_gen(num, distribution={'push':25,'switch':25,'targets':40,'lose':10})
     random.shuffle(grids)
     data = {}
     for idx,sample in enumerate(grids):
@@ -307,22 +320,34 @@ def make_train_json(num):
 
 
 push1 = ({'train':(1,0),'trainvel':(0,1),'cargo1':(2,2),'num1':1,'target1':(3,1),
-        'switch':(0,0),'agent':(3,3),'cargo2':(1,4),'num2':2,'target2':(0,3)},1)
+        'switch':(0,0),'agent':(3,1),'cargo2':(1,4),'num2':2,'target2':(0,3)},-1)
 
-switch = ({'train':(1,0),'trainvel':(0,1),'cargo1':(2,1),'num1':1,'target1':(4,3),
-        'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)},1)
+push2 = ({'train':(0,3),'trainvel':(1,0),'cargo1':(2,2),'num1':1,'target1':(0,4),
+        'switch':(2,4),'agent':(2,1),'cargo2':(4,3),'num2':2,'target2':(3,4)},-1)
 
-death1 = ({'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(2,2),
-        'switch':(4,0),'agent':(0,3),'other2':(2,4),'num2':2,'target2':(0,3)},1)
+push3 = ({'train':(4,4),'trainvel':(-1,0),'cargo1':(1,3),'num1':1,'target1':(3,2),
+        'switch':(2,0),'agent':(0,3),'cargo2':(0,4),'num2':2,'target2':(0,1)},-1)
+
+switch1 = ({'train':(1,0),'trainvel':(0,1),'cargo1':(0,1),'num1':1,'target1':(4,3),
+        'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)},-1)
+
+switch2 = ({'train':(0,2),'trainvel':(1,0),'cargo1':(1,3),'num1':1,'target1':(2,3),
+        'switch':(4,0),'agent':(2,0),'cargo2':(2,2),'num2':2,'target2':(4,2)},-1)
+
+switch3 = ({'train':(3,4),'trainvel':(0,-1),'cargo1':(4,2),'num1':1,'target1':(2,4),
+        'switch':(2,2),'agent':(0,1),'cargo2':(3,1),'num2':2,'target2':(1,0)},-1)
 
 def make_test_json(num):
-    grids = data_gen(num, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    grids = data_gen(num, distribution={'push':25,'switch':25,'targets':40,'lose':10})
     random.shuffle(grids)
     grids = grids[:num-3]
 
     grids.append(push1)
-    grids.append(switch)
-    grids.append(death1)
+    grids.append(push2)
+    grids.append(push3)
+    grids.append(switch1)
+    grids.append(switch2)
+    grids.append(switch3)
     random.shuffle(grids)
 
     data = {}
@@ -340,6 +365,7 @@ def make_test_json(num):
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    grids = data_gen(10, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=False)
-    #make_train_json(60)
-    # make_test_json(30)
+    #data_gen(100, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+
+    make_train_json(66)
+    make_test_json(30)

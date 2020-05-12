@@ -1,0 +1,60 @@
+#page1, #page2 {
+    margin: 0;
+    position: absolute;
+    height: 500;
+    width: 800;
+
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+
+}
+
+#task {
+    float: right;
+    width: 60%;
+    overflow: hidden;   
+    margin-right: 60;
+}
+  
+#info {
+    float: left;
+    overflow: hidden;   
+    margin-left: 60;
+}
+
+#reward {
+    font-size: 22pt;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+#tasknum {
+    position:absolute;
+    top: 65%;
+    -ms-transform: translateY(-65%);
+    transform: translateY(-65%);
+}
+
+#timer {
+    font-size: 102pt;
+    position:absolute;
+    top: 25%;
+    -ms-transform: translateY(-25%);
+    transform: translateY(-25%);
+    color: red;
+}
+
+#test_button {
+    font-size: 16px;
+    text-align: center;
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    border-radius: 8px;
+    padding: 6px 10px;
+    color:green;
+}
+  
