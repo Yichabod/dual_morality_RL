@@ -1,17 +1,30 @@
 info4_done = false;
 
+function clearGrid(div){
+    myNode = document.getElementById(div);
+    while (myNode.firstChild) {
+        myNode.removeChild(myNode.lastChild);
+    }
+}
+
 function pushDemo(GridWorldTask){
-    document.getElementById('next45').disabled = true
+    if (!info4_done){
+        document.getElementById('next45').disabled = true
+        document.getElementById('next45').style.color = "red"
+    }
     let task = new GridWorldTask({
         reset: true,
         container: $("#taskinfo4")[0],
         reward_container: $("#rewardinfo4")[0],
-        step_callback: (d) => {console.log(d)},
+        step_callback: (d) => {
+            if (d['reward'] == 3 && d['iter']==5){
+                document.getElementById("next45").disabled = false
+                info4_done = true;
+                document.getElementById('next45').style.color = "white"
+            }
+        },
         endtask_callback: (result_data,r) => {
             pushDemo(GridWorldTask);
-            if (r == 3){
-                document.getElementById("next45").disabled = false
-            }
         }
     });
     task.init({
