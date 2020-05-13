@@ -19,7 +19,7 @@
                 });             
             }
 
-            var test_data
+            var test_data;
             function prepare_test(){
                 $.getJSON("test_data.json", function(jsondata) {
                     test_data = jsondata
@@ -105,7 +105,8 @@
             </div>
             <div id="buttonbar">
                 <button type="button" id='back'; onclick="clearGrid('taskinfo4');clickStart('info4','info3');" >BACK</button>
-                <button type="button" id='next45'; onclick="clickStart('info4','info5');"; >NEXT</button>
+                <button type="button" id='next45';
+                    onclick="clickStart('info4','info5');pushDemo(GridWorldTask);"; >NEXT</button>
             </div>
         </div>
 
@@ -133,7 +134,8 @@
             </div>
             <div id="buttonbar">
                 <button type="button" id='back'; onclick="clickStart('info5','info4');"; >BACK</button>
-                <button type="button" id='next'; onclick="clickStart('info5','info6');"; >NEXT</button>
+                <button type="button" id='next';
+                    onclick="clickStart('info5','info6');switchDemo(GridWorldTask);"; >NEXT</button>
             </div>
         </div>
 
