@@ -293,7 +293,7 @@ class GridWorldTask {
             this.data[this.iter] = [action,(new Date()-this.start_datetime)]
             this.start_datetime = new Date()
             let step_data = this._process_action({action});
-            this.step_callback(step_data);
+            this.step_callback({'reward':this.reward,'iter':this.iter});
         });
     }
 
@@ -489,7 +489,6 @@ class GridWorldTask {
     }
 
     _process_action({action}) {
-        console.log(this.iter)
         let response_datetime = +new Date;
         let state, nextstate, reward;
 
@@ -527,8 +526,6 @@ class GridWorldTask {
             this.state = nextstate;
         }
 
-        
-
         return {
             state,
             state_type: this.mdp.state_features[state],
@@ -537,7 +534,7 @@ class GridWorldTask {
             nextstate_type: this.mdp.state_features[nextstate],
             reward,
             start_datetime: this.start_datetime,
-            response_datetime: response_datetime
+            response_datetime: response_datetime,
         }
     }
 }

@@ -45980,7 +45980,7 @@ var GridWorldTask = function () {
                 _this2.data[_this2.iter] = [action, new Date() - _this2.start_datetime];
                 _this2.start_datetime = new Date();
                 var step_data = _this2._process_action({ action: action });
-                _this2.step_callback(step_data);
+                _this2.step_callback({ 'reward': _this2.reward, 'iter': _this2.iter });
             });
         }
     }, {
@@ -46182,7 +46182,6 @@ var GridWorldTask = function () {
         value: function _process_action(_ref4) {
             var action = _ref4.action;
 
-            console.log(this.iter);
             var response_datetime = +new Date();
             var state = void 0,
                 nextstate = void 0,
