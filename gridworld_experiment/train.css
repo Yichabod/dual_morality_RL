@@ -8,13 +8,13 @@
     overflow:scroll;
 }
 
-#taskinfo4 {
+#taskinfo4, #taskinfo5, #taskinfo6 {
     float: right;
     width: 70%;
     overflow: hidden;   
 }
 
-#rewardinfo4 {
+#rewardinfo4, #rewardinfo5, #rewardinfo6 {
     font-size: 22pt;
     float: left;
     overflow: hidden;
