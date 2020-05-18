@@ -45683,6 +45683,7 @@ var GridWorldTask = function () {
     function GridWorldTask(_ref) {
         var container = _ref.container,
             reward_container = _ref.reward_container,
+            time_container = _ref.time_container,
             reset = _ref.reset,
             _ref$step_callback = _ref.step_callback,
             step_callback = _ref$step_callback === undefined ? function (d) {
@@ -45718,6 +45719,7 @@ var GridWorldTask = function () {
         this.reset = reset;
         this.container = container;
         this.reward_container = reward_container;
+        this.time_container = time_container;
         this.step_callback = step_callback;
         this.endtask_callback = endtask_callback;
 
@@ -45854,34 +45856,34 @@ var GridWorldTask = function () {
             var _this = this;
 
             if (this.wait_time > 0) {
-                document.getElementById('timer').style.color = 'red';
-                document.getElementById('timer').innerText = String(this.wait_time);
+                this.time_container.style.color = 'red';
+                this.time_container.innerText = String(this.wait_time);
                 this.time = this.wait_time - 1;
                 this.mytimer = window.setInterval(function () {
-                    document.getElementById('timer').innerText = String(_this.time);
+                    _this.time_container.innerText = String(_this.time);
                     _this.time -= 1;
                 }, 1000);
                 setTimeout(function () {
-                    document.getElementById('timer').innerText = "0";
-                    document.getElementById('timer').style.color = 'green';
+                    _this.time_container.innerText = "0";
+                    _this.time_container.style.color = 'green';
                     _this.start_datetime = new Date();
                     _this._enable_response();
                     window.clearInterval(_this.mytimer);
                 }, this.wait_time * 1000);
             } else if (this.time_limit != undefined) {
-                document.getElementById('timer').style.color = 'green';
-                document.getElementById('timer').innerText = String(this.time_limit);
+                this.time_container.style.color = 'green';
+                this.time_container.innerText = String(this.time_limit);
                 this.time = this.time_limit - 1;
                 this.start_datetime = new Date();
                 this._enable_response();
                 this.mytimer = window.setInterval(function () {
-                    document.getElementById('timer').innerText = String(_this.time);
+                    _this.time_container.innerText = String(_this.time);
                     _this.time -= 1;
                 }, 1000);
                 this.time_over = setTimeout(function () {
                     _this.time_out = true;
-                    document.getElementById('timer').innerText = "0";
-                    document.getElementById('timer').style.color = 'red';
+                    _this.time_container.innerText = "0";
+                    _this.time_container.style.color = 'red';
                     _this.reward = -4;
                     _this._end_task();
                 }, this.time_limit * 1000);
@@ -45980,7 +45982,7 @@ var GridWorldTask = function () {
                 _this2.data[_this2.iter] = [action, new Date() - _this2.start_datetime];
                 _this2.start_datetime = new Date();
                 var step_data = _this2._process_action({ action: action });
-                _this2.step_callback({ 'reward': _this2.reward, 'iter': _this2.iter });
+                _this2.step_callback({ 'reward': _this2.reward, 'iter': _this2.iter, 'hitswitch': step_data });
             });
         }
     }, {

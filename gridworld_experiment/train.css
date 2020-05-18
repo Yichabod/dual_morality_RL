@@ -8,17 +8,17 @@
     overflow:scroll;
 }
 
-#taskinfo4, #taskinfo5, #taskinfo6 {
+#taskinfo4, #taskinfo5, #taskinfo6, #taskinfo7, #taskinfotest {
     float: right;
     width: 70%;
     overflow: hidden;   
 }
 
-#rewardinfo4, #rewardinfo5, #rewardinfo6 {
+#rewardinfo4, #rewardinfo5, #rewardinfo6, #rewardinfo7, #rewardinfotest {
     font-size: 22pt;
     float: left;
     overflow: hidden;
-    margin-top: 200px;
+    margin-top: 250px;
 }
 
 /* next and back blue bar div of instructions pages */
@@ -113,6 +113,15 @@ button{
     top: 25%;
     -ms-transform: translateY(-25%);
     transform: translateY(-25%);
+    color: red;
+}
+
+#infotimer {
+    font-size: 102pt;
+    position:absolute;
+    top: 50%;
+    -ms-transform: translateY(-47%);
+    transform: translateY(-47%);
     color: red;
 }
 
