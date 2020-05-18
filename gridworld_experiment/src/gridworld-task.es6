@@ -17,6 +17,7 @@ class GridWorldTask {
     constructor({
         container,
         reward_container,
+        time_container,
         reset,
         step_callback = (d) => {console.log(d)},
         endtask_callback = () => {},
@@ -36,6 +37,7 @@ class GridWorldTask {
         this.reset = reset
         this.container = container;
         this.reward_container = reward_container
+        this.time_container = time_container
         this.step_callback = step_callback;
         this.endtask_callback = endtask_callback;
 
@@ -171,35 +173,35 @@ class GridWorldTask {
 
     start() {
         if (this.wait_time>0){
-            document.getElementById('timer').style.color = 'red';
-            document.getElementById('timer').innerText = String(this.wait_time);
+            this.time_container.style.color = 'red';
+            this.time_container.innerText = String(this.wait_time);
             this.time = this.wait_time-1
             this.mytimer = window.setInterval(() => {
-                document.getElementById('timer').innerText = String(this.time);
+                this.time_container.innerText = String(this.time);
                 this.time -= 1 
             }, 1000);
             setTimeout(() => {
-                document.getElementById('timer').innerText = "0";
-                document.getElementById('timer').style.color = 'green';
+                this.time_container.innerText = "0";
+                this.time_container.style.color = 'green';
                 this.start_datetime = new Date();
                 this._enable_response();
                 window.clearInterval(this.mytimer)
             }, this.wait_time*1000);
 
         } else if (this.time_limit != undefined) {
-            document.getElementById('timer').style.color = 'green';
-            document.getElementById('timer').innerText = String(this.time_limit);
+            this.time_container.style.color = 'green';
+            this.time_container.innerText = String(this.time_limit);
             this.time = this.time_limit-1
             this.start_datetime = new Date();
             this._enable_response();
             this.mytimer = window.setInterval(() => {
-                document.getElementById('timer').innerText = String(this.time);
+                this.time_container.innerText = String(this.time);
                 this.time -= 1 
             }, 1000);
             this.time_over = setTimeout(() => {
                 this.time_out = true
-                document.getElementById('timer').innerText = "0";
-                document.getElementById('timer').style.color = 'red';
+                this.time_container.innerText = "0";
+                this.time_container.style.color = 'red';
                 this.reward = -4
                 this._end_task();
             }, this.time_limit*1000);
@@ -293,7 +295,7 @@ class GridWorldTask {
             this.data[this.iter] = [action,(new Date()-this.start_datetime)]
             this.start_datetime = new Date()
             let step_data = this._process_action({action});
-            this.step_callback({'reward':this.reward,'iter':this.iter});
+            this.step_callback({'reward':this.reward,'iter':this.iter,'hitswitch':step_data});
         });
     }
 
