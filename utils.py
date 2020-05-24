@@ -140,6 +140,8 @@ class Train:
         self.pos = (newx,newy)
         if not in_bounds(self.size,self.pos):
             self.on_screen = False
+        else:
+            self.on_screen = True
     def get_next_position(self,velocity):
         newx = self.pos[0]+velocity[0]
         newy = self.pos[1]+velocity[1]
