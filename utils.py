@@ -1,6 +1,6 @@
 import numpy as np
 
-ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch':4}
+ELEMENT_INT_DICT = {'agent':1,'train':2,'switch':3}
 INT_ELEMENT_DICT = {1:'◉',2:'O',3:'T',4:'S'}
 
 def in_bounds(size,position:tuple) -> bool:
