@@ -8,7 +8,7 @@ import random
 import json
 
 
-ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch':4}
+ELEMENT_INT_DICT = {'agent':1,'train':2,'switch':3}
 GRID_TYPE_DICT = {0:'push only',1:'switch or push',2:'do nothing',3:'others death'}
 
 def _add_next_train_targets(grids,target1,target2):
@@ -235,8 +235,8 @@ def collect_grid(size, grid_type):
 
         a = Agent()
         #seems like needs 50,000 iters to solve reliably....
-        Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
-        grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q, display=True)
+        Q, policy = a.mc_first_visit_control(testgrid.copy(), 5000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
+        grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q, display=False)
 
     target1 = testgrid.other_agents.targets[0]
     target2 = testgrid.other_agents.targets[1]
@@ -365,7 +365,7 @@ def make_test_json(num):
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    #data_gen(100, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    data_gen(100, distribution={'push':25,'switch':25,'targets':40,'lose':10})
 
-    make_train_json(66)
-    make_test_json(30)
+    #make_train_json(66)
+    #make_test_json(30)
