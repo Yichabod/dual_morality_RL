@@ -1,6 +1,8 @@
 info4_done = false;
 info5_done = false;
+info6_hit = false;
 info6_done = false;
+info7_done = false;
 
 function clearGrid(div){
     myNode = document.getElementById(div);
@@ -94,27 +96,32 @@ function switchDemo(GridWorldTask){
     document.getElementById('next67').style.color = "red";
     document.getElementById('next67').disabled = true;
     }
-        let task = new GridWorldTask({
+    let task = new GridWorldTask({
         reset: true,
         container: $("#taskinfo6")[0],
         reward_container: $("#rewardinfo6")[0],
         step_callback: (d) => {
-            if (d['reward'] == 0 && d['iter']==5){
+            console.log(d['hitswitch']['nextstate']['hitswitch'])
+            if (d['hitswitch']['nextstate']['hitswitch'] == 1){
+                info6_hit = true
+            }
+            if (info6_hit && d['iter']==5){
                 document.getElementById("next67").disabled = false
                 info6_done = true;
                 document.getElementById('next67').style.color = "white"
             }
         },
         endtask_callback: (result_data,r) => {
+            info6_hit = false
             switchDemo(GridWorldTask);
         }
             });
         task.init({
         init_state: {
             'agent': [2,3],
-            'cargo1': [4,2],
-            'cargo2': [6,6],
-            'train': [1,2],
+            'cargo1': [6,6],
+            'cargo2': [6,7],
+            'train': [0,2],
             'trainvel': [1,0]
         },
         switch_pos: [4,3],
@@ -130,4 +137,44 @@ function switchDemo(GridWorldTask){
     task.start();
 }
 
+function twoTrial(GridWorldTask){
+    if (!info7_done){
+        document.getElementById('next78').style.color = "red";
+        document.getElementById('next78').disabled = true;
+        }
+    let task = new GridWorldTask({
+        reset: true,
+        container: $("#taskinfo7")[0],
+        reward_container: $("#rewardinfo7")[0],
+        step_callback: (d) => {
+            if (d['reward']==1 && d['iter']==5){
+                document.getElementById("next78").disabled = false
+                info7_done = true;
+                document.getElementById('next78').style.color = "white"
+            }
+        },
+        endtask_callback: (result_data,r) => {
+            twoTrial(GridWorldTask);
+        }
+            });
+        task.init({
+        init_state: {
+            'agent': [4,3],
+            'cargo1': [2,3],
+            'cargo2': [3,1],
+            'train': [4,0],
+            'trainvel': [-1,0]
+        },
+        switch_pos: [4,1],
+        targets: {
+            'target1': [1,3],
+            'target2': [4,2]
+        },
+        show_rewards: true,
+        wait_time: 0,
+        time_limit: undefined,
+        best_reward: 1,
+    });
+    task.start();
+}
 

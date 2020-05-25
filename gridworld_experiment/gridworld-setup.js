@@ -8,17 +8,74 @@ const num_training = 60
 const num_test = 30
 const num_total = 90
 
-function test_info(){
-    clickStart('page1','page2')
+function test_info(GridWorldTask){
     var test_info = "You have completed " + String(num_training) + "/" + String(num_total) + " trials. ";
     test_info += "For the last " + String(num_test) + " trials, you will be placed under a time constraint.\r\n\r\n";   
     test_group = Math.floor(Math.random() * 2);
     if (test_group==0){
-        test_info += "You should take 10 seconds to look at the board and plan your moves. When 10 seconds is up, the counter will turn green and you can then take your 5 steps" 
+        test_info += "You should take 7 seconds to look at the board and plan your moves. When 7 seconds is up, the counter will turn green and you can then take your 5 steps<br><br>Try one practice trial below, and get the best score to continue!" 
     } else {
-        test_info += "You will have a time limit of 5 seconds to complete the board. There will be a counter on the right displaying your time remaining. If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4"
+        test_info += "You will have a time limit of 7 seconds to complete the board. There will be a counter on the right displaying your time remaining. <b>If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4</b><br><br>Try one practice trial below, and get the best score to continue!"
     }
-    document.getElementById('test_info').innerText = test_info  
+    clickStart('page1','testinfo')
+    document.getElementById('test_info').innerHTML = test_info  
+}
+
+testdemo_done = false
+function testDemo(GridWorldTask,test_group){
+    document.getElementById("testinfobutton").style.visibility = "hidden"
+    document.getElementById("infotimer").style.visibility = "visible"
+    document.getElementById("rewardinfotest").style.visibility = "visible"
+
+    var wt 
+    var tl
+    if (test_group == 0){
+        wt = 7
+    } else {
+        wt = 0
+        tl = 7
+    }
+    console.log(test_group,wt,tl)
+
+    if (!testdemo_done){
+        document.getElementById('test_button').style.color = "red";
+        document.getElementById('test_button').disabled = true;
+        }
+    let task = new GridWorldTask({
+        reset: true,
+        container: $("#taskinfotest")[0],
+        reward_container: $("#rewardinfotest")[0],
+        time_container: $("#infotimer")[0],
+        step_callback: (d) => {
+            if (d['reward']==1 && d['iter']==5){
+                document.getElementById("test_button").disabled = false
+                testdemo_done = true;
+                document.getElementById('test_button').style.color = "white"
+            }
+        },
+        endtask_callback: (result_data,r) => {
+            testDemo(GridWorldTask);
+        }
+            });
+        task.init({
+        init_state: {
+            'agent': [4,3],
+            'cargo1': [2,3],
+            'cargo2': [3,1],
+            'train': [4,0],
+            'trainvel': [-1,0]
+        },
+        switch_pos: [4,1],
+        targets: {
+            'target1': [1,3],
+            'target2': [4,2]
+        },
+        show_rewards: true,
+        wait_time: wt,
+        time_limit: tl,
+        best_reward: 1,
+    });
+    task.start();
 }
 
 function run_train(data,GridWorldTask,num=1,idxs=undefined) {
@@ -41,7 +98,7 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
         endtask_callback: (result_data,r) => {
             saveData(idx, result_data, r, trial_data['best_reward'],"train")
             if (num >= num_training){
-                test_info();
+                test_info(GridWorldTask);
             }
             else {run_train(data,GridWorldTask,num+1,idxs)}
         }
@@ -72,9 +129,9 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
 
     var wait_time
     var time_limit
-    
+
     if (test_group == 0){ //time delay group
-        wait_time = 10;
+        wait_time = 7;
     } else { //time pressure group
         wait_time = 0;
         time_limit = 7;
@@ -93,7 +150,8 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     task = new GridWorldTask({
         reset: false,
         container: $("#task")[0],
-        reward_container: $("#reward"),
+        reward_container: $("#reward")[0],
+        time_container: $("#timer")[0],
         step_callback: (d) => {},
         endtask_callback: (result_data,r) => {
             saveData(num, result_data, r, trial_data['best_reward'],"test", test_group)
