@@ -31,7 +31,7 @@ class Net(nn.Module):
         x = self.fc1(x)
         return x
 
-def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs=100, C=CHANNELS):
+def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs=20, C=CHANNELS):
     '''
     C is the number of channels in input array
     C = overall pos mask, agent, empty, obj1, obj2, train, train_next, switch, target1, target2
@@ -81,7 +81,7 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
         ys = ys.cuda()
         net = net.cuda()
 
-    
+
     onehot_train_xs = onehot_xs[:9*B//10]
     train_ys = ys[:9*B//10]
 
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
 
-    train(grids_file='grids_data_final_apr9.npy',actions_file='actions_data_final_apr9.npy')
+    train(grids_file='grids_data_final_may22.npy',actions_file='actionsdata_final_may22.npy')
     model = load()
     state = np.random.random([2,5,5])
     print(predict(model, state))

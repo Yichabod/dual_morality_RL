@@ -1,6 +1,6 @@
 import numpy as np
 from collections import Counter, defaultdict
-#import neural_net
+import neural_net
 from graphics import display_grid
 from utils import generate_array, in_bounds
 import new_grid as grid
@@ -280,4 +280,3 @@ if __name__ == "__main__":
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=10000, nn_init=False, softmax=False)
         #display_grid(testgrid.copy())
         agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
- 
