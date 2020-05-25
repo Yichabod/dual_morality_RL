@@ -366,7 +366,7 @@ def make_test_json(num):
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    data_gen(50000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True)
+    data_gen(5000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True)
 
     # make_train_json(66)
     # make_test_json(30)
