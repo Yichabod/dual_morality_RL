@@ -1,6 +1,6 @@
 import numpy as np
 
-ELEMENT_INT_DICT = {'agent':1,'other':2,'train':3,'switch':4}
+ELEMENT_INT_DICT = {'agent':1,'train':2,'switch':3}
 INT_ELEMENT_DICT = {1:'◉',2:'O',3:'T',4:'S'}
 
 def in_bounds(size,position:tuple) -> bool:
@@ -140,6 +140,8 @@ class Train:
         self.pos = (newx,newy)
         if not in_bounds(self.size,self.pos):
             self.on_screen = False
+        else:
+            self.on_screen = True
     def get_next_position(self,velocity):
         newx = self.pos[0]+velocity[0]
         newy = self.pos[1]+velocity[1]

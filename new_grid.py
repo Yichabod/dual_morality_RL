@@ -246,9 +246,9 @@ class Grid:
             reward += self.rewards_dict['agent push switch']
             new_agent_pos = self.agent_pos
             if self.train.velocity[1] == 0:
-                self.train.get_next_position((self.train.velocity[0]-self.train.velocity[1], 0))
+                new_train_pos = self.train.get_next_position((0,self.train.velocity[0]-self.train.velocity[1]))
             else:
-                new_train_pos = self.train.get_next_position((0,self.train.velocity[0]-self.train.velocity[1]))   
+                new_train_pos = self.train.get_next_position((self.train.velocity[0]-self.train.velocity[1], 0)) 
 
         new_agent_mask = {}
         for other_pos in self.other_agents.mask.keys():
