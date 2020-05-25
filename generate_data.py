@@ -209,7 +209,7 @@ def grid_nothing_lose(size):
 
 
 
-def collect_grid(size, grid_type):
+def collect_grid(size, grid_type, display=False):
     """
     param: size of grid
     returns 2 ndarrays, grids_array (n, 2, size, size) and actions_value_array (n,5) generated
@@ -236,14 +236,14 @@ def collect_grid(size, grid_type):
         a = Agent()
         #seems like needs 50,000 iters to solve reliably....
         Q, policy = a.mc_first_visit_control(testgrid.copy(), 1000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
-        grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q, display=True)
+        grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q, display=display)
 
     target1 = testgrid.other_agents.targets[0]
     target2 = testgrid.other_agents.targets[1]
     return _add_next_train_targets(grids,target1,target2), action_values, reward, init_pos
 
 
-def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True):
+def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True,display=False,filename="data_final_may22"):
     """
     Saves 2 ndarrays, actions_val_array (n,5) and grids_array
     (n,2, grid_size, grid_size) generated, where the second dim is for future train pos
@@ -256,6 +256,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True):
     directory as this script
     """
     start = time.time()
+    print("Started data generation")
     grids_data = np.empty((1,3,grid_size,grid_size),dtype=int)
     actions_data = np.empty((1, grid_size),dtype=int)
     reward_dist = {}
@@ -269,7 +270,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True):
     for type in distribution:
         num_type = int(distribution[type]*num_grids/100)
         for i in range(num_type):
-            grids,actions,reward,init_info = collect_grid(grid_size,type)
+            grids,actions,reward,init_info = collect_grid(grid_size,type, display)
             init_info = coords_for_web(init_info)
             user_testing_grids.append((init_info,reward))
 
@@ -285,8 +286,8 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True):
             if count % 100 == 0:
                 print("generated grid",count)
     if save:
-        np.save("grids_data_final_apr9",grids_data[1:])
-        np.save("actions_data_final_apr9",actions_data[1:])
+        np.save("grids_"+filename,grids_data[1:])
+        np.save("actions_"+filename,actions_data[1:])
     print("finished in", time.time()-start)
     print("reward_dist: ", reward_dist)
 
@@ -365,7 +366,7 @@ def make_test_json(num):
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    #data_gen(100, distribution={'push':23,'switch':23,'targets':39,'lose':15})
+    data_gen(50000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True)
 
-    make_train_json(66)
-    make_test_json(30)
+    # make_train_json(66)
+    # make_test_json(30)
