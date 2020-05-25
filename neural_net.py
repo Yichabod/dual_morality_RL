@@ -1,5 +1,3 @@
-from utils import generate_array
-from graphics import display_grid
 import numpy as np
 import time
 
@@ -153,8 +151,7 @@ def predict(model, state, C=CHANNELS):
 if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
-
-    train(grids_file='grids_data_final_may22.npy',actions_file='actionsdata_final_may22.npy')
+    train(grids_file='dodgy_combined_grids_may25.npy',actions_file='dodgy_combined_actions_may25.npy')
     model = load()
     state = np.random.random([2,5,5])
     print(predict(model, state))

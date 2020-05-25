@@ -266,7 +266,7 @@ if __name__ == "__main__":
     push4 = {'train':(2,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(0,1),
         'switch':(4,0),'agent':(4,2),'cargo2':(3,3),'num2':2,'target2':(0,3)}
 
-    testgrid = grid.Grid(5,random=False, init_pos=easy2)
+    testgrid = grid.Grid(5,random=False, init_pos=easy1)
 
     agent = Agent()
 
