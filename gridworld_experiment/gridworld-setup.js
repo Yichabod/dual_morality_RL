@@ -1,12 +1,15 @@
 function clickStart(hide, show){
-    document.getElementById(hide).style.display="none";
-    document.getElementById(show).style.display = "block";
-    window.scrollTo(0,0);
+    if (hide!="consent" || document.getElementById("consent_checkbox").checked){
+        document.getElementById(hide).style.display="none";
+        document.getElementById(show).style.display = "block";
+        window.scrollTo(0,0);
+    }
 }
 
 const num_training = 60
 const num_test = 30
 const num_total = 90
+
 
 function test_info(GridWorldTask){
     var test_info = "You have completed " + String(num_training) + "/" + String(num_total) + " trials. ";
@@ -21,64 +24,9 @@ function test_info(GridWorldTask){
     document.getElementById('test_info').innerHTML = test_info  
 }
 
-testdemo_done = false
-function testDemo(GridWorldTask,test_group){
-    document.getElementById("testinfobutton").style.visibility = "hidden"
-    document.getElementById("infotimer").style.visibility = "visible"
-    document.getElementById("rewardinfotest").style.visibility = "visible"
+var total_score = 0;
 
-    var wt 
-    var tl
-    if (test_group == 0){
-        wt = 7
-    } else {
-        wt = 0
-        tl = 7
-    }
-    console.log(test_group,wt,tl)
-
-    if (!testdemo_done){
-        document.getElementById('test_button').style.color = "red";
-        document.getElementById('test_button').disabled = true;
-        }
-    let task = new GridWorldTask({
-        reset: true,
-        container: $("#taskinfotest")[0],
-        reward_container: $("#rewardinfotest")[0],
-        time_container: $("#infotimer")[0],
-        step_callback: (d) => {
-            if (d['reward']==1 && d['iter']==5){
-                document.getElementById("test_button").disabled = false
-                testdemo_done = true;
-                document.getElementById('test_button').style.color = "white"
-            }
-        },
-        endtask_callback: (result_data,r) => {
-            testDemo(GridWorldTask);
-        }
-            });
-        task.init({
-        init_state: {
-            'agent': [4,3],
-            'cargo1': [2,3],
-            'cargo2': [3,1],
-            'train': [4,0],
-            'trainvel': [-1,0]
-        },
-        switch_pos: [4,1],
-        targets: {
-            'target1': [1,3],
-            'target2': [4,2]
-        },
-        show_rewards: true,
-        wait_time: wt,
-        time_limit: tl,
-        best_reward: 1,
-    });
-    task.start();
-}
-
-function run_train(data,GridWorldTask,num=1,idxs=undefined) {
+function run_train(data,GridWorldTask,num=60,idxs=undefined) {
     if (idxs == undefined){
         idxs = Array.apply(null, {length: num_training}).map(Number.call, Number)
     }
@@ -89,6 +37,7 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     idxs.splice(idxs.indexOf(idx), 1);
 
     document.getElementById('tasknum').innerText = "Trial " + String(num) + "/" + String(num_total);
+    document.getElementById('totalscore').innerText = "Total Score: " + String(total_score);
     trial_data = data[idx]
     let task = new GridWorldTask({
         reset: false,
@@ -96,8 +45,11 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
         reward_container: $("#reward")[0],
         step_callback: (d) => {},
         endtask_callback: (result_data,r) => {
-            saveData(idx, result_data, r, trial_data['best_reward'],"train")
+            total_score += r;
+            saveData(num, idx, result_data, r, trial_data['best_reward'],"train")
             if (num >= num_training){
+                document.getElementById('test_button').style.color = "red";
+                document.getElementById('test_button').disabled = true;
                 test_info(GridWorldTask);
             }
             else {run_train(data,GridWorldTask,num+1,idxs)}
@@ -124,8 +76,10 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     task.start();
 }
 
-function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
+function run_test(data,GridWorldTask,test_group,num=30,idxs=undefined) {
+    
     document.getElementById('tasknum').innerText = "Trial " + String(num_training+num) + "/" + String(num_total);
+    document.getElementById('totalscore').innerText = "Total Score: " + String(total_score);
 
     var wait_time
     var time_limit
@@ -154,8 +108,9 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
         time_container: $("#timer")[0],
         step_callback: (d) => {},
         endtask_callback: (result_data,r) => {
-            saveData(num, result_data, r, trial_data['best_reward'],"test", test_group)
-            if (num >= num_test){clickStart('page1','page3')}
+            total_score += r;
+            saveData(num+num_training, idx, result_data, r, trial_data['best_reward'],"test", test_group)
+            if (num >= num_test){clickStart('page1','finishpage')}
             else {run_test(data,GridWorldTask, test_group, num+1, idxs)}
         }
     });
@@ -182,7 +137,7 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
 
 var userid = -1;
 
-function saveData(idx, trial_data, r, rmax, type, time_condition = undefined) {
+function saveData(num, idx, trial_data, r, rmax, type, time_condition = undefined) {
     var datajson = {};
 
     for (i = 0; i < 5; i++){
@@ -219,7 +174,8 @@ function saveData(idx, trial_data, r, rmax, type, time_condition = undefined) {
         }
         datajson[i] = {
             'userid': userid,
-            'trial': idx,
+            'trialnum': num,
+            'gridnum': idx,
             'type': type,
             'timed': time_condition,
             'step': step,
@@ -242,7 +198,8 @@ function saveData(idx, trial_data, r, rmax, type, time_condition = undefined) {
 
     datajson[5] = {
         'userid': userid,
-        'trial': idx,
+        'trialnum': num,
+        'gridnum': idx,
         'type': type,
         'timed': time_condition,
         'step': 6,
