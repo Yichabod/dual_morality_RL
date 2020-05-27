@@ -159,7 +159,6 @@ class Agent:
             if display: print(action)
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
             grids_array = np.vstack((grids_array,generate_array(grid)))
-
             total_reward += grid.R(action)
             newstate = grid.T(action)
             state = newstate

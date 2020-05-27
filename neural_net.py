@@ -8,7 +8,7 @@ import torch.optim as optim
 
 cuda = True if torch.cuda.is_available() else False
 NUM_TARGETS = 2
-CHANNELS = 9
+CHANNELS = 8 #8 from 9. testing removal of mask layer
 
 class Net(nn.Module):
     def __init__(self, C=CHANNELS):
@@ -29,6 +29,69 @@ class Net(nn.Module):
         x = self.fc1(x)
         return x
 
+def make_onehot_data(inputs, labels):
+    """
+    Preprocesses data to one hot format to feed into model
+    """
+
+    inputs = torch.from_numpy(inputs).float()#.to(torch.long)
+    labels = torch.from_numpy(labels).float()
+
+    base = inputs[:, 0:1, :, :] #this contains all elts except next train/targets
+    targets = inputs[:, 2:3, :, :]
+
+    agent_layer = (base == 1).float()
+    train_layer = (base == 3).float()
+    next_train_layer = inputs[:, 1:2, :, :]
+    switch_layer = (base == 4).float()
+    object1_layer = (base == 5).float()
+    target1_layer = (targets == 1).float()
+    object2_layer = (base == 6).float()
+    target2_layer = (targets == 2).float()
+
+    onehot_inputs = torch.cat((agent_layer,train_layer,next_train_layer,switch_layer,object1_layer,target1_layer,object2_layer, target2_layer), dim=1)
+
+
+
+    # #only keep current trains
+    # inputs = inputs[:, 0:1, :, :]
+    #
+    # B, H, W = inputs.shape[0], inputs.shape[2], inputs.shape[3]
+    # # input shape b x c x h x w to net
+    # # so need to unsqueeze to make channel dimension of 1, could also make each agent its own channel instead
+    # #torch.from_numpy(inputs).unsqueeze(1).to(torch.long)
+    # # C - 3 (for targets and next train) + 1 since zero indexed? TODO
+    # onehot_inputs = torch.zeros([B, CHANNELS-2, H, W], dtype=torch.float32)
+    #
+    # #put agent, others, switch, train into their own layer
+    # onehot_inputs.scatter_(1, inputs, torch.ones(onehot_inputs.shape))
+    #
+    # targets = torch.from_numpy(targets).to(torch.long)
+    # onehot_targets = torch.zeros([B, NUM_TARGETS+1, H, W], dtype=torch.float32) #+1 for zero index
+    # onehot_targets.scatter_(1, targets, torch.ones(onehot_targets.shape))
+    # onehot_targets = onehot_targets[:,1:,:,:] #get rid of zero mask
+    #
+    # #add previous train observations
+    # onehot_inputs = torch.cat((onehot_inputs, torch.from_numpy(next_trains).float()), dim=1)
+    # #add targets
+    # onehot_inputs = torch.cat((onehot_inputs, onehot_targets), dim=1)
+    # import pdb; pdb.set_trace()
+    # onehot_inputs = torch.cat((onehot_inputs[:,:2,:,:], onehot_inputs[:,3:,:,:]), dim=1)
+
+    if cuda:
+        onehot_inputs = onehot_inputs.cuda()
+        labels = labels.cuda()
+        net = net.cuda()
+
+    B = inputs.shape[0]
+    onehot_train_inputs = onehot_inputs[:9*B//10]
+    train_labels = labels[:9*B//10]
+
+    onehot_test_inputs = onehot_inputs[9*B//10:]
+    test_labels = labels[9*B//10:]
+
+    return onehot_train_inputs, onehot_test_inputs, train_labels, test_labels
+
 def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs=20, C=CHANNELS):
     '''
     C is the number of channels in input array
@@ -39,52 +102,14 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
     xs = np.load(grids_file)
     ys = np.load(actions_file)
 
-    # previous_trains = xs[:, 0:1, :, :]
-    next_trains = xs[:, 1:2, :, :]
-    targets = xs[:, 2:3, :, :]
-    #only keep current trains
-    xs = xs[:, 0, :, :] #might consider doing 0:1
+    onehot_train_xs, onehot_test_xs, train_ys, test_ys = make_onehot_data(xs, ys)
 
-    B, H, W = xs.shape
-    #C = int(np.max(train_xs))+2
 
     net = Net(C)
     criterion = nn.MSELoss()#CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 
-    # input shape b x c x h x w to net
-    # so need to unsqueeze to make channel dimension of 1, could also make each agent its own channel instead
-    xs = torch.from_numpy(xs).unsqueeze(1).to(torch.long)
-    # C - 3 (for targets and next train) + 1 since zero indexed?
-    onehot_xs = torch.zeros([B, C-2, H, W], dtype=torch.float32)
-
-    #put agent, others, switch, train into their own layer
-    onehot_xs.scatter_(1, xs, torch.ones(onehot_xs.shape))
-
-    targets = torch.from_numpy(targets).to(torch.long)
-    onehot_targets = torch.zeros([B, NUM_TARGETS+1, H, W], dtype=torch.float32) #+1 for zero index
-    onehot_targets.scatter_(1, targets, torch.ones(onehot_targets.shape))
-    onehot_targets = onehot_targets[:,1:,:,:] #get rid of zero mask
-
-    #add previous train observations
-    onehot_xs = torch.cat((onehot_xs, torch.from_numpy(next_trains).float()), dim=1)
-    #add targets
-    onehot_xs = torch.cat((onehot_xs, onehot_targets), dim=1)
-    onehot_xs = torch.cat((onehot_xs[:,:2,:,:], onehot_xs[:,3:,:,:]), dim=1)
-
-    ys = torch.from_numpy(ys).float()
-    if cuda:
-        onehot_xs = onehot_xs.cuda()
-        ys = ys.cuda()
-        net = net.cuda()
-
-
-    onehot_train_xs = onehot_xs[:9*B//10]
-    train_ys = ys[:9*B//10]
-
-    onehot_test_xs = onehot_xs[9*B//10:]
-    test_ys = ys[9*B//10:]
     start = time.time()
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         running_loss = []
@@ -103,15 +128,16 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
             optimizer.step()
             # print statistics
             running_loss.append(loss.item())
-
-        if epoch%10==0 or (epoch == num_epochs-1):
+        # if epoch%10==0 or (epoch == num_epochs-1):
             test_loss = []
+            test_accuracy = []
             with torch.no_grad():
                 for j in range((len(test_ys)-1)//batch_size+1):
                     inputs, labels = onehot_test_xs[batch_size*j:batch_size*(j+1)], test_ys[batch_size*j:batch_size*(j+1)]
 
                     # forward + backward + optimize
                     outputs = net(inputs)
+                    import pdb; pdb.set_trace()
                     loss = criterion(outputs, labels)
                     test_loss.append(loss.item())
 
@@ -151,7 +177,30 @@ def predict(model, state, C=CHANNELS):
 if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
-    train(grids_file='dodgy_combined_grids_may25.npy',actions_file='dodgy_combined_actions_may25.npy')
+
+    train(grids_file='dodgy_combined_grids_may25.npy',actions_file='dodgy_combined_actions_may25.npy', num_epochs=1)
     model = load()
     state = np.random.random([2,5,5])
     print(predict(model, state))
+
+    #accuracy testing code
+    grids = np.load('dodgy_combined_grids_may25.npy')
+    actions = np.load('dodgy_combined_actions_may25.npy')
+    hits = 0
+    for i in range(200000,200010):
+        # print(grids[i])
+        # print(actions[i])
+        preds = list(predict(model, grids[i])[0])
+        targets = list(actions[i])
+        print("preds", preds)
+        print("targets", targets)
+        if preds.index(max(preds)) == targets.index(max(targets)): # change to np argmax
+            hits += 1
+    print(hits/i)
+
+
+    model = load()
+    state = grids[200000]
+    print(predict(model, state))
+    print("target",actions[200000])
+    print(max(actions[100]))
