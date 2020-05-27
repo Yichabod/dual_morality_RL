@@ -1,12 +1,19 @@
 info4_done = false;
-
 info5_done = false;
 hitagent = false;
 hitcargo = false;
-
 info6_hit = false;
 info6_done = false;
 info7_done = false;
+
+testing = false;
+if (testing==true){
+    info4_done = true;
+    info5_done = true;
+    info6_hit = true;
+    info6_done = true;
+    info7_done = true;
+}
 
 function clearGrid(div){
     myNode = document.getElementById(div);
@@ -125,7 +132,6 @@ function switchDemo(GridWorldTask){
         container: $("#taskinfo6")[0],
         reward_container: $("#rewardinfo6")[0],
         step_callback: (d) => {
-            console.log(d['hitswitch']['nextstate']['hitswitch'])
             if (d['hitswitch']['nextstate']['hitswitch'] == 1){
                 info6_hit = true
             }
@@ -215,7 +221,6 @@ function testDemo(GridWorldTask,test_group){
         wt = 0
         tl = 7
     }
-    console.log(test_group,wt,tl)
 
     let task = new GridWorldTask({
         reset: true,
