@@ -117,14 +117,13 @@ class GridWorldTask {
 
         this.painter.add_object("rect","cargo2",{"fill":"lightblue","object_length":.7, "object_width": .7});
         var cargo2_pos = init_state['cargo2'];
-        console.log(init_state, cargo2_pos)
         this.painter.draw_object(cargo2_pos[0], cargo2_pos[1], "<", "cargo2");
-        this.text2 = this.painter.add_text(cargo2_pos[0], cargo2_pos[1], "2", {"font-size":40});
+        this.text2 = this.painter.add_text(cargo2_pos[0], cargo2_pos[1], "$$", {"font-size":30});
 
         this.painter.add_object("rect","cargo1",{"fill":"lightgreen","object_length":.7, "object_width": .7});
         var cargo1_pos = init_state['cargo1']
         this.painter.draw_object(cargo1_pos[0], cargo1_pos[1], "<", "cargo1");
-        this.text1 = this.painter.add_text(cargo1_pos[0], cargo1_pos[1],"1", {"font-size":40});
+        this.text1 = this.painter.add_text(cargo1_pos[0], cargo1_pos[1],"$", {"font-size":30});
 
         var train_pos = init_state['train'];
         this.vel_mapping = {"1,0":"1","-1,0":"2","0,1":"3","0,-1":"4"}
@@ -295,7 +294,7 @@ class GridWorldTask {
             this.data[this.iter] = [action,(new Date()-this.start_datetime)]
             this.start_datetime = new Date()
             let step_data = this._process_action({action});
-            this.step_callback({'reward':this.reward,'iter':this.iter,'hitswitch':step_data});
+            this.step_callback({'reward':this.reward,'iter':this.iter,'hitswitch':step_data,'action':action});
         });
     }
 
