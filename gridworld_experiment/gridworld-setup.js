@@ -26,7 +26,7 @@ function test_info(GridWorldTask){
 
 var total_score = 0;
 
-function run_train(data,GridWorldTask,num=60,idxs=undefined) {
+function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     if (idxs == undefined){
         idxs = Array.apply(null, {length: num_training}).map(Number.call, Number)
     }
@@ -76,7 +76,7 @@ function run_train(data,GridWorldTask,num=60,idxs=undefined) {
     task.start();
 }
 
-function run_test(data,GridWorldTask,test_group,num=30,idxs=undefined) {
+function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     
     document.getElementById('tasknum').innerText = "Trial " + String(num_training+num) + "/" + String(num_total);
     document.getElementById('totalscore').innerText = "Total Score: " + String(total_score);
