@@ -1,0 +1,33 @@
+May 25, 2020
+Combined data of old apr9 dataset and dataset of 50k examples with slightly
+incorrect reward (corrected by Alice later). Trained on Google Colab with GPU
+(100 seconds for 40 epochs). Final test loss = 0.062 (Train loss 0.06)
+Strangely, when testing locally, using a sample of the data, the accuracy on the
+test grids when compared with the targets is 0.19 (equivalent to random choice)
+
+Epoch:1, train loss: 0.792, test loss: 0.788
+Epoch:11, train loss: 0.145, test loss: 0.110
+Epoch:20, train loss: 0.097, test loss: 0.065
+training took 234.4454641342163 seconds (Colab) NOTE THE ABOVE DATA WAS
+INCORRECT
+May 28 update:
+Removed mask layer and reorganized layers. Now training on properly generated
+and shuffled data. Model does much worse without mask it seems.
+Epoch:1, train loss: 0.884, test loss: 0.863, test accuracy: 0.116
+...
+Epoch:91, train loss: 0.442, test loss: 1.200, test accuracy: 0.173
+Epoch:100, train loss: 0.432, test loss: 1.268, test accuracy: 0.185
+training took 130.20787501335144 seconds
+After adding the mask,
+Epoch:1, train loss: 0.886, test loss: 0.864, test accuracy: 0.117
+...
+Epoch:100, train loss: 0.383, test loss: 1.386, test accuracy: 0.159
+Also tried increasing layer dimension from 100 to 500. Model did better on
+training loss but worse on test loss. Test accuracy peaked at around 0.27 which
+is still horrendous.
+Changed loss function to simply predict argmax of function and test accuracy
+significantly increased:
+Epoch:1, train loss: 1.175, test loss: 1.124, test accuracy: 0.603
+Epoch:11, train loss: 1.125, test loss: 1.140, test accuracy: 0.603
+Epoch:21, train loss: 0.988, test loss: 1.325, test accuracy: 0.517
+(performance gets worse after even more epochs).
