@@ -8,7 +8,7 @@ function clickStart(hide, show){
         var bonus = total_score * 0.05
         bonus = Math.round(100*bonus)/100
         if (bonus < 0){ bonus = 0 }
-    
+        document.getElementById("completioncode").innerHTML =  "Secret Completion Code: A8M9KF22PXKS"
         document.getElementById("bonusmsg").innerHTML = "You will recieve a bonus based on your total score for the task. Your total was " + parseInt(total_score) + ", providing a bonus of $" + parseFloat(bonus) + ". Please enter your mTurk ID so that we can correctly assign your bonus. Please be aware that this may take some time to process."    
     }
 }
