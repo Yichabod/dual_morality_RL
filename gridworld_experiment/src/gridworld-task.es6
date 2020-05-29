@@ -492,40 +492,37 @@ class GridWorldTask {
     _process_action({action}) {
         let response_datetime = +new Date;
         let state, nextstate, reward;
+        console.log("processing")
 
-        if (this.task_paused) {
-            console.log("Response-disabled time: "(+new Date));
-            this._disable_response();
+        
+        state = this.state;
+        nextstate = this.mdp.transition({state, action});
+        reward = this.mdp.reward({state, action, nextstate});
+        this.reward += reward['value'];
+        
+        this.data[this.iter].push(reward['value']);
+        this.data[this.iter].push(this.reward);
+        this.data[this.iter].push(nextstate['hitswitch'],nextstate['push1'],nextstate['push2'],nextstate['hitagent']);
+        this.data[this.iter].push(reward['hit1'],reward['hit2'],reward['get1'],reward['get2'])
+
+        var statestring = {'agent': state['agent'],'cargo1': state['cargo1'],'cargo2': state['cargo2'],'train': state['train'],
+                            'trainvel': state['trainvel'], 'switch':this.mdp.switch_pos, 'target1':this.mdp.target1,'target2':this.mdp.target2}
+        statestring = JSON.stringify(statestring)
+        this.data[this.iter].push(statestring)
+
+        this._do_animation({reward, action, state, nextstate});
+        this.iter += 1;
+        this.update_stats();
+
+        if (this.mdp.is_terminal() || this.iter >= this.iter_limit) {
+            this._end_task();
         }
         else {
-            state = this.state;
-            nextstate = this.mdp.transition({state, action});
-            reward = this.mdp.reward({state, action, nextstate});
-            this.reward += reward['value'];
-            
-            this.data[this.iter].push(reward['value']);
-            this.data[this.iter].push(this.reward);
-            this.data[this.iter].push(nextstate['hitswitch'],nextstate['push1'],nextstate['push2'],nextstate['hitagent']);
-            this.data[this.iter].push(reward['hit1'],reward['hit2'],reward['get1'],reward['get2'])
-
-            var statestring = {'agent': state['agent'],'cargo1': state['cargo1'],'cargo2': state['cargo2'],'train': state['train'],
-                                'trainvel': state['trainvel'], 'switch':this.mdp.switch_pos, 'target1':this.mdp.target1,'target2':this.mdp.target2}
-            statestring = JSON.stringify(statestring)
-            this.data[this.iter].push(statestring)
-
-            this._do_animation({reward, action, state, nextstate});
-            this.iter += 1;
-            this.update_stats();
-
-            if (this.mdp.is_terminal() || this.task_ended || this.iter >= this.iter_limit) {
-                this._end_task();
-            }
-            else {
-                //This handles when/how to re-enable user responses
-                this._setup_trial();
-            }
-            this.state = nextstate;
+            //This handles when/how to re-enable user responses
+            this._setup_trial();
         }
+        this.state = nextstate;
+    
 
         return {
             state,

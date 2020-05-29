@@ -3,6 +3,13 @@ function clickStart(hide, show){
         document.getElementById(hide).style.display="none";
         document.getElementById(show).style.display = "block";
         window.scrollTo(0,0);
+    } 
+    if (show == 'finishpage'){
+        var bonus = total_score * 0.05
+        bonus = Math.round(100*bonus)/100
+        if (bonus < 0){ bonus = 0 }
+    
+        document.getElementById("bonusmsg").innerHTML = "You will recieve a bonus based on your total score for the task. Your total was " + parseInt(total_score) + ", providing a bonus of $" + parseFloat(bonus) + ". Please enter your mTurk ID so that we can correctly assign your bonus. Please be aware that this may take some time to process."    
     }
 }
 
@@ -226,6 +233,7 @@ function saveData(num, idx, trial_data, r, rmax, type, time_condition = undefine
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onload = function() {
       if(xhr.status == 200){
+        console.log(xhr.responseText);
         var response = JSON.parse(xhr.responseText); 
         userid = response["userid"];
         console.log(userid);
