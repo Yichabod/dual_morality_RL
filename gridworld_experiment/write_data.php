@@ -5,11 +5,6 @@ include('database_config.php');
 
 $data_array = json_decode(file_get_contents('php://input'), true);
 
-function console_log( $data ){
-  echo '<script>';
-  echo 'console.log('. json_encode( $data ) .')';
-  echo '</script>';
-}
 
 try {
   $conn = new PDO("mysql:host=$servername;port=$port;dbname=$dbname", $username, $password);
@@ -32,7 +27,6 @@ try {
     $userid = $userid + 1;
   }
   
-
   // Second stage is to create prepared SQL statement using the column
   // names as a guide to what values might be in the JSON.
   // If a value is missing from a particular trial, then NULL is inserted

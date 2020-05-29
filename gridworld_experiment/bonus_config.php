@@ -4,5 +4,5 @@
   $username = "azhang";
   $password = "mprl_azhang";
   $dbname = "azhang";
-  $table = "beta_bonus";
+  $table = "internal_bonus";
 ?>
