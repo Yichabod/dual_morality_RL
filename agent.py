@@ -239,7 +239,9 @@ if __name__ == "__main__":
     # agent should push simple cargo into target, away from train
     easy2 = {'train':(1,0),'trainvel':(0,1),'cargo1':(4,1),'num1':1,'target1':(4,0),
             'switch':(0,0),'agent':(2,2),'cargo2':(2,4),'num2':2,'target2':(0,3)}
-
+    # agent should get out of the way of the train
+    easy3 = {'train':(1,0),'trainvel':(0,1),'cargo1':(4,1),'num1':1,'target1':(4,0),
+            'switch':(0,0),'agent':(1,2),'cargo2':(2,4),'num2':2,'target2':(0,3)}
 
     #somewhere between 10,000 and 50,000 iterations the mc finally gets it - seems pretty hard without nn even
     push3 = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,3),'num1':1,'target1':(3,1),
@@ -265,7 +267,7 @@ if __name__ == "__main__":
     push4 = {'train':(2,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(0,1),
         'switch':(4,0),'agent':(4,2),'cargo2':(3,3),'num2':2,'target2':(0,3)}
 
-    testgrid = grid.Grid(5,random=False, init_pos=easy1)
+    testgrid = grid.Grid(5,random=False, init_pos=easy3)
 
     agent = Agent()
 

@@ -23,9 +23,7 @@ def generate_array(mdp,action=None):
     in the grid of given dimensions.
     Intended to be able to feed into a network
     """
-    # TODO:
-    # Change this function to output 1xCx5x5 instead to allow different numbers of other agents and change
-    # neural_net.py accordingly
+    
     #
     dims = (1,mdp.size,mdp.size) #tuple eg (1,11,11)
     grid = np.full(dims, 0, dtype=int) #np has nice display built in

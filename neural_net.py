@@ -8,7 +8,7 @@ import torch.optim as optim
 
 cuda = True if torch.cuda.is_available() else False
 NUM_TARGETS = 2
-CHANNELS = 8 #8 from 9. testing removal of mask layer
+CHANNELS = 9
 
 class Net(nn.Module):
     def __init__(self, C=CHANNELS):
@@ -40,6 +40,7 @@ def make_onehot_data(inputs, labels):
     base = inputs[:, 0:1, :, :] #this contains all elts except next train/targets
     targets = inputs[:, 2:3, :, :]
 
+    mask_layer = (base != 0).float()
     agent_layer = (base == 1).float()
     train_layer = (base == 3).float()
     next_train_layer = inputs[:, 1:2, :, :]
@@ -49,7 +50,7 @@ def make_onehot_data(inputs, labels):
     object2_layer = (base == 6).float()
     target2_layer = (targets == 2).float()
 
-    onehot_inputs = torch.cat((agent_layer,train_layer,next_train_layer,switch_layer,object1_layer,target1_layer,object2_layer, target2_layer), dim=1)
+    onehot_inputs = torch.cat((mask_layer,agent_layer,train_layer, next_train_layer,switch_layer,object1_layer,target1_layer,object2_layer, target2_layer), dim=1)
 
 
 
@@ -81,7 +82,6 @@ def make_onehot_data(inputs, labels):
     if cuda:
         onehot_inputs = onehot_inputs.cuda()
         labels = labels.cuda()
-        net = net.cuda()
 
     B = inputs.shape[0]
     onehot_train_inputs = onehot_inputs[:9*B//10]
@@ -101,14 +101,17 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
 
     xs = np.load(grids_file)
     ys = np.load(actions_file)
+    np.random.shuffle(xs)
 
     onehot_train_xs, onehot_test_xs, train_ys, test_ys = make_onehot_data(xs, ys)
 
 
     net = Net(C)
-    criterion = nn.MSELoss()#CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss() #nn.MSELoss()
     optimizer = optim.Adam(net.parameters(), lr=0.001)
 
+    if cuda:
+        net = net.cuda()
 
     start = time.time()
     for epoch in range(num_epochs):  # loop over the dataset multiple times
@@ -117,7 +120,7 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
         #trains on the remainder if not gully divisible
         for j in range((len(train_ys)-1)//batch_size+1):
             inputs, labels = onehot_train_xs[batch_size*j:batch_size*(j+1)], train_ys[batch_size*j:batch_size*(j+1)]
-
+            labels = torch.argmax(labels, dim=1).long()
             # zero the parameter gradients
             optimizer.zero_grad()
 
@@ -128,25 +131,31 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
             optimizer.step()
             # print statistics
             running_loss.append(loss.item())
-        # if epoch%10==0 or (epoch == num_epochs-1):
+        if epoch%10==0 or (epoch == num_epochs-1):
             test_loss = []
             test_accuracy = []
             with torch.no_grad():
+                count = 0
                 for j in range((len(test_ys)-1)//batch_size+1):
                     inputs, labels = onehot_test_xs[batch_size*j:batch_size*(j+1)], test_ys[batch_size*j:batch_size*(j+1)]
 
                     # forward + backward + optimize
                     outputs = net(inputs)
-                    import pdb; pdb.set_trace()
+                    label_argmax = torch.argmax(labels, dim=1)
+                    output_argmax = torch.argmax(outputs, dim=1)
+
+                    accuracy = torch.mean((label_argmax==output_argmax).float())
+                    test_accuracy.append(accuracy.item())
+
                     loss = criterion(outputs, labels)
                     test_loss.append(loss.item())
 
-            print('Epoch:{}, train loss: {:.3f}, test loss: {:.3f}'.format(epoch + 1, np.mean(running_loss), np.mean(test_loss)))
+            print('Epoch:{}, train loss: {:.3f}, test loss: {:.3f}, test accuracy: {:.3f}'.format(epoch + 1, np.mean(running_loss), np.mean(test_loss), np.mean(test_accuracy)))
             running_loss = 0.0
     print("training took", time.time() - start, "seconds")
     torch.save(net.state_dict(), 'nn_model')
     print("Model saved as nn_model")
-
+    
 def load(C=CHANNELS):
     model = Net(C)
     if not cuda:
@@ -178,29 +187,4 @@ if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
 
-    train(grids_file='dodgy_combined_grids_may25.npy',actions_file='dodgy_combined_actions_may25.npy', num_epochs=1)
-    model = load()
-    state = np.random.random([2,5,5])
-    print(predict(model, state))
-
-    #accuracy testing code
-    grids = np.load('dodgy_combined_grids_may25.npy')
-    actions = np.load('dodgy_combined_actions_may25.npy')
-    hits = 0
-    for i in range(200000,200010):
-        # print(grids[i])
-        # print(actions[i])
-        preds = list(predict(model, grids[i])[0])
-        targets = list(actions[i])
-        print("preds", preds)
-        print("targets", targets)
-        if preds.index(max(preds)) == targets.index(max(targets)): # change to np argmax
-            hits += 1
-    print(hits/i)
-
-
-    model = load()
-    state = grids[200000]
-    print(predict(model, state))
-    print("target",actions[200000])
-    print(max(actions[100]))
+    train(grids_file='shuffled_grids_may28.npy',actions_file='shuffled_actions_may28.npy', num_epochs=50)
