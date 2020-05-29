@@ -281,7 +281,6 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True,display=Fals
 
             actions_data = np.concatenate((actions_data,actions))
             grids_data = np.vstack((grids_data,grids))
-
             count += 1
             if count % 100 == 0:
                 print("generated grid",count)
@@ -362,11 +361,22 @@ def make_test_json(num):
     with open('test_data.json', 'w') as outfile:
         json.dump(data, outfile)
 
+def shuffle_generated_data(grids, actions):
+    """
+    Creates shuffled array of batches of 5, keeping actions and grids in order
+    """
+    shuf_ind = np.random.permutation(grids.shape[0]//5)
+    shuffled_grids, shuffled_actions = grids[0:5], actions[0:5]
+
+    for ind in shuf_ind:
+        gridstack = grids[5*ind:5*ind+5]
+        actionstack = actions[5*ind:5*ind+5]
+        shuffled_grids = np.vstack((shuffled_grids, gridstack))
+        shuffled_actions = np.vstack((shuffled_actions, actionstack))
+    return shuffled_grids[5:], shuffled_actions[5:]
+
 
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    data_gen(5000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True)
-
-    # make_train_json(66)
-    # make_test_json(30)
+    data_gen(1000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True, filename="data_final_may27_2")
