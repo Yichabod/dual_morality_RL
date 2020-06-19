@@ -375,8 +375,9 @@ def shuffle_generated_data(grids, actions):
         shuffled_actions = np.vstack((shuffled_actions, actionstack))
     return shuffled_grids[5:], shuffled_actions[5:]
 
+#TODO visualize
 
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    data_gen(1000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True, filename="data_final_may27_2")
+    data_gen(20000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True, filename="data_final_may29")

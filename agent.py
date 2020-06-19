@@ -69,16 +69,9 @@ class Agent:
 
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
-            state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
+            test_input = generate_array(grid)
 
-            #updates next train pos input grid for neural_net.predict function
-            next_train = np.zeros((grid.size,grid.size),dtype=int)
-            next_train_y = grid.train.pos[0]+grid.train.velocity[0]
-            next_train_x = grid.train.pos[1]+grid.train.velocity[1]
-            if in_bounds(grid.size, (next_train_y,next_train_x)):
-                next_train[next_train_y][next_train_x] = 1
-            test_input = np.stack((state_array,next_train))
-
+            #input to neural net predict should be (3,5,5) for base, next_train, targets
             action_ind = np.argmax(neural_net.predict(net, test_input))
             action = grid.all_actions[action_ind]
             if display: print(neural_net.predict(net, test_input))
@@ -242,7 +235,9 @@ if __name__ == "__main__":
     # agent should get out of the way of the train
     easy3 = {'train':(1,0),'trainvel':(0,1),'cargo1':(4,1),'num1':1,'target1':(4,0),
             'switch':(0,0),'agent':(1,2),'cargo2':(2,4),'num2':2,'target2':(0,3)}
-
+    # dont_die_pos = {'train':(2,0),'trainvel':()
+    easy4 = {'train':(2,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(4,0),
+            'switch':(0,0),'agent':(2,2),'cargo2':(2,4),'num2':2,'target2':(0,3)}
     #somewhere between 10,000 and 50,000 iterations the mc finally gets it - seems pretty hard without nn even
     push3 = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,3),'num1':1,'target1':(3,1),
             'switch':(4,0),'agent':(3,3),'cargo2':(2,4),'num2':2,'target2':(1,4)}
@@ -254,8 +249,8 @@ if __name__ == "__main__":
     push1 = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,2),'num1':1,'target1':(3,1),
         'switch':(0,0),'agent':(3,3),'cargo2':(1,4),'num2':2,'target2':(0,3)}
 
-    targets_test = {'train':(0,0),'trainvel':(0,1),'other1':(1,2),'num1':1,'target1':(1,3),
-            'switch':(4,4),'agent':(2,1),'other2':(2,2),'num2':2,'target2':(3,2)}
+    targets_test = {'train':(0,0),'trainvel':(0,1),'cargo1':(1,2),'num1':1,'target1':(1,3),
+            'switch':(4,4),'agent':(2,1),'cargo2':(2,2),'num2':2,'target2':(3,2)}
 
     weird1 = {'train':(4,2),'trainvel':(-1,0),'other1':(4,3),'num1':1,'target1':(0,3),
             'switch':(1,0),'agent':(3,0),'other2':(2,2),'num2':2,'target2':(2,4)}
@@ -267,7 +262,7 @@ if __name__ == "__main__":
     push4 = {'train':(2,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(0,1),
         'switch':(4,0),'agent':(4,2),'cargo2':(3,3),'num2':2,'target2':(0,3)}
 
-    testgrid = grid.Grid(5,random=False, init_pos=easy3)
+    testgrid = grid.Grid(5,random=False, init_pos=easy4)
 
     agent = Agent()
 
@@ -276,7 +271,7 @@ if __name__ == "__main__":
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
     if model == 'free':
-        agent.run_model_free_policy(testgrid.copy(),display=True)
+        agent.run_model_free_policy(testgrid.copy(), display=True)
     if model == 'based':
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=10000, nn_init=False, softmax=False)
         #display_grid(testgrid.copy())

@@ -1,7 +1,7 @@
 import numpy as np
 
-ELEMENT_INT_DICT = {'agent':1,'train':2,'switch':3}
-INT_ELEMENT_DICT = {1:'◉',2:'O',3:'T',4:'S'}
+ELEMENT_INT_DICT = {'agent':1,'train':2,'switch':3,'other1':4,'other2':5}
+INT_ELEMENT_DICT = {1:'◉',2:'T',3:'T',4:'S'}
 
 def in_bounds(size,position:tuple) -> bool:
     """
@@ -23,23 +23,35 @@ def generate_array(mdp,action=None):
     in the grid of given dimensions.
     Intended to be able to feed into a network
     """
-    
-    #
-    dims = (1,mdp.size,mdp.size) #tuple eg (1,11,11)
+
+    #  first layer for agent, train, switch, objs. Second for next_train, last for targets
+    dims = (3,mdp.size,mdp.size)
     grid = np.full(dims, 0, dtype=int) #np has nice display built in
     others_dict = mdp.other_agents.mask
-
+    #bug: need to properly distinguish between the targets
     for other_coord, other_obj in others_dict.items():
         #the value of the other in the grid will be the num of
         # non other elements + value of other
-        grid[0,other_coord[0],other_coord[1]] = len(ELEMENT_INT_DICT)+other_obj.num
+        target_coord = other_obj.target
+        if other_obj.num == 1:
+            grid[0,other_coord[0],other_coord[1]] = ELEMENT_INT_DICT['other1']
+            grid[2, target_coord[0], target_coord[1]] = 1
+        elif other_obj.num == 2:
+            grid[0,other_coord[0],other_coord[1]] = ELEMENT_INT_DICT['other2']
+            grid[2, target_coord[0], target_coord[1]] = 2
 
-    grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent'] #where the agent is
+    grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent']
 
-    grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch'] #switch
+    grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch']
+    next_train_y = mdp.train.pos[0]+mdp.train.velocity[0]
+    next_train_x = mdp.train.pos[1]+mdp.train.velocity[1]
 
     if mdp.train.on_screen == True:
         grid[0,mdp.train.pos[0],mdp.train.pos[1]] = ELEMENT_INT_DICT['train']
+
+    if in_bounds(5,(next_train_y,next_train_x)):
+
+        grid[1, next_train_y, next_train_x] = 1
 
     return grid
 
@@ -110,7 +122,6 @@ class Other:
         return self.target
     def toggle_active(self):
         self.active = not self.active
-
 
 class Switch:
     """
