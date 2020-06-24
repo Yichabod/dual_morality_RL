@@ -9,15 +9,13 @@
         <script src="gridworld-setup.js" type="text/javascript"> </script>
         <script src="gridworld-info.js" type="text/javascript"> </script>
         <script> 
-            $(function(){
-                $("#consent").load("consent.html"); 
-            });
+            $(function(){   $("#consent").load("consent.html");  });
+
+            $(function(){   $("#finishpage").load("finish.html");  });
+
+            $(function(){   $("#feedbackpage").load("feedback.html");  });
         </script> 
-        <script> 
-            $(function(){
-                $("#finishpage").load("finish.html"); 
-            });
-        </script> 
+
         <script>
 
             var train_data;
@@ -44,9 +42,9 @@
         <div id="consent"></div>
         <div id="info1" style="display:none"> 
             <div id="instructions">
-                Welcome! Please read these instructions carefully - this will help you earn more money by doing the task right. <br>  
+                Welcome! Please read these instructions carefully - this will help you earn more money by doing the task right. Each point you earn is worth <b>5&cent in bonus money.</b></b> <br>  
                 <br>
-                In this task you are the director of a transport station. Unfortunately the station is usually chaotic - the freight is often not where it is supposed to be.  Sometimes it might even get hit by a train. <br>
+                In this task you are the director of a transport station. Unfortunately the station is usually chaotic and the freight is often not where it is supposed to be.  Sometimes it might even get hit by a train. <br>
                 <br>
                 You have three main goals:
                 <ol><b>
@@ -184,7 +182,7 @@
                 Now you've learned everything you need to know! 
                 <br><br>
                 Remember that your goal is to <b>get the highest score possible for each grid. 
-                You will receive bonus money based on the total number of points you accumulate by the end of the task.</b>
+                You will receive 5&cent per point in bonus money based on the total number of points you accumulate by the end of the task.</b>
                 <br><br>
                 Also remember that you will rarely be able to accomplish everything you want to in the time you have, so you need to prioritize. It is ok if you cannot do everything within the limited steps you have. The train depot is chaotic, and you should try to get as many points as you can given the situation.
                 <br><br>
@@ -224,6 +222,7 @@
                 <button type="button" id='test_button'; onclick="prepare_test();clearGrid('taskinfotest');"; >BEGIN</button>
             </div>
         </div>
+        <div id="feedbackpage" style="display:none"></div>
         <div id="finishpage" style="display:none">
         </div>
     </body>

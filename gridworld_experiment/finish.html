@@ -14,12 +14,17 @@
     function mTurkSubmit(event){
         event.preventDefault()
 
+        var URLqueryString = window.location.search;
+        var URLparams = new URLSearchParams(URLqueryString);
+        var URL_mTurkID = URLparams.get('workerId')
+                
         var bonus = total_score * 0.05
         if (bonus < 0){ bonus = 0 }
         var mTurkID = document.getElementById('mTurk_id').value;
         var datajson = {}
         datajson["mTurk_id"] = mTurkID;
         datajson["bonus"] = bonus;
+        datajson["URL_mTurkID"] = URL_mTurkID;
         datajson = JSON.stringify(datajson)
         console.log(datajson)
 
