@@ -29,10 +29,8 @@ class GridWorldTask {
         disable_hold_key = true,
         WALL_WIDTH = .08,
         TILE_SIZE = 90,
-        INTENTIONAL_ACTION_TIME_PROP = .4,
         DELAY_TO_REACTIVATE_UI = .8,
         END_OF_ROUND_DELAY_MULTIPLIER = 4,
-        prevent_default_key_event = true
     }) {
         this.reset = reset
         this.container = container;
@@ -49,16 +47,11 @@ class GridWorldTask {
 
         this.iter_limit = ITER_LIMIT;
         this.disable_during_movement = disable_during_movement;
-        this.INTENTIONAL_ACTION_TIME_PROP = INTENTIONAL_ACTION_TIME_PROP;
         this.DELAY_TO_REACTIVATE_UI = DELAY_TO_REACTIVATE_UI;
         this.END_OF_ROUND_DELAY_MULTIPLIER = END_OF_ROUND_DELAY_MULTIPLIER;
         this.REWARD_ANIMATION_TIME = REWARD_ANIMATION_TIME;
         this.TILE_SIZE = TILE_SIZE;
-        this.disable_hold_key = disable_hold_key;
-        this.prevent_default_key_event = prevent_default_key_event;
-        if (this.prevent_default_key_event) {
-            this._disable_default_key_response()
-        }
+        this.disable_hold_key = disable_hold_key;  
     }
 
     init({
@@ -222,44 +215,6 @@ class GridWorldTask {
         this.painter.draw_tiles();
     }
 
-    clear() {
-        this._disable_response();
-        this._enable_default_key_response();
-        this.painter.clear_objects();
-        this.painter.draw_tiles();
-    }
-
-    move_agent(state) {
-        this.state = state;
-        this.painter.hide_object('agent');
-        this.painter.draw_object(state[0], state[1], undefined, 'agent')
-        this.painter.show_object('agent');
-    }
-
-    pause_next() {
-        this.task_paused = true;
-    }
-
-    resume() {
-        this.task_paused = false;
-        this.start_datetime = +new Date;
-        this._enable_response();
-        // console.log("Task re-enabled time: "+(+new Date));
-    }
-
-    _disable_default_key_response() {
-        $(document).on("keydown.disable_default", (e) => {
-            let kc = e.keyCode ? e.keyCode : e.which;
-            if ((kc === 37) || (kc === 38) || (kc === 39) || (kc === 40) || (kc === 32)) {
-                e.preventDefault();
-            }
-        });
-    }
-
-    _enable_default_key_response() {
-        $(document).off("keydown.disable_default");
-    }
-
     _enable_response() {
         if (this.input_enabled) {
             return
@@ -375,9 +330,7 @@ class GridWorldTask {
             this.train.animate(move_train)
         } 
 
-
         let animtime = this.painter.OBJECT_ANIMATION_TIME;
-        // console.log("Animation-end time: "+((+new Date)+this.painter.OBJECT_ANIMATION_TIME));
         if (this.show_rewards && value !== 0) {
             setTimeout(() => {
                 this.painter.float_text(
@@ -396,7 +349,6 @@ class GridWorldTask {
     }
 
     _end_task() {
-
         if (this.time_limit>0){
             window.clearInterval(this.mytimer);
             if (!this.time_out){
@@ -477,10 +429,6 @@ class GridWorldTask {
                 }, animtime*this.DELAY_TO_REACTIVATE_UI)
             }
         }
-        else {
-            console.warn("FEATURE NOT IMPLEMENTED!")
-        }
-
     }
 
     update_stats(){
