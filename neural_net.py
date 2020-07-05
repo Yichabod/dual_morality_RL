@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import time
 
 import torch
@@ -75,8 +76,6 @@ def make_onehot_data(inputs, labels):
 
     inputs = torch.from_numpy(inputs).float()#.to(torch.long)
     labels = torch.from_numpy(labels).float()
-
-    # NEWER ATTEMPT TO CLEAN UP INPUT
 
     base = inputs[:, 0:1, :, :] #this contains all elts except next train/targets
     targets = inputs[:, 2:3, :, :]
@@ -161,6 +160,7 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
                     output_argmax = torch.argmax(outputs, dim=1)
                     # labels = label_argmax.long()
                     accuracy = torch.mean((label_argmax==output_argmax).float())
+                    value_captured = math.exp(labels[output_argmax])/(math.exp(labels[label_argmax]))
                     test_accuracy.append(accuracy.item())
 
                     loss = criterion(outputs, labels)
@@ -224,4 +224,4 @@ if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
 
-    train(grids_file='small_grids.npy',actions_file='small_actions.npy', num_epochs=50)
+    train(grids_file='grids_1000_switch.npy',actions_file='actions_1000_switch.npy', num_epochs=50)

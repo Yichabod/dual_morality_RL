@@ -31,3 +31,110 @@ Epoch:1, train loss: 1.175, test loss: 1.124, test accuracy: 0.603
 Epoch:11, train loss: 1.125, test loss: 1.140, test accuracy: 0.603
 Epoch:21, train loss: 0.988, test loss: 1.325, test accuracy: 0.517
 (performance gets worse after even more epochs).
+
+Attempted to gauge accuracy of older model (without targets), and results were
+interesting:
+Epoch:1, train loss: 0.499, test loss: 0.545, test accuracy: 0.045
+Epoch:11, train loss: 0.065, test loss: 0.078, test accuracy: 0.191
+Epoch:21, train loss: 0.051, test loss: 0.074, test accuracy: 0.145
+Epoch:31, train loss: 0.032, test loss: 0.063, test accuracy: 0.237
+Epoch:41, train loss: 0.038, test loss: 0.085, test accuracy: 0.590
+Epoch:51, train loss: 0.021, test loss: 0.068, test accuracy: 0.178
+Epoch:61, train loss: 0.018, test loss: 0.066, test accuracy: 0.194
+Epoch:71, train loss: 0.017, test loss: 0.073, test accuracy: 0.198
+Epoch:81, train loss: 0.012, test loss: 0.065, test accuracy: 0.196
+Epoch:91, train loss: 0.012, test loss: 0.071, test accuracy: 0.164
+Epoch:100, train loss: 0.017, test loss: 0.076, test accuracy: 0.672
+I think part of the reason test accuracy is so low here is that when there is no
+clear best action, the model defaults to doing nothing, whereas the mechanism
+used to figure out accuracy takes the index of the last highest value (meaning
+that if all three actions have a value of zero according to MC, the index that
+gets counted is the last one (4).
+It's also worth noting that the old model will get out of the way of the train
+and hit the switch to make sure the train doesn't hit the target whereas the new
+model will not even get out of the way of the train.
+
+Now tried older model with single action loss (rather than Q value). The test
+accuracy became much higher:
+Epoch:1, train loss: 1.115, test loss: 1.049, test accuracy: 0.671
+Epoch:11, train loss: 0.590, test loss: 0.623, test accuracy: 0.758
+Epoch:21, train loss: 0.434, test loss: 0.620, test accuracy: 0.773
+Epoch:31, train loss: 0.340, test loss: 0.669, test accuracy: 0.768
+Epoch:41, train loss: 0.242, test loss: 0.811, test accuracy: 0.753
+Epoch:51, train loss: 0.253, test loss: 1.168, test accuracy: 0.755
+Epoch:60, train loss: 0.212, test loss: 1.042, test accuracy: 0.742
+BUT for a specific configuration (easy3 in the new test grid, the model trained
+with Q value loss instead of single action loss would get out of the way of the
+train. Also clearly the train and test loss is much worse when you remove the Q
+values).
+
+Older model on new data (but just ignoring the targets)
+Epoch:1, train loss: 1.144, test loss: 1.034, test accuracy: 0.603
+Epoch:11, train loss: 0.519, test loss: 0.591, test accuracy: 0.778
+Epoch:21, train loss: 0.434, test loss: 0.669, test accuracy: 0.766
+Epoch:31, train loss: 0.322, test loss: 0.766, test accuracy: 0.766
+Epoch:41, train loss: 0.329, test loss: 0.819, test accuracy: 0.757
+Epoch:51, train loss: 0.258, test loss: 0.850, test accuracy: 0.762
+Epoch:61, train loss: 0.212, test loss: 1.081, test accuracy: 0.757
+Epoch:71, train loss: 0.170, test loss: 1.183, test accuracy: 0.736
+Epoch:81, train loss: 0.109, test loss: 1.405, test accuracy: 0.758
+Epoch:91, train loss: 0.124, test loss: 1.519, test accuracy: 0.742
+Epoch:100, train loss: 0.113, test loss: 1.413, test accuracy: 0.720
+It really seems like the newer task of adding the targets is significantly
+harder and makes it very difficult for the new network to learn.
+
+Did a validation test of the new model using old data. It doesn't seem to learn.
+Need to investigate and understand what's going wrong there.
+OK figured out a ridiculous bug: there was a shuffle command after loading the
+training examples, so the inputs weren't being properly matched with the labels.
+Now it works the same as the old model.
+Epoch:1, train loss: 0.496, test loss: 0.530, test accuracy: 0.086
+Epoch:11, train loss: 0.064, test loss: 0.094, test accuracy: 0.442
+Epoch:21, train loss: 0.037, test loss: 0.069, test accuracy: 0.265
+Epoch:31, train loss: 0.046, test loss: 0.135, test accuracy: 0.223
+Epoch:41, train loss: 0.027, test loss: 0.063, test accuracy: 0.201
+Epoch:51, train loss: 0.014, test loss: 0.066, test accuracy: 0.219
+Epoch:61, train loss: 0.022, test loss: 0.101, test accuracy: 0.387
+Epoch:71, train loss: 0.012, test loss: 0.069, test accuracy: 0.217
+Epoch:81, train loss: 0.012, test loss: 0.078, test accuracy: 0.460
+Epoch:91, train loss: 0.014, test loss: 0.085, test accuracy: 0.190
+Epoch:100, train loss: 0.017, test loss: 0.064, test accuracy: 0.286
+
+Finally, it looks like the model is working? Just from looking at the test loss
+decreasing. Mainly the problem seems to have been mismatched labels and
+potentially insufficient data.
+Epoch:1, train loss: 0.645, test loss: 0.462, test accuracy: 0.083
+Epoch:11, train loss: 0.068, test loss: 0.083, test accuracy: 0.504
+Epoch:21, train loss: 0.043, test loss: 0.071, test accuracy: 0.481
+Epoch:31, train loss: 0.032, test loss: 0.065, test accuracy: 0.468
+Epoch:41, train loss: 0.029, test loss: 0.062, test accuracy: 0.470
+Epoch:51, train loss: 0.026, test loss: 0.062, test accuracy: 0.455
+Epoch:61, train loss: 0.022, test loss: 0.062, test accuracy: 0.451
+Epoch:71, train loss: 0.021, test loss: 0.062, test accuracy: 0.442
+Epoch:81, train loss: 0.018, test loss: 0.061, test accuracy: 0.475
+Epoch:91, train loss: 0.017, test loss: 0.061, test accuracy: 0.533
+Epoch:100, train loss: 0.014, test loss: 0.063, test accuracy: 0.447
+
+9 June 2020
+Added an additional layer, and it mildly improved test loss
+Epoch:1, train loss: 0.665, test loss: 0.514, test accuracy: 0.071
+Epoch:11, train loss: 0.069, test loss: 0.086, test accuracy: 0.460
+Epoch:21, train loss: 0.042, test loss: 0.070, test accuracy: 0.446
+Epoch:31, train loss: 0.034, test loss: 0.076, test accuracy: 0.411
+Epoch:41, train loss: 0.027, test loss: 0.064, test accuracy: 0.482
+Epoch:51, train loss: 0.025, test loss: 0.063, test accuracy: 0.418
+Epoch:61, train loss: 0.019, test loss: 0.060, test accuracy: 0.424
+Epoch:71, train loss: 0.017, test loss: 0.060, test accuracy: 0.560
+Epoch:81, train loss: 0.018, test loss: 0.065, test accuracy: 0.410
+Epoch:91, train loss: 0.010, test loss: 0.055, test accuracy: 0.474
+Epoch:100, train loss: 0.010, test loss: 0.054, test accuracy: 0.476
+notes from Max: make a visualization and investigate exactly how test loss goes
+down. Try fixing something in the training data (e.g. train keeps coming from
+left). Make task simpler. Try training on test benchmark and see if the model
+gets it right.
+
+June 17 2020.
+Realised that the neural net was not creating a layer for the train. This may
+have been a new development. 
+Tested effect of adding an extra fully connected layer at the end. It does a bit
+better.
