@@ -212,8 +212,8 @@ def grid_nothing_lose(size):
 def collect_grid(size, grid_type, display=False):
     """
     param: size of grid
-    returns 2 ndarrays, grids_array (n, 2, size, size) and actions_value_array (n,5) generated
-    by the MC agent from a single random grid
+    returns 2 ndarrays, grids_array (n, 3, size, size) and actions_value_array (n,5) generated
+    by the MC agent from a single random grid, as well as the reward value and the initial position
     """
 
     func_dict = {'push': grid_must_push,'switch':grid_must_switch,'targets':grid_get_targets,'lose':grid_nothing_lose}
@@ -240,7 +240,7 @@ def collect_grid(size, grid_type, display=False):
 
     target1 = testgrid.other_agents.targets[0]
     target2 = testgrid.other_agents.targets[1]
-    return _add_next_train_targets(grids,target1,target2), action_values, reward, init_pos
+    return grids, action_values, reward, init_pos
 
 
 def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True,display=False,filename="data_final_may22"):
@@ -271,6 +271,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True,display=Fals
         num_type = int(distribution[type]*num_grids/100)
         for i in range(num_type):
             grids,actions,reward,init_info = collect_grid(grid_size,type, display)
+
             init_info = coords_for_web(init_info)
             user_testing_grids.append((init_info,reward))
 
@@ -290,7 +291,7 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True,display=Fals
     print("finished in", time.time()-start)
     print("reward_dist: ", reward_dist)
 
-    return user_testing_grids
+    return grids_data[1:], actions_data[1:]#user_testing_grids
 
 def coords_for_web(init_info):
     new_init = {}
@@ -380,4 +381,4 @@ def shuffle_generated_data(grids, actions):
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    data_gen(20000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True, filename="data_final_may29")
+    grids, actions = data_gen(10000, distribution={'push':0,'switch':0,'targets':100,'lose':0}, save=True,filename="10000_targets")

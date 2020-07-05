@@ -139,7 +139,8 @@ class Agent:
         #if display: display_grid(grid)
         state = grid.current_state
         total_reward = 0 #to keep track of most significant action taken by agent
-        grids_array = np.empty((1,grid.size,grid.size),dtype=int)
+        # grids_array = np.empty((1,grid.size,grid.size),dtype=int)
+        grids_array = []
         action_val_array = np.empty((1,grid.size),dtype=int)
 
         while not grid.terminal_state: # max number of steps per episode
@@ -151,13 +152,14 @@ class Agent:
             if display: display_grid(grid)
             if display: print(action)
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
-            grids_array = np.vstack((grids_array,generate_array(grid)))
+            grids_array.append(generate_array(grid))
+            #grids_array = np.vstack((grids_array,generate_array(grid)))
             total_reward += grid.R(action)
             newstate = grid.T(action)
             state = newstate
-
+        grids_array = np.array(grids_array)
         if display: print(total_reward)
-        return grids_array[1:], action_val_array[1:], total_reward
+        return grids_array, action_val_array[1:], total_reward
 
 
     def mc_first_visit_control(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False, cutoff = 0, softmax = True) -> tuple:
