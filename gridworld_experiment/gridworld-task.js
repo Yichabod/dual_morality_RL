@@ -45705,14 +45705,10 @@ var GridWorldTask = function () {
             WALL_WIDTH = _ref$WALL_WIDTH === undefined ? .08 : _ref$WALL_WIDTH,
             _ref$TILE_SIZE = _ref.TILE_SIZE,
             TILE_SIZE = _ref$TILE_SIZE === undefined ? 90 : _ref$TILE_SIZE,
-            _ref$INTENTIONAL_ACTI = _ref.INTENTIONAL_ACTION_TIME_PROP,
-            INTENTIONAL_ACTION_TIME_PROP = _ref$INTENTIONAL_ACTI === undefined ? .4 : _ref$INTENTIONAL_ACTI,
             _ref$DELAY_TO_REACTIV = _ref.DELAY_TO_REACTIVATE_UI,
             DELAY_TO_REACTIVATE_UI = _ref$DELAY_TO_REACTIV === undefined ? .8 : _ref$DELAY_TO_REACTIV,
             _ref$END_OF_ROUND_DEL = _ref.END_OF_ROUND_DELAY_MULTIPLIER,
-            END_OF_ROUND_DELAY_MULTIPLIER = _ref$END_OF_ROUND_DEL === undefined ? 4 : _ref$END_OF_ROUND_DEL,
-            _ref$prevent_default_ = _ref.prevent_default_key_event,
-            prevent_default_key_event = _ref$prevent_default_ === undefined ? true : _ref$prevent_default_;
+            END_OF_ROUND_DELAY_MULTIPLIER = _ref$END_OF_ROUND_DEL === undefined ? 4 : _ref$END_OF_ROUND_DEL;
 
         _classCallCheck(this, GridWorldTask);
 
@@ -45731,16 +45727,11 @@ var GridWorldTask = function () {
 
         this.iter_limit = ITER_LIMIT;
         this.disable_during_movement = disable_during_movement;
-        this.INTENTIONAL_ACTION_TIME_PROP = INTENTIONAL_ACTION_TIME_PROP;
         this.DELAY_TO_REACTIVATE_UI = DELAY_TO_REACTIVATE_UI;
         this.END_OF_ROUND_DELAY_MULTIPLIER = END_OF_ROUND_DELAY_MULTIPLIER;
         this.REWARD_ANIMATION_TIME = REWARD_ANIMATION_TIME;
         this.TILE_SIZE = TILE_SIZE;
         this.disable_hold_key = disable_hold_key;
-        this.prevent_default_key_event = prevent_default_key_event;
-        if (this.prevent_default_key_event) {
-            this._disable_default_key_response();
-        }
     }
 
     _createClass(GridWorldTask, [{
@@ -45905,50 +45896,6 @@ var GridWorldTask = function () {
             this.painter.draw_tiles();
         }
     }, {
-        key: 'clear',
-        value: function clear() {
-            this._disable_response();
-            this._enable_default_key_response();
-            this.painter.clear_objects();
-            this.painter.draw_tiles();
-        }
-    }, {
-        key: 'move_agent',
-        value: function move_agent(state) {
-            this.state = state;
-            this.painter.hide_object('agent');
-            this.painter.draw_object(state[0], state[1], undefined, 'agent');
-            this.painter.show_object('agent');
-        }
-    }, {
-        key: 'pause_next',
-        value: function pause_next() {
-            this.task_paused = true;
-        }
-    }, {
-        key: 'resume',
-        value: function resume() {
-            this.task_paused = false;
-            this.start_datetime = +new Date();
-            this._enable_response();
-            // console.log("Task re-enabled time: "+(+new Date));
-        }
-    }, {
-        key: '_disable_default_key_response',
-        value: function _disable_default_key_response() {
-            (0, _jquery2.default)(document).on("keydown.disable_default", function (e) {
-                var kc = e.keyCode ? e.keyCode : e.which;
-                if (kc === 37 || kc === 38 || kc === 39 || kc === 40 || kc === 32) {
-                    e.preventDefault();
-                }
-            });
-        }
-    }, {
-        key: '_enable_default_key_response',
-        value: function _enable_default_key_response() {
-            (0, _jquery2.default)(document).off("keydown.disable_default");
-        }
-    }, {
         key: '_enable_response',
         value: function _enable_response() {
             var _this2 = this;
@@ -46072,7 +46019,6 @@ var GridWorldTask = function () {
             }
 
             var animtime = this.painter.OBJECT_ANIMATION_TIME;
-            // console.log("Animation-end time: "+((+new Date)+this.painter.OBJECT_ANIMATION_TIME));
             if (this.show_rewards && value !== 0) {
                 setTimeout(function () {
                     _this3.painter.float_text(reward['position'][0], reward['position'][1], r_string, r_params, undefined, undefined, undefined, undefined, _this3.REWARD_ANIMATION_TIME);
@@ -46167,8 +46113,6 @@ var GridWorldTask = function () {
                         _this5.start_datetime = +new Date();
                     }, animtime * this.DELAY_TO_REACTIVATE_UI);
                 }
-            } else {
-                console.warn("FEATURE NOT IMPLEMENTED!");
             }
         }
     }, {
@@ -46210,7 +46154,6 @@ var GridWorldTask = function () {
 
             if (this.mdp.is_terminal() || this.iter >= this.iter_limit) {
                 this._end_task();
-                console.log('ending task');
             } else {
                 //This handles when/how to re-enable user responses
                 this._setup_trial();

@@ -117,7 +117,7 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
         endtask_callback: (result_data,r) => {
             total_score += r;
             saveData(num+num_training, idx, result_data, r, trial_data['best_reward'],"test", test_group)
-            if (num >= num_test){clickStart('page1','finishpage')}
+            if (num >= num_test){clickStart('page1','feedbackpage')}
             else {run_test(data,GridWorldTask, test_group, num+1, idxs)}
         }
     });
