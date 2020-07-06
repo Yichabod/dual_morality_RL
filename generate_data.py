@@ -234,7 +234,7 @@ def collect_grid(size, grid_type, display=False):
         testgrid = Grid(size,init_pos=init_pos)
 
         a = Agent()
-        #seems like needs 50,000 iters to solve reliably....
+        #seems like needs 5000 iters to solve reliably....
         Q, policy = a.mc_first_visit_control(testgrid.copy(), 5000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
         grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q, display=display)
 
