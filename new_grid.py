@@ -78,6 +78,7 @@ class Grid:
                     others_pos.append(init_pos['cargo2'])
                     num.append(init_pos['num2'])
                     targets.append(init_pos['target2'])
+                print(num)
                 self.other_agents = OtherMask(positions=others_pos, num=num, targets=targets)
         else:
             open_grid_coords = set((i,j) for i in range(self.size) for j in range(self.size))
