@@ -25,7 +25,7 @@ function test_info(GridWorldTask){
     if (test_group==0){
         test_info += "You should take 7 seconds to look at the board and plan your moves. When 7 seconds is up, the counter will turn green and you can then take your 5 steps<br><br>Try one practice trial below, and get the best score to continue!" 
     } else {
-        test_info += "You will have a time limit of 7 seconds to complete the board. There will be a counter on the right displaying your time remaining. <b>If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4</b><br><br>Try one practice trial below, and get the best score to continue!"
+        test_info += "You will have a time limit of 7 seconds to complete the board. There will be a counter on the right displaying your time remaining. <b>If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4</b> Therefore, you should always try to finish 5 moves in each round, even if this means hitting the spacebar several times after you have accomplished your goals. <br><br>Try one practice trial below, and get the best score to continue!"
     }
     clickStart('page1','testinfo')
     document.getElementById('test_info').innerHTML = test_info  
