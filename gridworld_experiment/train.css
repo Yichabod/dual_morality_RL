@@ -5,7 +5,7 @@
     width: 70%;
     margin-top:60px;
     margin-bottom:100px;
-    overflow:scroll;
+    overflow:hidden;
 }
 
 #taskinfo4, #taskinfo5, #taskinfo6, #taskinfo7, #taskinfotest {
