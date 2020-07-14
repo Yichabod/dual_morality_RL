@@ -78,7 +78,6 @@ class Grid:
                     others_pos.append(init_pos['cargo2'])
                     num.append(init_pos['num2'])
                     targets.append(init_pos['target2'])
-                print(num)
                 self.other_agents = OtherMask(positions=others_pos, num=num, targets=targets)
         else:
             open_grid_coords = set((i,j) for i in range(self.size) for j in range(self.size))
@@ -163,9 +162,9 @@ class Grid:
         if new_agent_pos == self.switch.pos:
             new_agent_pos = self.agent_pos #agent
             if self.train.velocity[1] == 0:
-                self.train.velocity = (0, self.train.velocity[0]-self.train.velocity[1]) 
+                self.train.velocity = (0, self.train.velocity[0]-self.train.velocity[1])
             else:
-                self.train.velocity = (self.train.velocity[0]-self.train.velocity[1],0)            
+                self.train.velocity = (self.train.velocity[0]-self.train.velocity[1],0)
         old_train_pos = self.train.pos
         self.train.update() #update train AFTER switch is hit
 
@@ -249,7 +248,7 @@ class Grid:
             if self.train.velocity[1] == 0:
                 new_train_pos = self.train.get_next_position((0,self.train.velocity[0]-self.train.velocity[1]))
             else:
-                new_train_pos = self.train.get_next_position((self.train.velocity[0]-self.train.velocity[1], 0)) 
+                new_train_pos = self.train.get_next_position((self.train.velocity[0]-self.train.velocity[1], 0))
 
         new_agent_mask = {}
         for other_pos in self.other_agents.mask.keys():

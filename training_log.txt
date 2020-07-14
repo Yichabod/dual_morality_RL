@@ -138,3 +138,15 @@ Realised that the neural net was not creating a layer for the train. This may
 have been a new development. 
 Tested effect of adding an extra fully connected layer at the end. It does a bit
 better.
+
+July 8th 2020.
+After generating 10,000 grids of only the 'target' variant (which actually should
+be more like 50,000 since there are 5 steps in each configuration, I trained on
+the network with the following results:
+Epoch:100, train loss: 0.049, test loss: 0.059, test accuracy: 0.595
+training took 59.22803497314453 seconds
+Now to see how the network behaves in other configurations.
+So it performs the easy1 push task (just push nearby object onto target) fine.
+Even better, it performs the easy2 push task (which requires more steps), and
+also seems to learn the intuition that dying from being hit by a train is bad
+(easy3).

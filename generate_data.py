@@ -227,15 +227,19 @@ def collect_grid(size, grid_type, display=False):
 
     valid_rewards = valid_dict[grid_type]
     reward = -100 #invalid
+
     while reward not in valid_rewards:
         init_pos = func_dict[grid_type](size)
         while init_pos == False:
             init_pos = grid_get_targets(size)
-        testgrid = Grid(size,init_pos=init_pos)
 
+        testgrid = Grid(size,init_pos=init_pos)
+        
         a = Agent()
         #seems like needs 5000 iters to solve reliably....
+
         Q, policy = a.mc_first_visit_control(testgrid.copy(), 5000) # Q value key is (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
+
         grids, action_values, reward = a.run_final_policy(testgrid.copy(), Q, display=display)
 
     target1 = testgrid.other_agents.targets[0]
@@ -243,7 +247,7 @@ def collect_grid(size, grid_type, display=False):
     return grids, action_values, reward, init_pos
 
 
-def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True,display=False,filename="data_final_may22"):
+def data_gen(num_grids=1000, grid_size=5, distribution=None, save=True, display=False, filename="data_final_may22"):
     """
     Saves 2 ndarrays, actions_val_array (n,5) and grids_array
     (n,2, grid_size, grid_size) generated, where the second dim is for future train pos
@@ -270,6 +274,8 @@ def data_gen(num_grids=1000,grid_size=5,distribution=None,save=True,display=Fals
     for type in distribution:
         num_type = int(distribution[type]*num_grids/100)
         for i in range(num_type):
+
+
             grids,actions,reward,init_info = collect_grid(grid_size,type, display)
 
             init_info = coords_for_web(init_info)
@@ -381,4 +387,4 @@ def shuffle_generated_data(grids, actions):
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    grids, actions = data_gen(10000, distribution={'push':0,'switch':0,'targets':100,'lose':0}, save=True,filename="10000_targets")
+    grids, actions = data_gen(10000, distribution={'push':0,'switch':100,'targets':0,'lose':0}, save=True,filename="10000_switch")
