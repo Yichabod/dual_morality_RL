@@ -11,7 +11,7 @@ cuda = True if torch.cuda.is_available() else False
 NUM_TARGETS = 2
 CHANNELS = 9
 
-NN_FILE = 'nn_model'
+NN_FILE = 'models/nn_model_targets'
 
 class Net(nn.Module):
     def __init__(self, C=CHANNELS, dropout_p=0.2):
@@ -141,6 +141,7 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
 
             # forward + backward + optimize
             outputs = net(inputs)
+
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -149,6 +150,7 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
         if epoch%10==0 or (epoch == num_epochs-1):
             test_loss = []
             test_accuracy = []
+            total_value_captured = []
             with torch.no_grad():
                 count = 0
                 for j in range((len(test_ys)-1)//batch_size+1):
@@ -157,16 +159,26 @@ def train(grids_file="grids_data.npy",actions_file="actions_data.npy",num_epochs
                     # forward + backward + optimize
                     outputs = net(inputs)
                     label_argmax = torch.argmax(labels, dim=1)
+                    label_argmax = label_argmax.unsqueeze(-1) # for indexing
                     output_argmax = torch.argmax(outputs, dim=1)
+                    output_argmax = output_argmax.unsqueeze(-1)
+
                     # labels = label_argmax.long()
                     accuracy = torch.mean((label_argmax==output_argmax).float())
-                    value_captured = math.exp(labels[output_argmax])/(math.exp(labels[label_argmax]))
+
+                    model_chosen_labels = torch.gather(labels, 1, output_argmax)
+                    best_labels = torch.gather(labels, 1, label_argmax)
+                    #we exponentiate to account for 0 and negative conditions
+                    value_captured = torch.exp(model_chosen_labels)/(torch.exp(best_labels))
+
                     test_accuracy.append(accuracy.item())
 
                     loss = criterion(outputs, labels)
                     test_loss.append(loss.item())
+                    total_value_captured.append(value_captured.item())
 
             print('Epoch:{}, train loss: {:.3f}, test loss: {:.3f}, test accuracy: {:.3f}'.format(epoch + 1, np.mean(running_loss), np.mean(test_loss), np.mean(test_accuracy)))
+            print('Value captured in test case:', np.mean())
             running_loss = 0.0
     print("training took", time.time() - start, "seconds")
     torch.save(net.state_dict(), 'nn_model')
@@ -186,15 +198,6 @@ def predict(model, state, C=CHANNELS):
     state: 3x5x5 numpy array corresponding to grid
     returns 1x5(num actions) numpy array of Q-values for each action
     '''
-    # _, H, W = state.shape
-    # onehot_test_xs = torch.zeros([1, C-1, H, W])
-    #
-    # #state[1] is current observation
-    # test_x = torch.from_numpy(state[0]).unsqueeze(0).unsqueeze(1).to(torch.long)
-    # onehot_test_xs.scatter_(1, test_x, torch.ones(onehot_test_xs.shape))
-    #
-    # next_trains = state[1:2]
-    # onehot_test_xs = torch.cat((onehot_test_xs, torch.from_numpy(next_trains).unsqueeze(0).float()), dim=1)
 
     inputs = torch.from_numpy(state).float()#.to(torch.long)
 
@@ -224,4 +227,4 @@ if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
 
-    train(grids_file='grids_1000_switch.npy',actions_file='actions_1000_switch.npy', num_epochs=50)
+    train(grids_file='grids_10000_switch.npy',actions_file='actions_10000_switch.npy', num_epochs=50)
