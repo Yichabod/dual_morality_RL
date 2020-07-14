@@ -29,7 +29,6 @@ class Grid:
         self.terminal_state = False
         self.step = 1
         self.alive = True
-
         self._place_all(random, init_pos)
         # self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
         self.current_state = (self.agent_pos,self.train.pos)+tuple(self.other_agents.positions)
@@ -59,7 +58,7 @@ class Grid:
             train will always be along a border, going perpindicular to the wall. No collision
             Switch cannot be located in the path of the train
         """
-        #all possible coordinates as a y,x tuple
+        #all posisible coordinates as a y,x tuple
         if not place_random or len(init_pos) > 0:
             #default positions. Train, switch and other defaults found in utils.py
             if len(init_pos) == 0:
@@ -68,6 +67,11 @@ class Grid:
                 self.switch = Switch(self.size)
                 self.agent_pos = (0,2)
             else:
+                for key,val in init_pos.items():
+                    if key == "trainvel":
+                        init_pos[key] = (-val[1],val[0])
+                    elif type(val) == tuple :
+                        init_pos[key] = (4-val[1],val[0])
                 self.train = Train(self.size,pos=init_pos['train'],velocity=init_pos['trainvel'])
                 self.agent_pos = init_pos['agent']
                 self.switch = Switch(self.size,pos=init_pos['switch'])
