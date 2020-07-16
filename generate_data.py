@@ -11,27 +11,6 @@ import json
 ELEMENT_INT_DICT = {'agent':1,'train':2,'switch':3}
 GRID_TYPE_DICT = {0:'push only',1:'switch or push',2:'do nothing',3:'others death'}
 
-def _add_next_train_targets(grids,target1,target2):
-    """
-    grids: (n,5,5) np arrays where n is num actions taken
-    returns: (n,2,5,5) np array with previous train position added on
-    """
-    shape = grids[0].shape
-    ans = [] #stores full stacked grid rep.
-    target_mask = np.zeros(shape,dtype=int)
-    target_mask[target1[0],target1[1]] = 1
-    target_mask[target2[0],target2[1]] = 2
-
-    for ind, grid in enumerate(grids):
-        if ind == len(grids)-1:
-            stacked = np.stack([grid,np.zeros(shape,dtype=int),target_mask])
-        else:
-            next_grid = grids[ind+1]
-            next_train = np.where(next_grid==ELEMENT_INT_DICT['train'], 1, 0) #zeros except for prev train pos
-            stacked = np.stack([grid,next_train,target_mask])
-        ans.append(stacked)
-    return np.array(ans)
-
 
 def get_within(steps,location):
     within = set([location])
@@ -234,7 +213,7 @@ def collect_grid(size, grid_type, display=False):
             init_pos = grid_get_targets(size)
 
         testgrid = Grid(size,init_pos=init_pos)
-        
+
         a = Agent()
         #seems like needs 5000 iters to solve reliably....
 
