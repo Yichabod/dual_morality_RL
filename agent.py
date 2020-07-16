@@ -14,7 +14,6 @@ class Agent:
     Given a set of actions and a view of the grid, decides what action to take
     """
 
-
     def __init__(self):
         pass
 
@@ -38,16 +37,8 @@ class Agent:
 
     def neural_net_output(self, grid):
         net = self.train_load_neural_net()
-
-        state_array = generate_array(grid)[0,:,:] #(1,5,5) -> (5,5)
-        next_train = np.zeros((grid.size,grid.size),dtype=int)
-        next_train_y = grid.train.pos[0]+grid.train.velocity[0]
-        next_train_x = grid.train.pos[1]+grid.train.velocity[1]
-        if in_bounds(grid.size, (next_train_y,next_train_x)):
-            next_train[next_train_y][next_train_x] = 1
-        test_input = np.stack((state_array,next_train))
-
-        out = neural_net.predict(net, test_input)
+        state_array = generate_array(grid)
+        out = neural_net.predict(net, state_array)
         return out[0]
 
     def run_model_free_policy(self, grid, display=False):
@@ -153,7 +144,6 @@ class Agent:
             if display: print(action)
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
             grids_array.append(generate_array(grid))
-            #grids_array = np.vstack((grids_array,generate_array(grid)))
             total_reward += grid.R(action)
             newstate = grid.T(action)
             state = newstate
@@ -260,15 +250,26 @@ if __name__ == "__main__":
     switch = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,1),'num1':1,'target1':(4,3),
             'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)}
 
-
     push4 = {'train':(2,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(0,1),
         'switch':(4,0),'agent':(4,2),'cargo2':(3,3),'num2':2,'target2':(0,3)}
 
-    testgrid = grid.Grid(5,random=False, init_pos=easy3)
+    test3 = {"train": (0, 3), "trainvel": (1, 0), "cargo1": (2, 2), "target1": (0, 4), "switch": (2, 4), "agent": (2, 0), "cargo2": (3, 3), "target2": (3, 4),'num1':1,
+    'num2':2}
+
+    test12 = {"train": (1, 0), "trainvel": (0, 1), "cargo1": (2, 2), "target1": (3, 1), "switch": (0, 4), "agent": (3, 1), "cargo2": (1, 4), "target2": (0, 3), 'num1':1, 'num2':2}
+
+    test14 = {"train": (4, 4), "trainvel": (-1, 0), "cargo1": (1, 3), "target1": (3, 2), "switch": (4, 1), "agent": (0, 2), "cargo2": (0, 4), "target2": (0, 1), 'num1':1,
+    'num2':2}
+
+    test_suite = [grid.Grid(5,random=False, init_pos=test3),
+                  grid.Grid(5,random=False, init_pos=test12),
+                  grid.Grid(5,random=False, init_pos=test14)]
+
+    testgrid = grid.Grid(5,random=False, init_pos=easy1)
 
     agent = Agent()
 
-    model = 'free'
+    model = 'dual'
     if model == 'dual':
         Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = True)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)

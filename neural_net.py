@@ -11,7 +11,7 @@ cuda = True if torch.cuda.is_available() else False
 NUM_TARGETS = 2
 CHANNELS = 9
 
-NN_FILE = 'models/nn_model_targets'
+NN_FILE = 'models/nn_model'
 
 class Net(nn.Module):
     def __init__(self, C=CHANNELS, dropout_p=0.2):
