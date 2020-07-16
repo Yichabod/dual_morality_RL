@@ -21,10 +21,6 @@ class Net(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.conv3 = nn.Conv2d(100, 100, 3, padding=1)
         self.conv4 = nn.Conv2d(100, 100, 3, padding=1)
-        # self.conv3_1 = nn.Conv2d(100, 100, 3, padding=1)
-
-        # self.conv3_2 = nn.Conv2d(100, 100, 3, padding=1)
-        # self.conv3_3 = nn.Conv2d(100, 100, 3, padding=1)
 
         # add fully connected layer here
         self.fc1 = nn.Linear(100 * 1 * 1, 64)
@@ -40,33 +36,6 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
-# class Net(nn.Module):
-#     def __init__(self, C=CHANNELS, dropout_p=0.2):
-#         super(Net, self).__init__()
-#         self.conv1 = nn.Conv2d(C, 100, 3, padding=1)
-#         self.conv2 = nn.Conv2d(100, 100, 3, padding=1)
-#         self.pool = nn.MaxPool2d(2, 2)
-#         self.conv3 = nn.Conv2d(100, 100, 3, padding=1)
-#         self.conv3_1 = nn.Conv2d(100, 100, 3, padding=1)
-#
-#         self.conv3_2 = nn.Conv2d(100, 100, 3, padding=1)
-#         self.conv3_3 = nn.Conv2d(100, 100, 3, padding=1)
-#         self.conv4 = nn.Conv2d(100, 100, 3, padding=1)
-#         self.fc1 = nn.Linear(100 * 1 * 1, 5)
-#         # self.dropout = nn.Dropout(dropout_p)
-#
-#     def forward(self, x):
-#         x = F.relu(self.conv1(x))
-#         x = self.pool(F.relu(self.conv2(x)))
-#         x = F.relu(self.conv3(x))
-#         x = F.relu(self.conv3_1(x))
-#         x = self.pool(F.relu(self.conv4(x)))
-#         x = F.relu(self.conv3_2(x))
-#         # x = self.dropout(x)
-#         x = F.relu(self.conv3_3(x))
-#         x = x.view(-1, 100 * 1 * 1)
-#         x = self.fc1(x)
-#         return x
 
 
 def make_onehot_data(inputs, labels):
