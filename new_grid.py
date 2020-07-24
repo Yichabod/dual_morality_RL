@@ -67,6 +67,7 @@ class Grid:
                 self.switch = Switch(self.size)
                 self.agent_pos = (0,2)
             else:
+                init_pos = init_pos.copy()
                 for key,val in init_pos.items():
                     if key == "trainvel":
                         init_pos[key] = (-val[1],val[0])
