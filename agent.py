@@ -73,24 +73,6 @@ class Agent:
             if display: display_grid(grid)
         return total_reward
 
-    def _create_softmax_policy(self,Q_dict,cutoff=0, nn_init = False):
-        def policy(grid):
-            state = grid.current_state
-
-            if state not in Q_dict and nn_init:
-                Q_dict[state] = self.neural_net_output(grid)
-
-            Q_values = Q_dict[state]
-            e_x = np.exp(Q_values - np.max(Q_values))
-            softmax = e_x / e_x.sum()
-            for ind,action_prob in enumerate(softmax):
-                if action_prob<cutoff:
-                    softmax[ind] = 0
-            if np.count_nonzero(softmax) == 0:
-                return [1/(len(Q_values)) for k in range(len(Q_values))]
-            return softmax/np.sum(softmax)
-        return policy
-
     def _create_epsilon_greedy_policy(self, Q_dict, epsilon=0.2, nn_init = False):
         """
         Use Q_dict to create a greedy policy
@@ -152,7 +134,7 @@ class Agent:
         return grids_array, action_val_array[1:], total_reward
 
 
-    def mc_first_visit_control(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False, cutoff = 0, softmax = True) -> tuple:
+    def mc_first_visit_control(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False, cutoff = 0) -> tuple:
         """
         Monte Carlo first visit control. Uses epsilon greedy strategy
         to find optimal policy. Details can be found page 101 of Sutton
@@ -169,10 +151,7 @@ class Agent:
         else:
             Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
 
-        if softmax:
-            policy = self._create_softmax_policy(Q, cutoff, nn_init)
-        else:
-            policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init)
+        policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init)
 
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(iters):
@@ -205,10 +184,7 @@ class Agent:
                     sa_reward_sum[sa_pair] += G
                     total_sa_counts[sa_pair] += 1
                     Q[state][action_index] = sa_reward_sum[sa_pair]/total_sa_counts[sa_pair] #average reward over all episodes
-                    if softmax:
-                        policy = self._create_softmax_policy(Q,cutoff,nn_init)
-                    else:
-                        policy = self._create_epsilon_greedy_policy(Q, epsilon,nn_init)
+                    policy = self._create_epsilon_greedy_policy(Q, epsilon,nn_init)
 
         return Q, policy
 
@@ -265,17 +241,19 @@ if __name__ == "__main__":
                   grid.Grid(5,random=False, init_pos=test12),
                   grid.Grid(5,random=False, init_pos=test14)]
 
-    testgrid = grid.Grid(5,random=False, init_pos=easy1)
+    swit27 = {"train": (1, 0), "trainvel": (0, 1), "cargo1": (0, 1), "target1": (4, 3), "switch": (3, 3), "agent": (4, 4), "cargo2": (1, 2), "target2": (0, 3), 'num1':1, "num2":2}
 
+    testgrid = grid.Grid(5,random=False, init_pos=swit27)
     agent = Agent()
 
-    model = 'dual'
+
+    model = 'based'
     if model == 'dual':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 20, nn_init=True,cutoff=0.4,softmax = True)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1, nn_init=True,cutoff=0.4)
         agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
     if model == 'free':
         agent.run_model_free_policy(testgrid.copy(), display=True)
     if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=10000, nn_init=False, softmax=False)
+        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=100, nn_init=False)
         #display_grid(testgrid.copy())
         agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
