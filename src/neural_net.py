@@ -1,6 +1,5 @@
 import numpy as np
-import math
-import time
+import math, time, os
 
 import torch
 import torch.nn as nn
@@ -11,7 +10,8 @@ cuda = True if torch.cuda.is_available() else False
 NUM_TARGETS = 2
 CHANNELS = 9
 
-NN_FILE = '../models/nn_model'
+base_path = os.path.dirname(os.path.dirname(__file__))
+NN_FILE = os.path.join(base_path,'models/nn_model')
 
 class Net(nn.Module):
     def __init__(self, C=CHANNELS, dropout_p=0.2):
@@ -76,7 +76,7 @@ def make_onehot_data(inputs, labels):
 
 
 
-def train(grids_file="../data/grids_data.npy",actions_file="../data/actions_data.npy",num_epochs=20, C=CHANNELS):
+def train(grids_file="../data/large_shuffled_actions.npy",actions_file="../data/large_shuffled_grids.npy",num_epochs=20, C=CHANNELS):
     '''
     C is the number of channels in input array
     C = overall pos mask, agent, empty, obj1, obj2, train, train_next, switch, target1, target2
@@ -144,10 +144,10 @@ def train(grids_file="../data/grids_data.npy",actions_file="../data/actions_data
 
                     loss = criterion(outputs, labels)
                     test_loss.append(loss.item())
-                    total_value_captured.append(value_captured.item())
+                    # total_value_captured.append(value_captured.item())
 
             print('Epoch:{}, train loss: {:.3f}, test loss: {:.3f}, test accuracy: {:.3f}'.format(epoch + 1, np.mean(running_loss), np.mean(test_loss), np.mean(test_accuracy)))
-            print('Value captured in test case:', np.mean())
+            # print('Value captured in test case:', np.mean())
             running_loss = 0.0
     print("training took", time.time() - start, "seconds")
     torch.save(net.state_dict(), 'nn_model')
@@ -161,7 +161,7 @@ def load(C=CHANNELS):
         model.load_state_dict(torch.load(NN_FILE))
     return model
 
-def predict(model, state, C=CHANNELS):
+def predict(model, state):
     '''
     model: pytorch model, output of load()
     state: 3x5x5 numpy array corresponding to grid
@@ -195,5 +195,7 @@ def predict(model, state, C=CHANNELS):
 if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
-
-    train(grids_file='grids_10000_switch.npy',actions_file='actions_10000_switch.npy', num_epochs=50)
+    random_input = np.random.random((3,5,5))
+    model = load()
+    print(predict(model, random_input))
+    # train(grids_file='../data/grids_10000_switch.npy',actions_file='../data/actions_10000_switch.npy', num_epochs=50)

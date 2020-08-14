@@ -1,8 +1,8 @@
 import random
-from utils import Train, OtherMask, Switch, in_bounds
-from graphics import display_grid
 import numpy as np
 
+from .utils import Train, OtherMask, Switch, in_bounds
+from .graphics import display_grid
 
 class Grid:
     '''

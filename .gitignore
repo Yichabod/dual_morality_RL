@@ -3,4 +3,5 @@ __pycache__/
 *.pyc
 #don't push data
 *.npy
+env
 .DS_Store

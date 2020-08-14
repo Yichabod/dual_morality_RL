@@ -1,9 +1,9 @@
 import numpy as np
 from collections import Counter, defaultdict
-import neural_net
-from graphics import display_grid
-from utils import generate_array, in_bounds
-import new_grid as grid
+from . import neural_net
+from .graphics import display_grid
+from .utils import generate_array, in_bounds
+from . import new_grid as grid
 #import torch
 
 ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4} #
