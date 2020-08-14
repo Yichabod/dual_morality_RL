@@ -2,12 +2,13 @@
 This script uses the dual agent to generate time pressure and
 time delay data for analysis.
 """
-import neural_net, time, random
+from src import neural_net
+import time, random
 import pandas as pd
-from agent import Agent
-from graphics import display_grid
-from utils import generate_array, in_bounds
-import new_grid as grid
+from src.agent import Agent
+from src.graphics import display_grid
+from src.utils import generate_array, in_bounds
+import src.new_grid as grid
 
 random.seed(0)
 
@@ -51,11 +52,10 @@ TEST_GRIDS = {"0": {"train": (3, 4), "trainvel": (0, -1), "cargo1": (4, 2), "tar
 TEST_GRID_LIST= [(key, grid) for key, grid in TEST_GRIDS.items()]
 sorted(TEST_GRID_LIST, key=lambda x:x[0]) #make sure list is sorted in place
 
-def generate_data(mode,num_simulations=30, save=True):
+def generate_data(mode,num_simulations=30):
     """
     Generate the dual model data from the TEST_GRID_LIST specified above.
-    Will save the generated data to a csv with columns "id", "model",
-        "grid_num", "reward", and "best_reward"
+
     Args:
         - mode (Str): "delay" or "pressure"; whether the data generated has more
             or fewer monte carlo iterations to solve the test grids
@@ -93,8 +93,8 @@ def generate_data(mode,num_simulations=30, save=True):
 
 
 if __name__ == "__main__":
-    pressure_results = generate_data("pressure")
-    delay_results = generate_data("delay")
+    pressure_results = generate_data("pressure",num_simulations=50)
+    delay_results = generate_data("delay",num_simulations=50)
     model_results = pressure_results+delay_results
     results_df = pd.DataFrame(model_results)
-    results_df.to_csv('dual_model_data_generation.csv')
+    results_df.to_csv('100_dual_model_data_generation.csv')
