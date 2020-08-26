@@ -1,6 +1,3 @@
-/**
- * Created by markho on 6/25/17.
- */
 import $ from 'jquery';
 import forOwn from 'lodash/forown';
 import map from 'lodash/map';

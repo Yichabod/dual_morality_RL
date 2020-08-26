@@ -7,7 +7,6 @@ import get from 'lodash/get';
 import includes from 'lodash/includes';
 import cloneDeep from 'lodash/cloneDeep';
 import keys from 'lodash/keys';
-import weighted from 'weighted';
 const _ = {range, map, fromPairs, get, includes, keys, cloneDeep};
 import product from 'cartesian-product';
 

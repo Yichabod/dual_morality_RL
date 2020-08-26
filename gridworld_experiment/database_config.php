@@ -4,5 +4,5 @@
   $username = "user";
   $password = "password";
   $dbname = "user";
-  $table = "internal_data";
+  $table = "test_data_2";
 ?>

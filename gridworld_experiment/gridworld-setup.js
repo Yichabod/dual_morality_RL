@@ -1,3 +1,9 @@
+const num_training = 60
+const num_test = 30
+const num_total = 90
+var total_score = 0;
+var userid = -1;
+
 function clickStart(hide, show){
     if (hide!="consent" || document.getElementById("consent_checkbox").checked){
         document.getElementById(hide).style.display="none";
@@ -13,11 +19,6 @@ function clickStart(hide, show){
     }
 }
 
-const num_training = 60
-const num_test = 30
-const num_total = 90
-
-
 function test_info(GridWorldTask){
     var test_info = "You have completed " + String(num_training) + "/" + String(num_total) + " trials. ";
     test_info += "For the last " + String(num_test) + " trials, you will be placed under a time constraint.\r\n\r\n";   
@@ -31,16 +32,43 @@ function test_info(GridWorldTask){
     document.getElementById('test_info').innerHTML = test_info  
 }
 
-var total_score = 0;
+function get_random_idx(){
+    idxs = [1,2,3,4,5,6]
+    test_idxs = []
+    special_test = [
+        [101,102,103,104,105,106,107,108],
+        [201,202,203,204,205,206,207,208],
+        [301,302,303,304,305,306,307,308],
+        [401,402,403,404,405,406,407,408]]
+    for (index = 0; index < special_test.length; index++) { 
+        shuffle(special_test[index])
+        test_idxs.push(...special_test[index].slice(0, 3))
+    } 
+    filler_idxs = [7,8,9,10,11,12,13,14,15,16,17,18]
+    test_idxs.push(...filler_idxs)
+    shuffle(idxs)
+    shuffle(test_idxs)
+    return [...idxs,...test_idxs]
+}
 
-function run_train(data,GridWorldTask,num=1,idxs=undefined) {
+function shuffle(a) {
+    var j, x, i;
+    for (i = a.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        x = a[i];
+        a[i] = a[j];
+        a[j] = x;
+    }
+    return a;
+}
+
+function run_train(data,GridWorldTask,num=60,idxs=undefined) {
     if (idxs == undefined){
         idxs = Array.apply(null, {length: num_training}).map(Number.call, Number)
     }
-    
+
     idx = Math.floor(Math.random() * idxs.length);
     idx = idxs[idx]
-    console.log(idx)
     idxs.splice(idxs.indexOf(idx), 1);
 
     document.getElementById('tasknum').innerText = "Trial " + String(num) + "/" + String(num_total);
@@ -83,7 +111,7 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     task.start();
 }
 
-function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
+function run_test(data,GridWorldTask,test_group,num=1,idxs=get_random_idx()) {
     
     document.getElementById('tasknum').innerText = "Trial " + String(num_training+num) + "/" + String(num_total);
     document.getElementById('totalscore').innerText = "Total Score: " + String(total_score);
@@ -98,15 +126,9 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
         time_limit = 7;
     }
 
-    if (idxs == undefined){
-        idxs = Array.apply(null, {length: num_test}).map(Number.call, Number)
-    }
-    idx = Math.floor(Math.random() * idxs.length);
-    idx = idxs[idx]
-    console.log(idx)
-    idxs.splice(idxs.indexOf(idx), 1);
+    idx = idxs[num-1]
     trial_data = data[idx]
-    console.log(idxs)
+    console.log(idx)
     
     task = new GridWorldTask({
         reset: false,
@@ -141,8 +163,6 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=undefined) {
     });
     task.start();
 }
-
-var userid = -1;
 
 function saveData(num, idx, trial_data, r, rmax, type, time_condition = undefined) {
     var datajson = {};
@@ -233,10 +253,10 @@ function saveData(num, idx, trial_data, r, rmax, type, time_condition = undefine
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onload = function() {
       if(xhr.status == 200){
-        console.log(xhr.responseText);
+        //console.log(xhr.responseText);
         var response = JSON.parse(xhr.responseText); 
         userid = response["userid"];
-        console.log(userid);
+        //console.log(userid);
       }
     };
     xhr.send(datajson);

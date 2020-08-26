@@ -6,7 +6,7 @@ info6_hit = false;
 info6_done = false;
 info7_done = false;
 
-testing = false;
+testing = true;
 if (testing==true){
     info4_done = true;
     info5_done = true;
