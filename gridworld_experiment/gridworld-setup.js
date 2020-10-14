@@ -62,7 +62,7 @@ function shuffle(a) {
     return a;
 }
 
-function run_train(data,GridWorldTask,num=60,idxs=undefined) {
+function run_train(data,GridWorldTask,num=1,idxs=undefined) {
     if (idxs == undefined){
         idxs = Array.apply(null, {length: num_training}).map(Number.call, Number)
     }
