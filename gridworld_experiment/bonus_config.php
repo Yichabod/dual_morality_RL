@@ -3,6 +3,6 @@
   $port = 8889;
   $username = "user";
   $password = "password";
-  $dbname = "user";
+  $dbname = "dbname";
   $table = "test_bonus_2";
 ?>
