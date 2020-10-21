@@ -139,7 +139,10 @@ class Agent:
         Monte Carlo first visit control. Uses epsilon greedy strategy
         to find optimal policy. Details can be found page 101 of Sutton
         Barto RL Book
-        Args: nn_init whether to initialize Q-values with neural net outputs
+        Args:
+            - start_grid (Grid): grid object initialized with starting state
+            - iters (int): number of iterations to run monte carlo simulation for
+            - nn_init (bool): whether to initialize Q-values with neural net outputs
         Returns: (Q_values, policy)
                 Q(s,a) = val, policy(state) = action
         """
@@ -151,7 +154,7 @@ class Agent:
         else:
             Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
 
-        policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init)
+        policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init) #initial function
 
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(iters):
