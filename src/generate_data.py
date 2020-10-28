@@ -367,4 +367,4 @@ wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
     # original distribution distribution={'push':23,'switch':23,'targets':39,'lose':15}
-    grids, actions = data_gen(10000, distribution={'push':0,'switch':100,'targets':0,'lose':0}, save=True,filename="10000_switch")
+    grids, actions = data_gen(200000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True,filename="200000_shuffled")
