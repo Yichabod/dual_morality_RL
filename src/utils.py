@@ -13,19 +13,20 @@ def in_bounds(size,position:tuple) -> bool:
     else:
         return False
 
-def generate_array(mdp,action=None):
+def generate_array(mdp):
 
     """
-    Takes in a Grid mdp environment and an agent, with optional action to
-    show which direction next move should be in
-    Generates numpy array with main agent(1), other agents(depends on value), train(3),
-    switch(4), targets(depends on value of other agent)
+    Takes in a Grid mdp environment and an agent,
+    Generates numpy array with main agent(1), other agents(depends on value),
+    train(3), switch(4), targets(depends on value of other agent), and time step
     in the grid of given dimensions.
     Intended to be able to feed into a network
+    Args:
+        - mdp (Grid): grid at current state in time
     """
 
     #  first layer for agent, train, switch, objs. Second for next_train, last for targets
-    dims = (3,mdp.size,mdp.size)
+    dims = (4,mdp.size,mdp.size)
     grid = np.full(dims, 0, dtype=int) #np has nice display built in
     others_dict = mdp.other_agents.mask
     #bug: need to properly distinguish between the targets
@@ -41,7 +42,7 @@ def generate_array(mdp,action=None):
             grid[2, target_coord[0], target_coord[1]] = 2
 
     grid[0,mdp.agent_pos[0],mdp.agent_pos[1]] = ELEMENT_INT_DICT['agent']
-
+    grid[3, 0, mdp.step-1] = 1 # add index of 1 to indicate time step to model
     grid[0,mdp.switch.pos[0], mdp.switch.pos[1]] = ELEMENT_INT_DICT['switch']
     next_train_y = mdp.train.pos[0]+mdp.train.velocity[0]
     next_train_x = mdp.train.pos[1]+mdp.train.velocity[1]

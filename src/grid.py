@@ -31,7 +31,7 @@ class Grid:
         self.alive = True
         self._place_all(random, init_pos)
         # self.current_state = (self.agent_pos,self.train.pos,list(self.other_agents.positions)[0])
-        self.current_state = (self.agent_pos,self.train.pos)+tuple(self.other_agents.positions)
+        self.current_state = (self.agent_pos,self.train.pos,*self.other_agents.positions,self.step)
 
         self.rewards_dict = {'agent hit by train': -4, 'agent pushes others':0,
                             'others hit by train':-1, 'agent push switch': 0,
@@ -222,7 +222,7 @@ class Grid:
 
         self.agent_pos = new_agent_pos
         self.step += 1
-        self.current_state = (self.agent_pos,self.train.pos,*self.other_agents.positions)
+        self.current_state = (self.agent_pos,self.train.pos,*self.other_agents.positions,self.step)
         return self.current_state
 
     def R(self, action:tuple) -> int:

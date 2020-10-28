@@ -1,15 +1,62 @@
-May 25, 2020
-Combined data of old apr9 dataset and dataset of 50k examples with slightly
-incorrect reward (corrected by Alice later). Trained on Google Colab with GPU
-(100 seconds for 40 epochs). Final test loss = 0.062 (Train loss 0.06)
-Strangely, when testing locally, using a sample of the data, the accuracy on the
-test grids when compared with the targets is 0.19 (equivalent to random choice)
+October 21 2020.
+Added time as input to MC agent by concatenating time step to state array.
+Death1 variant where agent has to go towards train to push cargo onto target
+takes more than 1000 iterations to get (about 50%).
+(Definitely gets it at 5k iters). Behavior seems the same with or without state.
+My plan to get the whole pipeline working with time:
+Critical path:
+  dual model: mc_first_visit_control(nn_init=True)->agent.neural_net_output
+              neural_net.predict->utils.generate_array()
+  neural_net: train -> data_gen -> predict
+1) change generate_array so that 4 grids are returned for objs, next_train,
+    targets, and **time step** based on grid state DONE
+2) change generate_data so that extra grid for time is stacked and stored DONE
+3) generate data (what parameters?)
+4) train neural network on google colab
 
-Epoch:1, train loss: 0.792, test loss: 0.788
-Epoch:11, train loss: 0.145, test loss: 0.110
-Epoch:20, train loss: 0.097, test loss: 0.065
-training took 234.4454641342163 seconds (Colab) NOTE THE ABOVE DATA WAS
-INCORRECT
+(Maybe test if I can get neural net to ignore extra param so we don't have to
+  deal with the possible errors in training?)
+
+
+
+July 8th 2020.
+After generating 10,000 grids of only the 'target' variant (which actually should
+be more like 50,000 since there are 5 steps in each configuration, I trained on
+the network with the following results:
+Epoch:100, train loss: 0.049, test loss: 0.059, test accuracy: 0.595
+training took 59.22803497314453 seconds
+Now to see how the network behaves in other configurations.
+So it performs the easy1 push task (just push nearby object onto target) fine.
+Even better, it performs the easy2 push task (which requires more steps), and
+also seems to learn the intuition that dying from being hit by a train is bad
+(easy3).
+
+June 17 2020.
+Realised that the neural net was not creating a layer for the train. This may
+have been a new development.
+Tested effect of adding an extra fully connected layer at the end. It does a bit
+better.
+
+
+9 June 2020
+Added an additional layer, and it mildly improved test loss
+Epoch:1, train loss: 0.665, test loss: 0.514, test accuracy: 0.071
+Epoch:11, train loss: 0.069, test loss: 0.086, test accuracy: 0.460
+Epoch:21, train loss: 0.042, test loss: 0.070, test accuracy: 0.446
+Epoch:31, train loss: 0.034, test loss: 0.076, test accuracy: 0.411
+Epoch:41, train loss: 0.027, test loss: 0.064, test accuracy: 0.482
+Epoch:51, train loss: 0.025, test loss: 0.063, test accuracy: 0.418
+Epoch:61, train loss: 0.019, test loss: 0.060, test accuracy: 0.424
+Epoch:71, train loss: 0.017, test loss: 0.060, test accuracy: 0.560
+Epoch:81, train loss: 0.018, test loss: 0.065, test accuracy: 0.410
+Epoch:91, train loss: 0.010, test loss: 0.055, test accuracy: 0.474
+Epoch:100, train loss: 0.010, test loss: 0.054, test accuracy: 0.476
+notes from Max: make a visualization and investigate exactly how test loss goes
+down. Try fixing something in the training data (e.g. train keeps coming from
+left). Make task simpler. Try training on test benchmark and see if the model
+gets it right.
+
+
 May 28 update:
 Removed mask layer and reorganized layers. Now training on properly generated
 and shuffled data. Model does much worse without mask it seems.
@@ -115,38 +162,17 @@ Epoch:81, train loss: 0.018, test loss: 0.061, test accuracy: 0.475
 Epoch:91, train loss: 0.017, test loss: 0.061, test accuracy: 0.533
 Epoch:100, train loss: 0.014, test loss: 0.063, test accuracy: 0.447
 
-9 June 2020
-Added an additional layer, and it mildly improved test loss
-Epoch:1, train loss: 0.665, test loss: 0.514, test accuracy: 0.071
-Epoch:11, train loss: 0.069, test loss: 0.086, test accuracy: 0.460
-Epoch:21, train loss: 0.042, test loss: 0.070, test accuracy: 0.446
-Epoch:31, train loss: 0.034, test loss: 0.076, test accuracy: 0.411
-Epoch:41, train loss: 0.027, test loss: 0.064, test accuracy: 0.482
-Epoch:51, train loss: 0.025, test loss: 0.063, test accuracy: 0.418
-Epoch:61, train loss: 0.019, test loss: 0.060, test accuracy: 0.424
-Epoch:71, train loss: 0.017, test loss: 0.060, test accuracy: 0.560
-Epoch:81, train loss: 0.018, test loss: 0.065, test accuracy: 0.410
-Epoch:91, train loss: 0.010, test loss: 0.055, test accuracy: 0.474
-Epoch:100, train loss: 0.010, test loss: 0.054, test accuracy: 0.476
-notes from Max: make a visualization and investigate exactly how test loss goes
-down. Try fixing something in the training data (e.g. train keeps coming from
-left). Make task simpler. Try training on test benchmark and see if the model
-gets it right.
 
-June 17 2020.
-Realised that the neural net was not creating a layer for the train. This may
-have been a new development. 
-Tested effect of adding an extra fully connected layer at the end. It does a bit
-better.
 
-July 8th 2020.
-After generating 10,000 grids of only the 'target' variant (which actually should
-be more like 50,000 since there are 5 steps in each configuration, I trained on
-the network with the following results:
-Epoch:100, train loss: 0.049, test loss: 0.059, test accuracy: 0.595
-training took 59.22803497314453 seconds
-Now to see how the network behaves in other configurations.
-So it performs the easy1 push task (just push nearby object onto target) fine.
-Even better, it performs the easy2 push task (which requires more steps), and
-also seems to learn the intuition that dying from being hit by a train is bad
-(easy3).
+May 25, 2020
+Combined data of old apr9 dataset and dataset of 50k examples with slightly
+incorrect reward (corrected by Alice later). Trained on Google Colab with GPU
+(100 seconds for 40 epochs). Final test loss = 0.062 (Train loss 0.06)
+Strangely, when testing locally, using a sample of the data, the accuracy on the
+test grids when compared with the targets is 0.19 (equivalent to random choice)
+
+Epoch:1, train loss: 0.792, test loss: 0.788
+Epoch:11, train loss: 0.145, test loss: 0.110
+Epoch:20, train loss: 0.097, test loss: 0.065
+training took 234.4454641342163 seconds (Colab) NOTE THE ABOVE DATA WAS
+INCORRECT
