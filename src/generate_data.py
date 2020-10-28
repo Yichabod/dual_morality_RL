@@ -240,7 +240,7 @@ def data_gen(num_grids=1000, grid_size=5, distribution=None, save=True, display=
     """
     start = time.time()
     print("Started data generation")
-    grids_data = np.empty((1,3,grid_size,grid_size),dtype=int)
+    grids_data = np.empty((1,4,grid_size,grid_size),dtype=int)
     actions_data = np.empty((1, grid_size),dtype=int)
     reward_dist = {}
 
