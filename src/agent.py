@@ -145,7 +145,7 @@ class Agent:
             - iters (int): number of iterations to run monte carlo simulation for
             - nn_init (bool): whether to initialize Q-values with neural net outputs
         Returns: (Q_values, policy)
-                Q(s,a) = val, policy(state) = action
+                Q(s) = val, policy(state) = action
         """
         # Q is a dictionary mapping state to [value of action1, value of action2,...]
         grid = start_grid.copy()

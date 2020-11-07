@@ -8,7 +8,7 @@ import pandas as pd
 from src.agent import Agent
 from src.graphics import display_grid
 from src.utils import generate_array, in_bounds
-import src.new_grid as grid
+import src.grid as grid
 
 random.seed(0)
 
@@ -70,9 +70,9 @@ def generate_data(mode,num_simulations=30):
     # Generate dual model "time constrained scenario"
     for i in range(num_simulations):
         if mode == "pressure":
-            n_iters = random.randrange(20,30) #choose a randome integer between 20 and 30 for MC iterations
+            n_iters = random.randrange(0,50) #choose a randome integer between 20 and 30 for MC iterations
         elif mode == "delay":
-            n_iters = random.randrange(220,230) #note these ranges were chosen by looking at the dual model performance graph
+            n_iters = random.randrange(120,530) #note these ranges were chosen by looking at the dual model performance graph
             # in the dual_model_data_generation.ipynb
 
         for ind, grid_init in TEST_GRID_LIST:
@@ -93,8 +93,8 @@ def generate_data(mode,num_simulations=30):
 
 
 if __name__ == "__main__":
-    pressure_results = generate_data("pressure",num_simulations=50)
-    delay_results = generate_data("delay",num_simulations=50)
+    pressure_results = generate_data("pressure",num_simulations=250)
+    delay_results = generate_data("delay",num_simulations=250)
     model_results = pressure_results+delay_results
     results_df = pd.DataFrame(model_results)
-    results_df.to_csv('100_dual_model_data_generation.csv')
+    results_df.to_csv('500_dual_model_data_generation.csv')
