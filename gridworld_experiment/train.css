@@ -100,7 +100,7 @@ input[type=submit]{
 
 }
 
-#task {
+#task, #task2 {
     float: right;
     width: 60%;
     overflow: hidden;   
@@ -113,7 +113,7 @@ input[type=submit]{
     margin-left: 60;
 }
 
-#reward {
+#reward, #reward2 {
     font-size: 22pt;
     position: absolute;
     top: 50%;
@@ -128,7 +128,7 @@ input[type=submit]{
     transform: translateY(-70%);
 }
 
-#timer {
+#timer, #timer2 {
     font-size: 102pt;
     position:absolute;
     top: 25%;

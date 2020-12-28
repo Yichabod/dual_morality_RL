@@ -7,7 +7,7 @@ info6_done = false;
 info7_done = false;
 testinfo_done = false;
 
-testing = false;
+testing =  false;
 if (testing==true){
     info4_done = true;
     info5_done = true;
@@ -26,6 +26,7 @@ function clearGrid(div){
 }
 
 function pushDemo(GridWorldTask){
+    console.log(info4_done)
     if (!info4_done){
         document.getElementById('next45').disabled = true
         document.getElementById('next45').style.color = "red"
@@ -219,10 +220,11 @@ function testDemo(GridWorldTask,test_group){
     var wt 
     var tl
     if (test_group == 0){
+        wt = 5
+    } else if (test_group == 1) {
         wt = 7
     } else {
-        wt = 0
-        tl = 7
+        wt = 10
     }
 
     let task = new GridWorldTask({

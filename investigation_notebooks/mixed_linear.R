@@ -1,35 +1,39 @@
 library(readr)
 data_join <- read_csv("dual_morality_RL/data/cleaned_data_join.csv")
+data_model <- read_csv("dual_morality_RL/data/cleaned_data_model.csv")
+data_gen <- read_csv("dual_morality_RL/data/data_generated.csv")
+
 View(data_join)
 
 library(lme4)
-library(brms)
 library(simr)
 
-#time constraint,indistrib: -0.5,0.5
-#push vs switch (only out of distrib) 0 if indistrib, -0.5,0.5 for push and switch
-#nested set of predictors
-#list of hypotheses about what differs between switch and push
-mixed.datajoin <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_distrib + time_x_push + (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
-summary(mixed.datajoin)
+mixed.datajoin1 <- lmer(score_dif ~ (1|userid) + (1|gridnum), data = data_join)
 
-mixed.datajoin2 <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_distrib + (time_constraint|gridnum), data = data_join)
-summary(mixed.datajoin2)
+mixed.datajoin2 <- lmer(score_dif ~ time_constraint  +  (1|userid) + (1|gridnum), data = data_join)
 
-anova(mixed.datajoin,mixed.datajoin2)
+mixed.datajoin3 <- lmer(score_dif ~ time_constraint + in_distrib  +  (1|userid) + (1|gridnum), data = data_join)
 
-mixed.datab <- brm(score_dif ~ time_constraint + in_distrib + push + time_x_distrib + time_x_push + (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
-summary(mixed.datab)
+mixed.datajoin4 <- lmer(score_dif ~ time_constraint + in_distrib + push +  (1|userid) + (1|gridnum), data = data_join)
 
-mixed.datab2 <- brm(score_dif ~ time_constraint + in_distrib + push + (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
-summary(mixed.datab2)
+mixed.datajoin5 <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_distrib +  (1|userid) + (1|gridnum), data = data_join)
 
-loo(mixed.datab,mixed.datab2)
+mixed.datajoin6 <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_distrib + time_x_push + (1|userid) + (1|gridnum), data = data_join)
+summary(mixed.datajoin6)
+
+mixed.datajoin6b <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_push + (1|userid) + (1|gridnum), data = data_join)
+summary(mixed.datajoin6b)
+
+anova(mixed.datajoin1,mixed.datajoin2,mixed.datajoin3,mixed.datajoin4,mixed.datajoin5,mixed.datajoin6)
+anova(mixed.datajoin4,mixed.datajoin5)
+anova(mixed.datajoin4,mixed.datajoin6b)
 
 
-sim_treat <- powerSim(mixed.datapush, nsim=100, test = fixed("time_x_distrib"))
+sim_treat <- powerSim(mixed.datajoin, nsim=100, test = fcompare(score_dif~time_x_distrib))
 sim_treat
-p_curve <- powerCurve(mixed.datapush, test=fixed("time_x_distrib"), along="userid")
+
+model_ext_users <- extend(mixed.datajoin, along="userid", n=120)
+p_curve <- powerCurve(model_ext_users, test=fcompare(score_dif~time_x_push), along="userid")
 plot(p_curve)
 
 

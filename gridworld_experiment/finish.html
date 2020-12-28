@@ -18,7 +18,7 @@
         var URLparams = new URLSearchParams(URLqueryString);
         var URL_mTurkID = URLparams.get('workerId')
                 
-        var bonus = total_score * 0.05
+        var bonus = (total_score + total_best) * 0.03 
         if (bonus < 0){ bonus = 0 }
         var mTurkID = document.getElementById('mTurk_id').value;
         var datajson = {}

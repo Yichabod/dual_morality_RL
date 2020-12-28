@@ -348,30 +348,29 @@ class GridWorldTask {
     _end_task() {
         if (this.time_limit>0){
             window.clearInterval(this.mytimer);
-            if (!this.time_out){
-                window.clearTimeout(this.time_over);
-            }
+            window.clearTimeout(this.time_over);
         }
 
         let animtime = this.painter.OBJECT_ANIMATION_TIME;
         
+        /*
         var result_color = "green"
         if (this.reward<this.best_reward){ 
             result_color = "red"
-        }
+        }*/
 
-        this.painter.add_object("rect", "results", {"fill" : result_color,"object_length":2.5, "object_width":1.5});
+        this.painter.add_object("rect", "results", {"fill" : "black","object_length":2.5, "object_width":1.5});
         this.painter.draw_object(2,2, "<", "results");
         this.painter.add_object("rect", "results2", {"fill" : "white","object_length":2.25, "object_width":1.25});
         this.painter.draw_object(2,2, "<", "results2");
-        var scoretext = "Your Score: " + String(this.reward) + "\nBest Score: " + String(this.best_reward)
+        var scoretext = "Your Score: " + String(this.reward)
         if (this.reset == true){ scoretext += "\npress n to try again"}
         else { scoretext += "\npress n to continue" }
         this.painter.add_text(2,2, scoretext, {"font-size":20, "font-family": "Palatino Linotype, Book Antiqua, Palatino, serif"});
 
         console.log('endtask');
-        this._disable_response();
         $(document).on("keydown.task_response", (e) => {
+            console.log("enabling n")
             let kc = e.keyCode ? e.keyCode : e.which;
             if (kc === 78) {
                 this._disable_response();
@@ -460,6 +459,7 @@ class GridWorldTask {
         this.update_stats();
 
         if (this.mdp.is_terminal() || this.iter >= this.iter_limit) {
+            console.log(this.mdp.is_terminal(), this.iter)
             this._end_task();
         }
         else {
