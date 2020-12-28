@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from new_grid import Grid
+from grid import Grid
 import numpy as np
 from agent import Agent
 import time
@@ -240,7 +240,7 @@ def data_gen(num_grids=1000, grid_size=5, distribution=None, save=True, display=
     """
     start = time.time()
     print("Started data generation")
-    grids_data = np.empty((1,3,grid_size,grid_size),dtype=int)
+    grids_data = np.empty((1,4,grid_size,grid_size),dtype=int)
     actions_data = np.empty((1, grid_size),dtype=int)
     reward_dist = {}
 
@@ -366,4 +366,5 @@ def shuffle_generated_data(grids, actions):
 wasd_dict = {'w':(-1,0),'a':(0,-1),'s':(1,0),'d':(0,1),' ':(0,0)}
 if __name__ == "__main__":
     #num grids should always be multiple of 100
-    grids, actions = data_gen(10000, distribution={'push':0,'switch':100,'targets':0,'lose':0}, save=True,filename="10000_switch")
+    # original distribution distribution={'push':23,'switch':23,'targets':39,'lose':15}
+    grids, actions = data_gen(200000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True,filename="200000_shuffled")

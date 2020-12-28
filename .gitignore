@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 #don't push data
 *.npy
+data/
 env
 .DS_Store
 passwords.txt

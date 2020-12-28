@@ -8,7 +8,7 @@ import torch.optim as optim
 
 cuda = True if torch.cuda.is_available() else False
 NUM_TARGETS = 2
-CHANNELS = 9
+CHANNELS = 10
 
 base_path = os.path.dirname(os.path.dirname(__file__))
 NN_FILE = os.path.join(base_path,'models/nn_model')
@@ -48,6 +48,7 @@ def make_onehot_data(inputs, labels):
 
     base = inputs[:, 0:1, :, :] #this contains all elts except next train/targets
     targets = inputs[:, 2:3, :, :]
+    timestep = inputs[:, 3:4, :, :]
 
     mask_layer = (base != 0).float()
     agent_layer = (base == 1).float()
@@ -59,7 +60,7 @@ def make_onehot_data(inputs, labels):
     object2_layer = (base == 5).float()
     target2_layer = (targets == 2).float()
 
-    onehot_inputs = torch.cat((mask_layer, agent_layer, train_layer, next_train_layer,switch_layer,object1_layer,target1_layer,object2_layer, target2_layer), dim=1)
+    onehot_inputs = torch.cat((mask_layer, agent_layer, train_layer, next_train_layer,switch_layer,object1_layer,target1_layer,object2_layer, target2_layer,timestep), dim=1)
 
     if cuda:
         onehot_inputs = onehot_inputs.cuda()
@@ -174,6 +175,7 @@ def predict(model, state):
 
     base = inputs[0:1, :, :] #this contains all elts except next train/targets
     targets = inputs[2:3, :, :]
+    timestep = inputs[3:4, :, :]
 
     mask_layer = (base != 0).float()
     agent_layer = (base == 1).float()
@@ -185,7 +187,7 @@ def predict(model, state):
     object2_layer = (base == 5).float()
     target2_layer = (targets == 2).float()
 
-    onehot_inputs = torch.cat((mask_layer, agent_layer, train_layer, next_train_layer,switch_layer,object1_layer,target1_layer,object2_layer, target2_layer), dim=0)
+    onehot_inputs = torch.cat((mask_layer, agent_layer, train_layer, next_train_layer,switch_layer,object1_layer,target1_layer,object2_layer, target2_layer,timestep), dim=0)
     onehot_inputs = torch.unsqueeze(onehot_inputs, dim=0)
     outputs = model(onehot_inputs)
 
@@ -195,7 +197,17 @@ def predict(model, state):
 if __name__ == "__main__":
     #grids = np.ones((49,2,5,5))
     #actions = np.ones((49,5))
-    random_input = np.random.random((3,5,5))
+    random_input = np.random.random((4,5,5))
     model = load()
     print(predict(model, random_input))
-    # train(grids_file='../data/grids_10000_switch.npy',actions_file='../data/actions_10000_switch.npy', num_epochs=50)
+    # train(grids_file='../data/grids_200000_shuffled.npy',actions_file='../data/actions_200000_shuffled.npy', num_epochs=1)
+
+    # grids_file='../data/large_shuffled_grids.npy'
+    # grids = np.load(grids_file)
+    # grid_num = grids.shape[0]
+    # time_grids = np.zeros((grid_num, 1, 5, 5))
+    # for i in range(0, grids.shape[0], 5):
+    #     for j in range(5):
+    #         time_grids[i+j, :, -1, j] = 1 #set bottom row to time index
+    # total_grids = np.concatenate((grids, time_grids), axis=1)
+    # np.save('../data/large_shuffled_grids_time.npy', total_grids)

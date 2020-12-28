@@ -1,9 +1,9 @@
 import numpy as np
 from collections import Counter, defaultdict
-from . import neural_net
-from .graphics import display_grid
-from .utils import generate_array, in_bounds
-from . import new_grid as grid
+import neural_net
+from graphics import display_grid
+from utils import generate_array, in_bounds
+import grid
 #import torch
 
 ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4} #
@@ -61,7 +61,7 @@ class Agent:
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
             test_input = generate_array(grid)
-
+            import pdb; pdb.set_trace()
             #input to neural net predict should be (3,5,5) for base, next_train, targets
             action_ind = np.argmax(neural_net.predict(net, test_input))
             action = grid.all_actions[action_ind]
@@ -125,6 +125,7 @@ class Agent:
             if display: display_grid(grid)
             if display: print(action)
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
+
             grids_array.append(generate_array(grid))
             total_reward += grid.R(action)
             newstate = grid.T(action)
@@ -139,9 +140,12 @@ class Agent:
         Monte Carlo first visit control. Uses epsilon greedy strategy
         to find optimal policy. Details can be found page 101 of Sutton
         Barto RL Book
-        Args: nn_init whether to initialize Q-values with neural net outputs
+        Args:
+            - start_grid (Grid): grid object initialized with starting state
+            - iters (int): number of iterations to run monte carlo simulation for
+            - nn_init (bool): whether to initialize Q-values with neural net outputs
         Returns: (Q_values, policy)
-                Q(s,a) = val, policy(state) = action
+                Q(s) = val, policy(state) = action
         """
         # Q is a dictionary mapping state to [value of action1, value of action2,...]
         grid = start_grid.copy()
@@ -151,7 +155,7 @@ class Agent:
         else:
             Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
 
-        policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init)
+        policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init) #initial function
 
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(iters):
@@ -190,70 +194,7 @@ class Agent:
 
 
 if __name__ == "__main__":
-
-    #push_init_pos = {'train':(2,0),'agent':(4,1),'other1':(3,2),'switch':(0,0),'other2':(2,4),'other1num':1,'other2num':4}
-    #switch_init_pos = {'train':(2,0),'agent':(4,1),'other1':(0,0),'switch':(3,2),'other2':(2,4),'other1num':1,'other2num':4}
-
-    #here agent only needs to push cargo into target, which is near train. To test model free
-    easy1 = {'train':(1,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(2,2),
-            'switch':(0,0),'agent':(4,2),'cargo2':(2,4),'num2':2,'target2':(0,3)}
-    # agent should push simple cargo into target, away from train
-    easy2 = {'train':(1,0),'trainvel':(0,1),'cargo1':(4,1),'num1':1,'target1':(4,0),
-            'switch':(0,0),'agent':(2,2),'cargo2':(2,4),'num2':2,'target2':(0,3)}
-    # agent should get out of the way of the train
-    easy3 = {'train':(1,0),'trainvel':(0,1),'cargo1':(4,1),'num1':1,'target1':(4,0),
-            'switch':(0,0),'agent':(1,2),'cargo2':(2,4),'num2':2,'target2':(0,3)}
-    # dont_die_pos = {'train':(2,0),'trainvel':()
-    easy4 = {'train':(2,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(4,0),
-            'switch':(0,0),'agent':(2,2),'cargo2':(2,4),'num2':2,'target2':(0,3)}
-    #somewhere between 10,000 and 50,000 iterations the mc finally gets it - seems pretty hard without nn even
-    push3 = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,3),'num1':1,'target1':(3,1),
-            'switch':(4,0),'agent':(3,3),'cargo2':(2,4),'num2':2,'target2':(1,4)}
-
-    #this one takes a long time too - perhaps because reward comes too late
-    death1 = {'train':(0,0),'trainvel':(0,1),'cargo1':(1,2),'num1':1,'target1':(2,2),
-            'switch':(4,0),'agent':(0,3),'cargo2':(2,4),'num2':2,'target2':(3,3)}
-
-    push1 = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,2),'num1':1,'target1':(3,1),
-        'switch':(0,0),'agent':(3,3),'cargo2':(1,4),'num2':2,'target2':(0,3)}
-
-    targets_test = {'train':(0,0),'trainvel':(0,1),'cargo1':(1,2),'num1':1,'target1':(1,3),
-            'switch':(4,4),'agent':(2,1),'cargo2':(2,2),'num2':2,'target2':(3,2)}
-
-    weird1 = {'train':(4,2),'trainvel':(-1,0),'other1':(4,3),'num1':1,'target1':(0,3),
-            'switch':(1,0),'agent':(3,0),'other2':(2,2),'num2':2,'target2':(2,4)}
-
-    switch = {'train':(1,0),'trainvel':(0,1),'cargo1':(2,1),'num1':1,'target1':(4,3),
-            'switch':(3,3),'agent':(4,4),'cargo2':(1,2),'num2':2,'target2':(0,3)}
-
-    push4 = {'train':(2,0),'trainvel':(0,1),'cargo1':(3,2),'num1':1,'target1':(0,1),
-        'switch':(4,0),'agent':(4,2),'cargo2':(3,3),'num2':2,'target2':(0,3)}
-
-    test3 = {"train": (0, 3), "trainvel": (1, 0), "cargo1": (2, 2), "target1": (0, 4), "switch": (2, 4), "agent": (2, 0), "cargo2": (3, 3), "target2": (3, 4),'num1':1,
-    'num2':2}
-
-    test12 = {"train": (1, 0), "trainvel": (0, 1), "cargo1": (2, 2), "target1": (3, 1), "switch": (0, 4), "agent": (3, 1), "cargo2": (1, 4), "target2": (0, 3), 'num1':1, 'num2':2}
-
-    test14 = {"train": (4, 4), "trainvel": (-1, 0), "cargo1": (1, 3), "target1": (3, 2), "switch": (4, 1), "agent": (0, 2), "cargo2": (0, 4), "target2": (0, 1), 'num1':1,
-    'num2':2}
-
-    test_suite = [grid.Grid(5,random=False, init_pos=test3),
-                  grid.Grid(5,random=False, init_pos=test12),
-                  grid.Grid(5,random=False, init_pos=test14)]
-
-    swit27 = {"train": (1, 0), "trainvel": (0, 1), "cargo1": (0, 1), "target1": (4, 3), "switch": (3, 3), "agent": (4, 4), "cargo2": (1, 2), "target2": (0, 3), 'num1':1, "num2":2}
-
-    testgrid = grid.Grid(5,random=False, init_pos=swit27)
-    agent = Agent()
-
-
-    model = 'based'
-    if model == 'dual':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), 1, nn_init=True,cutoff=0.4)
-        agent.run_final_policy(testgrid.copy(), Q,nn_init=True,display=True)
-    if model == 'free':
-        agent.run_model_free_policy(testgrid.copy(), display=True)
-    if model == 'based':
-        Q, policy = agent.mc_first_visit_control(testgrid.copy(), iters=100, nn_init=False)
-        #display_grid(testgrid.copy())
-        agent.run_final_policy(testgrid.copy(), Q,nn_init=False,display=True)
+    """
+    NOTE: Don't run this file directly. Import from another directory, and then
+    call the functions.
+    """

@@ -1,3 +1,3 @@
-# Dual Morality Reinforcement Learning
+# Dual Process Reinforcement Learning
 
-Extending moral experiments into the Reinforcement Learning Domain
+Using reinforcement learning to model human dual process cognition.
