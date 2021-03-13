@@ -1,8 +1,7 @@
 const num_training = 60
-const num_test = 50
-const num_total = 110
+const num_test = 30
+const num_total = 90
 var total_score = 0;
-var total_best = 0;
 var userid = -1;
 
 function clickStart(hide, show){
@@ -12,28 +11,28 @@ function clickStart(hide, show){
         window.scrollTo(0,0);
     } 
     if (show == 'finishpage'){
-        var bonus = (total_score + total_best) * 0.03 
-        bonus = Math.round(100*bonus)/100 
-        console.log(total_best,bonus,total_score)
+        var bonus = total_score * 0.10
+        bonus = Math.round(100*bonus)/100
         if (bonus < 0){ bonus = 0 }
         document.getElementById("completioncode").innerHTML =  "Secret Completion Code: A8M9KF22PXKS"
-        document.getElementById("bonusmsg").innerHTML = "Your score was " + parseInt(total_score) + ", and the number of grids you got the best possible score on was " + parseInt(total_best) + " providing a bonus of $" + parseFloat(bonus) + ". Please enter your mTurk ID so that we can correctly assign your bonus. Please be aware that this may take some time to process."    
+        document.getElementById("bonusmsg").innerHTML = "You will recieve a bonus based on your total score for the task. Your total was " + parseInt(total_score) + ", providing a bonus of $" + parseFloat(bonus) + ". Please enter your mTurk ID so that we can correctly assign your bonus. Please be aware that this may take some time to process."    
     }
 }
 
 function test_info(GridWorldTask){
-    var test_info = "You have completed " + String(num_training) + "/" + String(num_total) + " trials. ";
-    test_info += "For the last " + String(num_test) + " trials, you will be placed under a time constraint.";   
-    document.getElementById('test_info').innerHTML = test_info  
-    
-    var test_info3 = ""
+    if (!testinfo_done){
+        document.getElementById('test_button').style.color = "red";
+        document.getElementById('test_button').disabled = true;
+        }
+
+    var test_info = "Additionally, you will be placed under a time constraint for this task.\r\n\r\n";   
     test_group = Math.floor(Math.random() * 2);
     if (test_group==0){
-        test_info3 += "You should take 7 seconds to look at the board and plan your moves. When 7 seconds is up, the counter will turn green and you can then take your 5 steps<br><br>Try one practice trial below, and get the best score to continue!" 
+        test_info += "You should take 7 seconds to look at the board and plan your moves. When 7 seconds is up, the counter will turn green and you can then take your 5 steps<br><br>Try one practice trial below, and get the best score to continue!" 
     } else {
-        test_info3 += "You will have a time limit of 7 seconds to complete the board. There will be a counter on the right displaying your time remaining. <b>If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4</b> Therefore, you should always try to finish 5 moves in each round, even if this means hitting the spacebar several times after you have accomplished your goals. <br><br>Try one practice trial below, and get the best score to continue!"
+        test_info += "You will have a time limit of 7 seconds to complete the board. There will be a counter on the right displaying your time remaining. <b>If you do not complete all 5 moves before time runs out, you will get the lowest possible reward of -4</b> Therefore, you should always try to finish 5 moves in each round, even if this means hitting the spacebar several times after you have accomplished your goals. <br><br>Try one practice trial below, and get the best score to continue!"
     }
-    document.getElementById('test_info3').innerHTML = test_info3  
+    document.getElementById('test_info').innerHTML = test_info  
 }
 
 function get_random_idx(){
@@ -46,7 +45,7 @@ function get_random_idx(){
         [401,402,403,404,405,406,407,408]]
     for (index = 0; index < special_test.length; index++) { 
         shuffle(special_test[index])
-        test_idxs.push(...special_test[index])
+        test_idxs.push(...special_test[index].slice(0, 3))
     } 
     filler_idxs = [7,8,9,10,11,12,13,14,15,16,17,18]
     test_idxs.push(...filler_idxs)
@@ -90,8 +89,6 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
                 document.getElementById('test_button').style.color = "red";
                 document.getElementById('test_button').disabled = true;
                 test_info(GridWorldTask);
-                clickStart('page1','testinfo')
-                clearGrid('page1')
             }
             else {run_train(data,GridWorldTask,num+1,idxs)}
         }
@@ -119,8 +116,8 @@ function run_train(data,GridWorldTask,num=1,idxs=undefined) {
 
 function run_test(data,GridWorldTask,test_group,num=1,idxs=get_random_idx()) {
     
-    document.getElementById('tasknum2').innerText = "Trial " + String(num_training+num) + "/" + String(num_total);
-    document.getElementById('totalscore2').innerText = "Total Score: " + String(total_score);
+    document.getElementById('tasknum').innerText = "Trial " + String(num) + "/" + String(30);
+    document.getElementById('totalscore').innerText = "Total Score: " + String(total_score);
 
     var wait_time
     var time_limit
@@ -133,22 +130,19 @@ function run_test(data,GridWorldTask,test_group,num=1,idxs=get_random_idx()) {
     }
 
     idx = idxs[num-1]
-    console.log(idx)
     trial_data = data[idx]
+    console.log(idx)
     
     task = new GridWorldTask({
         reset: false,
-        container: $("#task2")[0],
-        reward_container: $("#reward2")[0],
-        time_container: $("#timer2")[0],
+        container: $("#task")[0],
+        reward_container: $("#reward")[0],
+        time_container: $("#timer")[0],
         step_callback: (d) => {},
         endtask_callback: (result_data,r) => {
             total_score += r;
-            if (r === trial_data['best_reward']){
-                total_best += 1;
-            }
             saveData(num+num_training, idx, result_data, r, trial_data['best_reward'],"test", test_group)
-            if (num >= num_test){clickStart('page2','feedbackpage')}
+            if (num >= num_test){clickStart('page1','feedbackpage')}
             else {run_test(data,GridWorldTask, test_group, num+1, idxs)}
         }
     });

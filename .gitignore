@@ -6,3 +6,8 @@ __pycache__/
 data/
 env
 .DS_Store
+passwords.txt
+gridworld_experiment/feedback_config.php
+gridworld_experiment/bonus_config.php
+gridworld_experiment/database_config.php
+

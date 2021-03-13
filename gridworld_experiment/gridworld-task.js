@@ -36988,7 +36988,7 @@ return Q;
 });
 
 }).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":187,"timers":188}],182:[function(require,module,exports){
+},{"_process":185,"timers":186}],182:[function(require,module,exports){
 // ┌────────────────────────────────────────────────────────────────────┐ \\
 // │ Raphaël 2.1.3 - JavaScript Vector Library                          │ \\
 // ├────────────────────────────────────────────────────────────────────┤ \\
@@ -45230,109 +45230,6 @@ return Q;
 }));
 
 },{"eve":2}],183:[function(require,module,exports){
-module.exports = require('./lib/weighted')
-
-},{"./lib/weighted":184}],184:[function(require,module,exports){
-function getTotal(weights) {
-  var total = weights.__weighted_total
-
-  if (total != null) {
-    return total
-  }
-
-  function wrap(arr, fn) {
-    return function () {
-      arr.__weighted_total = null
-      fn.apply(arr, arguments)
-    }
-  }
-
-  if (total === undefined) {
-    ;['pop', 'push', 'shift', 'unshift', 'splice'].forEach(function (key) {
-      weights[key] = wrap(weights, weights[key])
-    })
-  }
-
-  total = weights.__weighted_total = weights.reduce(function (prev, curr) {
-    return prev + curr
-  }, 0)
-
-  return total
-}
-
-function _selectArr(set, weights, options) {
-  if (typeof options.rand !== 'function') {
-    options.rand = Math.random
-  }
-
-  if (set.length !== weights.length) {
-    throw new TypeError('Different number of options & weights.')
-  }
-
-  var total = options.total || (options.normal ? 1 : getTotal(weights))
-    , key = options.rand() * total
-    , index = 0
-
-  for (;index < weights.length; index++) {
-    key -= weights[index]
-
-    if (key < 0) {
-      return set[index]
-    }
-  }
-
-  throw new RangeError('All weights do not add up to >= 1 as expected.')
-}
-
-function _selectObj(obj, options) {
-  var keys = Object.keys(obj)
-    , values = keys.map(function (key) {
-        return obj[key]
-      })
-
-  return _selectArr(keys, values, options)
-}
-
-function select(set, weights, options) {
-  if (typeof options === 'function') {
-    options = {
-      rand: options
-    }
-  }
-
-  if (options == null) {
-    options = {}
-  }
-
-  if (Array.isArray(set)) {
-    if (weights == null) {
-      weights = set.map(function () {
-        return 1
-      })
-    }
-
-    if (Array.isArray(weights)) {
-      if (set.length === weights.length) {
-        return _selectArr(set, weights, options)
-      }
-
-      throw new TypeError('Set and Weights are different sizes.')
-    }
-
-    throw new TypeError('Set is an Array, and Weights is not.')
-  }
-
-  if (typeof set === 'object') {
-    return _selectObj(set, weights || options)
-  }
-
-  throw new TypeError('Set is not an Object, nor is it an Array.')
-}
-
-module.exports = select
-module.exports.select = select
-
-},{}],185:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -45373,10 +45270,6 @@ var _cloneDeep2 = _interopRequireDefault(_cloneDeep);
 var _keys = require('lodash/keys');
 
 var _keys2 = _interopRequireDefault(_keys);
-
-var _weighted = require('weighted');
-
-var _weighted2 = _interopRequireDefault(_weighted);
 
 var _cartesianProduct = require('cartesian-product');
 
@@ -45631,13 +45524,10 @@ var GridWorldMDP = exports.GridWorldMDP = function () {
     return GridWorldMDP;
 }();
 
-},{"cartesian-product":1,"lodash/cloneDeep":144,"lodash/frompairs":148,"lodash/get":149,"lodash/includes":152,"lodash/keys":166,"lodash/map":169,"lodash/range":172,"weighted":183}],186:[function(require,module,exports){
+},{"cartesian-product":1,"lodash/cloneDeep":144,"lodash/frompairs":148,"lodash/get":149,"lodash/includes":152,"lodash/keys":166,"lodash/map":169,"lodash/range":172}],184:[function(require,module,exports){
 'use strict';
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by markho on 6/25/17.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
-
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _jquery = require('jquery');
 
@@ -46032,23 +45922,22 @@ var GridWorldTask = function () {
 
             if (this.time_limit > 0) {
                 window.clearInterval(this.mytimer);
-                if (!this.time_out) {
-                    window.clearTimeout(this.time_over);
-                }
+                window.clearTimeout(this.time_over);
             }
 
             var animtime = this.painter.OBJECT_ANIMATION_TIME;
 
-            var result_color = "green";
-            if (this.reward < this.best_reward) {
-                result_color = "red";
-            }
+            /*
+            var result_color = "green"
+            if (this.reward<this.best_reward){ 
+                result_color = "red"
+            }*/
 
-            this.painter.add_object("rect", "results", { "fill": result_color, "object_length": 2.5, "object_width": 1.5 });
+            this.painter.add_object("rect", "results", { "fill": "black", "object_length": 2.5, "object_width": 1.5 });
             this.painter.draw_object(2, 2, "<", "results");
             this.painter.add_object("rect", "results2", { "fill": "white", "object_length": 2.25, "object_width": 1.25 });
             this.painter.draw_object(2, 2, "<", "results2");
-            var scoretext = "Your Score: " + String(this.reward) + "\nBest Score: " + String(this.best_reward);
+            var scoretext = "Your Score: " + String(this.reward);
             if (this.reset == true) {
                 scoretext += "\npress n to try again";
             } else {
@@ -46057,8 +45946,8 @@ var GridWorldTask = function () {
             this.painter.add_text(2, 2, scoretext, { "font-size": 20, "font-family": "Palatino Linotype, Book Antiqua, Palatino, serif" });
 
             console.log('endtask');
-            this._disable_response();
             (0, _jquery2.default)(document).on("keydown.task_response", function (e) {
+                console.log("enabling n");
                 var kc = e.keyCode ? e.keyCode : e.which;
                 if (kc === 78) {
                     _this4._disable_response();
@@ -46153,6 +46042,7 @@ var GridWorldTask = function () {
             this.update_stats();
 
             if (this.mdp.is_terminal() || this.iter >= this.iter_limit) {
+                console.log(this.mdp.is_terminal(), this.iter);
                 this._end_task();
             } else {
                 //This handles when/how to re-enable user responses
@@ -46182,7 +46072,7 @@ if (typeof window === 'undefined') {
     window.GridWorldTask = GridWorldTask;
 }
 
-},{"./gridworld-mdp.es6":185,"gridworld-painter":3,"jquery":4,"lodash/concat":145,"lodash/forown":147,"lodash/frompairs":148,"lodash/includes":152,"lodash/map":169,"raphael":182}],187:[function(require,module,exports){
+},{"./gridworld-mdp.es6":183,"gridworld-painter":3,"jquery":4,"lodash/concat":145,"lodash/forown":147,"lodash/frompairs":148,"lodash/includes":152,"lodash/map":169,"raphael":182}],185:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -46368,7 +46258,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],188:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 (function (setImmediate,clearImmediate){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -46447,4 +46337,4 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":187,"timers":188}]},{},[186]);
+},{"process/browser.js":185,"timers":186}]},{},[184]);
