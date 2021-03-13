@@ -1,9 +1,10 @@
 import random
 import numpy as np
+from . import utils
+from . import graphics
 
-from utils import Train, OtherMask, Switch, in_bounds
-from graphics import display_grid
-
+display_grid = graphics.display_grid
+Train, OtherMask, Switch, in_bounds = utils.Train, utils.OtherMask, utils.Switch, utils.in_bounds
 class Grid:
     '''
     Grid is the state class for the MDP, with transition and reward functions
@@ -36,6 +37,7 @@ class Grid:
         self.rewards_dict = {'agent hit by train': -4, 'agent pushes others':0,
                             'others hit by train':-1, 'agent push switch': 0,
                             'others on target': 1, 'do nothing':0}
+        self.state_reward = 0 #this is used for the monte carlo tree search node
 
     def copy(self):
         """

@@ -1,11 +1,13 @@
 import numpy as np
 from collections import Counter, defaultdict
-import neural_net
-from graphics import display_grid
-from utils import generate_array, in_bounds
-import grid
+from . import neural_net
+# from . import mcts
+from . import graphics
+from . import utils
+from . import grid
 #import torch
-
+generate_array = utils.generate_array
+display_grid = graphics.display_grid
 ACTION_DICT = {(0, 0):0, (-1, 0):1, (0, 1):2, (1, 0):3, (0, -1):4} #
 
 class Agent:
@@ -29,6 +31,7 @@ class Agent:
                 net = neural_net.load()
                 print("neural net loaded")
             except:
+                raise AttributeError("No net specified")
                 print("training neural net")
                 neural_net.train()
                 net = neural_net.load()
@@ -61,7 +64,7 @@ class Agent:
         while not grid.terminal_state: # max number of steps per episode
             # grids.append(state)
             test_input = generate_array(grid)
-            import pdb; pdb.set_trace()
+
             #input to neural net predict should be (3,5,5) for base, next_train, targets
             action_ind = np.argmax(neural_net.predict(net, test_input))
             action = grid.all_actions[action_ind]
@@ -134,8 +137,29 @@ class Agent:
         if display: print(total_reward)
         return grids_array, action_val_array[1:], total_reward
 
+    def mc_tree_search(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False) -> tuple:
+        """
+        Monte Carlo Tree Search. Uses epsilon greedy strategy
+        to find optimal policy. Details can be found in mcts.py
+        Args:
+            - start_grid (Grid): grid object initialized with starting state
+            - iters (int): number of iterations to run monte carlo simulation
+            - nn_init (bool): whether to initialize Q-values with neural net outputs
+        Returns: (Q_values, policy)
+                Q(s) = val, policy(state) = action
+        """
+        # Q is a dictionary mapping state to [value of action1, value of action2,...]
+        grid = start_grid.copy()
+        tree = MCTS()
 
-    def mc_first_visit_control(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False, cutoff = 0) -> tuple:
+        for _ in range(iters):
+            tree.do_rollout(grid)
+
+        Q = tree.Q
+        policy = tree.choose
+        return Q, policy
+
+    def mc_first_visit_control(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False) -> tuple:
         """
         Monte Carlo first visit control. Uses epsilon greedy strategy
         to find optimal policy. Details can be found page 101 of Sutton
@@ -144,6 +168,8 @@ class Agent:
             - start_grid (Grid): grid object initialized with starting state
             - iters (int): number of iterations to run monte carlo simulation for
             - nn_init (bool): whether to initialize Q-values with neural net outputs
+            - discount_factor (int): how much to discount future rewards
+            - epsilon (int): how much to favor random choices in strategy
         Returns: (Q_values, policy)
                 Q(s) = val, policy(state) = action
         """

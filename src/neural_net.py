@@ -11,7 +11,7 @@ NUM_TARGETS = 2
 CHANNELS = 10
 
 base_path = os.path.dirname(os.path.dirname(__file__))
-NN_FILE = os.path.join(base_path,'models/nn_model')
+NN_FILE = os.path.join(base_path,'models/nn_model_time')
 
 class Net(nn.Module):
     def __init__(self, C=CHANNELS, dropout_p=0.2):
@@ -169,7 +169,7 @@ def predict(model, state):
     returns 1x5(num actions) numpy array of Q-values for each action
     '''
 
-    inputs = torch.from_numpy(state).float()#.to(torch.long)
+    inputs = torch.from_numpy(state).float()
 
     # NEWER ATTEMPT TO CLEAN UP INPUT
 
