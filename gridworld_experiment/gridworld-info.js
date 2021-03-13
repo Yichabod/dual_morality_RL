@@ -211,11 +211,13 @@ function twoTrial(GridWorldTask){
     task.start();
 }
 
+
 function testDemo(GridWorldTask,test_group){
     document.getElementById("testinfobutton").style.visibility = "hidden"
     document.getElementById("infotimer").style.visibility = "visible"
     document.getElementById("rewardinfotest").style.visibility = "visible"
-    
+
+
     var wt 
     var tl
     if (test_group == 0){
@@ -231,9 +233,9 @@ function testDemo(GridWorldTask,test_group){
         reward_container: $("#rewardinfotest")[0],
         time_container: $("#infotimer")[0],
         step_callback: (d) => {
-            if (d['reward']==1 && d['iter']==5){
+            if (d['reward']==2 && d['iter']==5){
+                testinfo_done = true;
                 document.getElementById("test_button").disabled = false
-                testdemo_done = true;
                 document.getElementById('test_button').style.color = "white"
             }
         },
@@ -243,21 +245,21 @@ function testDemo(GridWorldTask,test_group){
             });
         task.init({
         init_state: {
-            'agent': [4,3],
+            'agent': [2,0],
             'cargo1': [2,3],
-            'cargo2': [3,1],
+            'cargo2': [0,1],
             'train': [4,0],
-            'trainvel': [-1,0]
+            'trainvel': [0,1]
         },
-        switch_pos: [4,1],
+        switch_pos: [1,1],
         targets: {
-            'target1': [1,3],
-            'target2': [4,2]
+            'target1': [2,4],
+            'target2': [0,0]
         },
         show_rewards: true,
         wait_time: wt,
         time_limit: tl,
-        best_reward: 1,
+        best_reward: 2,
     });
     task.start();
 }

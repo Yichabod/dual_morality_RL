@@ -19,12 +19,19 @@
         <script>
 
             var train_data;
+            var train_group = Math.floor(Math.random() * 2);
             function prepare_train() {   
-                $.getJSON("train_data.json", function(jsondata) {
-                    train_data = jsondata
-                    clickStart("info7","page1")
-                    run_train(train_data, GridWorldTask)
-                });             
+                console.log(train_group)
+                if (train_group == 1){
+                    $.getJSON("train_data.json", function(jsondata) {
+                        train_data = jsondata
+                        clickStart("info7","page1")
+                        run_train(train_data, GridWorldTask)
+                    });
+                } else {
+                    test_info(GridWorldTask);
+                    clickStart('info7','testinfo')
+                }             
             }
 
             var test_data;
@@ -42,7 +49,7 @@
         <div id="consent"></div>
         <div id="info1" style="display:none"> 
             <div id="instructions">
-                Welcome! Please read these instructions carefully - this will help you earn more money by doing the task right. Each point you earn is worth <b><mark>3&cent in bonus money.</mark></b></b> <br>  
+                Welcome! Please read these instructions carefully - this will help you earn more money by doing the task right. <br>  
                 <br>
                 In this task you are the director of a transport station. Unfortunately the station is usually chaotic and the freight is often not where it is supposed to be.  Sometimes it might even get hit by a train. <br>
                 <br>
@@ -179,8 +186,7 @@
         <div id="info7" style="display:none"> 
             <div id="instructions">
                 <br><br>
-                Remember that your goal is to <b>get the highest score possible for each grid. 
-                You will receive 5&cent per point in bonus money based on the total number of points you accumulate by the end of the task.</b>
+                Remember that your goal is to <b>get the highest score possible for each grid. </b>
                 <br><br>
                 Also remember that you will rarely be able to accomplish everything you want to in the time you have, so you need to prioritize. It is ok if you cannot do everything within the limited steps you have. The train depot is chaotic, and you should try to get as many points as you can given the situation.
                 <br><br>
@@ -191,14 +197,14 @@
             </div>
             <div id="buttonbar">
                 <button type="button" id='back'; onclick="clearGrid('taskinfo7');clickStart('info7','info6');switchDemo(GridWorldTask);"; >BACK</button>
-                <button type="button" id='next78'; onclick="clearGrid('taskinfo7');clickStart('info7','page1');prepare_train()">NEXT</button>
+                <button type="button" id='next78'; onclick="clearGrid('taskinfo7');prepare_train()">NEXT</button>
             </div>
         </div>
 
         <div id="testinfo" style="display:none">
             <div id="instructions">
                 <p id="test_info"> </p>
-                <p id="test_info2">This is the test section, so do your best to get the highest possible score on each grid. <br><br><b>The problems during this section are difficult, and sometimes you will not be able to avoid losing points. Do not be discouraged, as you will recieve an additional point worth <mark>3&cent in bonus money</mark> for every grid in this section where you get the best possible score.</b><br><br> We will add these additional payments to your bonus at the end.  If you do well, this will ensure that your total bonus payment will increase even during this difficult phase.</p>
+                <p id="test_info2">The problems during this section are difficult, and sometimes you will not be able to avoid losing points. Do not be discouraged, as you will recieve <b><mark>5&cent in bonus money</mark> for every grid where you get the best possible score.</b> We will add these additional payments to your bonus at the end. </p>
                 <p id="test_info3"></p>
                 <button id="testinfobutton"; onclick="testDemo(GridWorldTask,test_group);" >Start Example</button> <br><br>
                 <div id="info">

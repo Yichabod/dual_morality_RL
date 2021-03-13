@@ -368,15 +368,14 @@ class GridWorldTask {
         else { scoretext += "\npress n to continue" }
         this.painter.add_text(2,2, scoretext, {"font-size":20, "font-family": "Palatino Linotype, Book Antiqua, Palatino, serif"});
 
-        console.log('endtask');
+        this._disable_response();
         $(document).on("keydown.task_response", (e) => {
-            console.log("enabling n")
             let kc = e.keyCode ? e.keyCode : e.which;
             if (kc === 78) {
                 this._disable_response();
                 setTimeout(() => {
                     this.painter.paper.remove()
-                    this.endtask_callback(this.data,this.reward);
+                    this.endtask_callback(this.data,this.reward,this.time_out);
                 }, animtime*this.END_OF_ROUND_DELAY_MULTIPLIER);
             }
         })
@@ -459,7 +458,6 @@ class GridWorldTask {
         this.update_stats();
 
         if (this.mdp.is_terminal() || this.iter >= this.iter_limit) {
-            console.log(this.mdp.is_terminal(), this.iter)
             this._end_task();
         }
         else {

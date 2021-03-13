@@ -45945,15 +45945,14 @@ var GridWorldTask = function () {
             }
             this.painter.add_text(2, 2, scoretext, { "font-size": 20, "font-family": "Palatino Linotype, Book Antiqua, Palatino, serif" });
 
-            console.log('endtask');
+            this._disable_response();
             (0, _jquery2.default)(document).on("keydown.task_response", function (e) {
-                console.log("enabling n");
                 var kc = e.keyCode ? e.keyCode : e.which;
                 if (kc === 78) {
                     _this4._disable_response();
                     setTimeout(function () {
                         _this4.painter.paper.remove();
-                        _this4.endtask_callback(_this4.data, _this4.reward);
+                        _this4.endtask_callback(_this4.data, _this4.reward, _this4.time_out);
                     }, animtime * _this4.END_OF_ROUND_DELAY_MULTIPLIER);
                 }
             });
@@ -46042,7 +46041,6 @@ var GridWorldTask = function () {
             this.update_stats();
 
             if (this.mdp.is_terminal() || this.iter >= this.iter_limit) {
-                console.log(this.mdp.is_terminal(), this.iter);
                 this._end_task();
             } else {
                 //This handles when/how to re-enable user responses
