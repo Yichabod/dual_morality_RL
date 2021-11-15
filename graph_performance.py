@@ -5,6 +5,9 @@ from src.agent import Agent
 import matplotlib.pyplot as plt
 import numpy as np
 
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 TEST_GRIDS = {
  # "1": {"train": (2, 0), "trainvel": (0, 1), "cargo1": (3, 1), "target1": (1, 1), "switch": (0, 0), "agent": (3, 3), "cargo2": (4, 3), "target2": (1, 3), "best_reward": 1, "num1":1, "num2":2},
  # "2": {"train": (4, 3), "trainvel": (-1, 0), "cargo1": (3, 4), "target1": (4, 2), "switch": (4, 4), "agent": (1, 2), "cargo2": (1, 3), "target2": (2, 0), "best_reward": 0, "num1":1, "num2":2},
@@ -62,8 +65,8 @@ TEST_GRIDS = {
  "408": {"train": (0, 3), "trainvel": (1, 0), "cargo1": (1, 4), "target1": (2, 4), "switch": (4, 0), "agent": (0, 4), "cargo2": (0, 0), "target2": (0, 1), "best_reward": 1, "num1":1, "num2":2}
 }
 
-ITERS = [i for i in range(0,150,5)] + [j for j in range(175,400,25)] + [k for k in range(500,1000,100)]
-REPEATS = 1 #number of times to redo the iteration; for consistency
+ITERS = [i for i in range(0,200,10)] #+ [j for j in range(175,400,25)] + [k for k in range(500,1000,100)]
+REPEATS = 10 #number of times to redo the iteration; for consistency
 
 def plot_grid_2_mc():
     test_grids = TEST_GRIDS
@@ -149,10 +152,10 @@ def graph_dual_model_performance():
       total_grid3_score.append(np.mean(grid3_score))
       total_grid4_score.append(np.mean(grid4_score))
     # plt.plot(iters, total_normal_grid_score, label="normal grids", color="red")
-    plt.plot(iters, total_grid1_score, label='grid 1', color="blue")
-    plt.plot(iters, total_grid2_score, label='grid 2', color="green")
-    plt.plot(iters, total_grid3_score, label='grid 3', color="orange")
-    plt.plot(iters, total_grid4_score, label='grid 4', color="brown")
+    plt.plot(iters, total_grid1_score, label='push dilemma', color="blue")
+    plt.plot(iters, total_grid2_score, label='switch dilemma', color="green")
+    plt.plot(iters, total_grid3_score, label='switch save', color="orange")
+    plt.plot(iters, total_grid4_score, label='push get', color="brown")
     plt.legend()
     plt.xlabel("Number of MC Iterations")
     plt.ylabel("Normalized Score")
