@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from grid import Grid
+from .grid import Grid
+from .agent import Agent
 import numpy as np
-from agent import Agent
 import time
-from graphics import display_grid
+from .graphics import display_grid
 import random
 import json
 
@@ -369,4 +369,4 @@ if __name__ == "__main__":
     # original distribution distribution={'push':23,'switch':23,'targets':39,'lose':15}
     # grids, actions = data_gen(200000, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=True,filename="200000_shuffled")
     grids, actions = data_gen(100, distribution={'push':23,'switch':23,'targets':39,'lose':15}, save=False,filename="100_shuffled")
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()

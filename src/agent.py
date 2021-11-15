@@ -138,11 +138,11 @@ class Agent:
                  #print(Q_dict[state])
             action = grid.all_actions[action_ind]
             if display: display_grid(grid)
-            if display: 
+            if display:
                 print(action)
                 print(self.neural_net_output(grid))
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             grids_array.append(generate_array(grid))
             total_reward += grid.R(action)
             newstate = grid.T(action)
@@ -195,8 +195,8 @@ class Agent:
         else:
             Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
 
-        if softmax: 
-            policy = self._create_softmax_policy(Q, nn_init) 
+        if softmax:
+            policy = self._create_softmax_policy(Q, nn_init)
         else:
             policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init) #initial function
 
@@ -231,8 +231,8 @@ class Agent:
                     sa_reward_sum[sa_pair] += G
                     total_sa_counts[sa_pair] += 1
                     Q[state][action_index] = sa_reward_sum[sa_pair]/total_sa_counts[sa_pair] #average reward over all episodes
-                    if softmax: 
-                        policy = self._create_softmax_policy(Q, nn_init) 
+                    if softmax:
+                        policy = self._create_softmax_policy(Q, nn_init)
                     else:
                         policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init) #initial function
 
