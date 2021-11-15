@@ -8,21 +8,19 @@ View(data_join)
 library(lme4)
 library(simr)
 
-mixed.datajoin1 <- lmer(score_dif ~ (1|userid) + (1|gridnum), data = data_join)
+mixed.datajoin1 <- lmer(score_dif ~ (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
 
-mixed.datajoin2 <- lmer(score_dif ~ time_constraint  +  (1|userid) + (1|gridnum), data = data_join)
+mixed.datajoin2 <- lmer(score_dif ~ time_constraint  +  (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
 
-mixed.datajoin3 <- lmer(score_dif ~ time_constraint + in_distrib  +  (1|userid) + (1|gridnum), data = data_join)
+mixed.datajoin3 <- lmer(score_dif ~ time_constraint + in_distrib  +  (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
 
-mixed.datajoin4 <- lmer(score_dif ~ time_constraint + in_distrib + push +  (1|userid) + (1|gridnum), data = data_join)
+mixed.datajoin4 <- lmer(score_dif ~ time_constraint + in_distrib + push +  (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
 
-mixed.datajoin5 <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_distrib +  (1|userid) + (1|gridnum), data = data_join)
+mixed.datajoin5 <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_distrib +  (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
 
-mixed.datajoin6 <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_distrib + time_x_push + (1|userid) + (1|gridnum), data = data_join)
+mixed.datajoin6 <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_distrib + time_x_push + (in_distrib|userid) + (time_constraint|gridnum), data = data_join)
 summary(mixed.datajoin6)
 
-mixed.datajoin6b <- lmer(score_dif ~ time_constraint + in_distrib + push + time_x_push + (1|userid) + (1|gridnum), data = data_join)
-summary(mixed.datajoin6b)
 
 anova(mixed.datajoin1,mixed.datajoin2,mixed.datajoin3,mixed.datajoin4,mixed.datajoin5,mixed.datajoin6)
 anova(mixed.datajoin4,mixed.datajoin5)
@@ -32,9 +30,11 @@ anova(mixed.datajoin4,mixed.datajoin6b)
 sim_treat <- powerSim(mixed.datajoin, nsim=100, test = fcompare(score_dif~time_x_distrib))
 sim_treat
 
-model_ext_users <- extend(mixed.datajoin, along="userid", n=120)
+model_ext_users <- extend(mixed.datajoin6, along="userid", n=300)
 p_curve <- powerCurve(model_ext_users, test=fcompare(score_dif~time_x_push), along="userid")
 plot(p_curve)
+par("mar")
+par(mar=c(1,1,1,1))
 
 
 

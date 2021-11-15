@@ -80,7 +80,7 @@ class Grid:
                 self.switch = Switch(self.size,pos=init_pos['switch'])
                 others_pos = [init_pos['cargo1'],]
                 targets = [init_pos['target1']]
-                num = [init_pos['num1'],]
+                num = [init_pos['num1']]
                 if 'num2' in init_pos:
                     others_pos.append(init_pos['cargo2'])
                     num.append(init_pos['num2'])

@@ -5,6 +5,7 @@ from . import neural_net
 from . import graphics
 from . import utils
 from . import grid
+from scipy.special import softmax
 #import torch
 generate_array = utils.generate_array
 display_grid = graphics.display_grid
@@ -103,6 +104,17 @@ class Agent:
             return action_probs
         return policy
 
+    def _create_softmax_policy(self, Q_dict, nn_init=False):
+        def policy(grid):
+            state = grid.current_state
+            if state not in Q_dict and nn_init:
+                Q_dict[state] = self.neural_net_output(grid)
+            Q_values = Q_dict[state]
+
+            action_probs = softmax(Q_values)
+            return action_probs
+        return policy
+
     def run_final_policy(self, grid, Q_dict, nn_init=False, display=False):
         """
         Use Q_dict to solve MDP (no exploration)
@@ -112,7 +124,6 @@ class Agent:
         fed into downstream model
         """
         policy = self._create_epsilon_greedy_policy(Q_dict,epsilon=0,nn_init=nn_init) #optimal policy, eps=0 always chooses best value
-        #if display: display_grid(grid)
         state = grid.current_state
         total_reward = 0 #to keep track of most significant action taken by agent
         # grids_array = np.empty((1,grid.size,grid.size),dtype=int)
@@ -123,10 +134,13 @@ class Agent:
             action_probs = policy(grid)
             action_ind = np.argmax(action_probs)
             if display:
-                pass#print(Q_dict[state])
+                pass
+                 #print(Q_dict[state])
             action = grid.all_actions[action_ind]
             if display: display_grid(grid)
-            if display: print(action)
+            if display: 
+                print(action)
+                print(self.neural_net_output(grid))
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
 
             grids_array.append(generate_array(grid))
@@ -159,7 +173,7 @@ class Agent:
         policy = tree.choose
         return Q, policy
 
-    def mc_first_visit_control(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False) -> tuple:
+    def mc_first_visit_control(self, start_grid, iters, discount_factor=0.9, epsilon=0.2, nn_init=False, softmax=False) -> tuple:
         """
         Monte Carlo first visit control. Uses epsilon greedy strategy
         to find optimal policy. Details can be found page 101 of Sutton
@@ -181,7 +195,10 @@ class Agent:
         else:
             Q = defaultdict(lambda: list(0 for i in range(len(grid.all_actions))))
 
-        policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init) #initial function
+        if softmax: 
+            policy = self._create_softmax_policy(Q, nn_init) 
+        else:
+            policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init) #initial function
 
         sa_reward_sum, total_sa_counts = defaultdict(int), defaultdict(int) #keep track of total reward and count over all episodes
         for n in range(iters):
@@ -214,7 +231,11 @@ class Agent:
                     sa_reward_sum[sa_pair] += G
                     total_sa_counts[sa_pair] += 1
                     Q[state][action_index] = sa_reward_sum[sa_pair]/total_sa_counts[sa_pair] #average reward over all episodes
-                    policy = self._create_epsilon_greedy_policy(Q, epsilon,nn_init)
+                    if softmax: 
+                        policy = self._create_softmax_policy(Q, nn_init) 
+                    else:
+                        policy = self._create_epsilon_greedy_policy(Q,epsilon, nn_init) #initial function
+
 
         return Q, policy
 
