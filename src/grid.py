@@ -45,6 +45,7 @@ class Grid:
         observes result), copy is necessary to maintain original start position
         """
         copy = Grid(self.size)
+        copy.rewards_dict = self.rewards_dict
         copy.train = self.train.copy()
         copy.other_agents = self.other_agents.copy()
         copy.switch = self.switch

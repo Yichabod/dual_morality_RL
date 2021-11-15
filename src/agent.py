@@ -128,7 +128,7 @@ class Agent:
             if display: display_grid(grid)
             if display: print(action)
             action_val_array = np.concatenate((action_val_array,np.array([Q_dict[grid.current_state]])))
-
+            import pdb; pdb.set_trace()
             grids_array.append(generate_array(grid))
             total_reward += grid.R(action)
             newstate = grid.T(action)
